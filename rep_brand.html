@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,400;1,600&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rep-navy:     #0D1F3C;
+    --rep-blue:     #1A4A7A;
+    --rep-blue-mid: #2E6AAF;
+    --rep-blue-lt:  #E8F0F9;
+    --rep-gold:     #B8922A;
+    --rep-gold-lt:  #F5EED8;
+    --rep-ink:      #1A1C22;
+    --rep-steel:    #4A5568;
+    --rep-mist:     #EEF1F6;
+    --rep-white:    #FAFBFC;
+    --rep-rule:     #D1D9E6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    background: var(--rep-white);
+    color: var(--rep-ink);
+  }
+
+  /* ── MASTHEAD ── */
+  .masthead {
+    background: var(--rep-navy);
+    padding: 0;
+    border-bottom: 3px solid var(--rep-gold);
+  }
+  .masthead-inner {
+    padding: 36px 48px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+  .rule-top {
+    height: 1px;
+    background: rgba(255,255,255,0.12);
+    margin-bottom: 6px;
+  }
+  .masthead-top-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .logotype {
+    font-family: 'Playfair Display', serif;
+    font-size: 64px;
+    font-weight: 700;
+    color: var(--rep-white);
+    letter-spacing: -0.01em;
+    line-height: 1;
+  }
+  .logotype-period { color: var(--rep-gold); }
+  .masthead-meta {
+    text-align: right;
+    padding-bottom: 6px;
+  }
+  .masthead-tagline {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+  .masthead-sub {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 15px;
+    color: rgba(255,255,255,0.65);
+  }
+  .masthead-desc {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-style: italic;
+    font-weight: 400;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.6;
+    max-width: 540px;
+    border-left: 2px solid var(--rep-gold);
+    padding-left: 18px;
+  }
+
+  /* ── SECTIONS ── */
+  .section { padding: 36px 48px; border-bottom: 1px solid var(--rep-rule); }
+  .section-title {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--rep-steel);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--rep-rule); }
+
+  /* ── LOGO VARIANTS ── */
+  .logo-variants { display: flex; gap: 16px; flex-wrap: wrap; align-items: stretch; }
+  .logo-variant {
+    border-radius: 4px;
+    padding: 20px 28px;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 8px;
+  }
+  .lv-navy { background: var(--rep-navy); border: 1px solid rgba(255,255,255,0.08); }
+  .lv-white { background: var(--rep-white); border: 1px solid var(--rep-rule); }
+  .lv-mist  { background: var(--rep-mist); border: 1px solid var(--rep-rule); }
+  .lv-gold  { background: var(--rep-gold); }
+
+  .lv-logotype {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1;
+  }
+  .lv-logotype .period { color: var(--rep-gold); }
+  .lv-navy .lv-logotype { color: var(--rep-white); }
+  .lv-navy .lv-logotype .period { color: var(--rep-gold); }
+  .lv-white .lv-logotype { color: var(--rep-navy); }
+  .lv-white .lv-logotype .period { color: var(--rep-gold); }
+  .lv-mist .lv-logotype  { color: var(--rep-navy); }
+  .lv-mist .lv-logotype .period { color: var(--rep-gold); }
+  .lv-gold .lv-logotype  { color: white; }
+  .lv-gold .lv-logotype .period { color: rgba(255,255,255,0.5); }
+
+  .lv-sub {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 8px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .lv-navy .lv-sub { color: rgba(255,255,255,0.35); }
+  .lv-white .lv-sub { color: var(--rep-steel); }
+  .lv-mist .lv-sub  { color: var(--rep-steel); }
+  .lv-gold .lv-sub  { color: rgba(255,255,255,0.6); }
+
+  /* App icons */
+  .icon-row { display: flex; gap: 12px; align-items: flex-end; margin-top: 20px; }
+  .app-icon {
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .icon-lg { width: 80px; height: 80px; border-radius: 18px; }
+  .icon-md { width: 56px; height: 56px; border-radius: 14px; }
+  .icon-sm { width: 40px; height: 40px; border-radius: 10px; }
+  .icon-navy { background: var(--rep-navy); border: 1px solid rgba(255,255,255,0.05); }
+  .icon-gold  { background: var(--rep-gold); }
+  .icon-logotype {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    color: white;
+    letter-spacing: -0.01em;
+    line-height: 1;
+  }
+  .icon-period-gold { color: var(--rep-gold); }
+  .icon-period-white { color: rgba(255,255,255,0.5); }
+
+  /* ── PALETTE ── */
+  .palette-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .swatch { border-radius: 4px; overflow: hidden; }
+  .swatch-color { height: 56px; width: 96px; }
+  .swatch-label { padding: 6px 8px; background: white; border: 1px solid var(--rep-rule); border-top: none; border-radius: 0 0 4px 4px; }
+  .swatch-name { font-size: 10px; font-weight: 500; color: var(--rep-ink); }
+  .swatch-hex  { font-size: 9px; color: var(--rep-steel); font-family: 'IBM Plex Mono', monospace; }
+
+  /* ── TYPOGRAPHY ── */
+  .type-grid { display: flex; flex-direction: column; gap: 24px; }
+  .type-block { display: flex; gap: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--rep-rule); align-items: baseline; flex-wrap: wrap; }
+  .type-block:last-child { border-bottom: none; padding-bottom: 0; }
+  .type-meta { width: 140px; flex-shrink: 0; }
+  .type-meta-name { font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--rep-steel); }
+  .type-meta-spec { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--rep-blue-mid); margin-top: 3px; }
+
+  .t-display  { font-family: 'Playfair Display', serif; font-size: 40px; font-weight: 700; color: var(--rep-navy); letter-spacing: -0.01em; line-height: 1.1; }
+  .t-heading  { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 500; color: var(--rep-navy); line-height: 1.3; }
+  .t-subhead  { font-family: 'Playfair Display', serif; font-size: 18px; font-style: italic; color: var(--rep-steel); line-height: 1.4; }
+  .t-body     { font-family: 'IBM Plex Sans', sans-serif; font-size: 14px; font-weight: 400; color: var(--rep-steel); line-height: 1.75; max-width: 420px; }
+  .t-label    { font-family: 'IBM Plex Sans', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--rep-steel); }
+  .t-mono     { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--rep-blue-mid); }
+
+  /* ── BRAND VOICE ── */
+  .voice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .voice-card {
+    background: var(--rep-white);
+    border: 1px solid var(--rep-rule);
+    border-top: 3px solid var(--rep-navy);
+    border-radius: 2px;
+    padding: 16px 18px;
+  }
+  .voice-context { font-family: 'IBM Plex Sans', sans-serif; font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--rep-gold); margin-bottom: 8px; }
+  .voice-headline { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 500; color: var(--rep-navy); line-height: 1.4; margin-bottom: 6px; }
+  .voice-body { font-family: 'IBM Plex Sans', sans-serif; font-size: 11px; color: var(--rep-steel); line-height: 1.6; }
+
+  /* ── UI IN CONTEXT ── */
+  .mockup-row { display: flex; gap: 28px; flex-wrap: wrap; align-items: flex-start; }
+
+  .phone-shell {
+    width: 224px;
+    border: 1.5px solid rgba(0,0,0,0.15);
+    border-radius: 36px;
+    overflow: hidden;
+    background: var(--rep-white);
+    flex-shrink: 0;
+    box-shadow: 0 12px 40px rgba(13,31,60,0.14);
+  }
+  .phone-status { background: var(--rep-navy); padding: 10px 18px 7px; display: flex; justify-content: space-between; font-size: 9px; color: rgba(255,255,255,0.35); }
+
+  .onboard-hero {
+    background: var(--rep-navy);
+    border-bottom: 3px solid var(--rep-gold);
+    padding: 28px 20px 22px;
+    text-align: center;
+  }
+  .onboard-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 42px; font-weight: 700;
+    color: white;
+    letter-spacing: -0.01em;
+    line-height: 1;
+    margin-bottom: 10px;
+  }
+  .onboard-logo span { color: var(--rep-gold); }
+  .onboard-tagline {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 9px; font-weight: 300;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 10px;
+  }
+  .onboard-desc {
+    font-family: 'Playfair Display', serif;
+    font-size: 12px;
+    font-style: italic;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.5;
+  }
+  .onboard-body { padding: 18px 16px; }
+  .field-label { font-family: 'IBM Plex Sans', sans-serif; font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--rep-steel); margin-bottom: 5px; }
+  .field-input { width: 100%; background: white; border: 1px solid var(--rep-rule); border-radius: 3px; padding: 9px 12px; font-size: 11px; color: #bbb; margin-bottom: 12px; font-family: 'IBM Plex Sans', sans-serif; }
+  .btn-primary { width: 100%; background: var(--rep-navy); color: white; border: none; border-radius: 3px; padding: 11px; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-align: center; font-family: 'IBM Plex Sans', sans-serif; }
+  .onboard-fine { font-size: 9px; color: var(--rep-steel); text-align: center; margin-top: 10px; line-height: 1.6; font-family: 'IBM Plex Sans', sans-serif; }
+
+  /* notification */
+  .notif-shell {
+    background: white;
+    border: 1px solid var(--rep-rule);
+    border-radius: 8px;
+    overflow: hidden;
+    max-width: 300px;
+    box-shadow: 0 4px 20px rgba(13,31,60,0.10);
+  }
+  .notif-header { background: var(--rep-navy); padding: 10px 14px; display: flex; align-items: center; gap: 8px; }
+  .notif-app-name { font-family: 'IBM Plex Sans', sans-serif; font-size: 11px; font-weight: 600; color: white; letter-spacing: 0.04em; }
+  .notif-app-sub  { font-size: 9px; color: rgba(255,255,255,0.4); font-family: 'IBM Plex Sans', sans-serif; margin-left: auto; }
+  .notif-body-area { padding: 14px 16px; }
+  .notif-title { font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 500; color: var(--rep-navy); line-height: 1.4; margin-bottom: 5px; }
+  .notif-body-text { font-family: 'IBM Plex Sans', sans-serif; font-size: 11px; color: var(--rep-steel); line-height: 1.55; }
+  .notif-pill { display: inline-flex; align-items: center; gap: 5px; background: var(--rep-blue-lt); color: var(--rep-blue); font-size: 9px; font-weight: 600; padding: 3px 8px; border-radius: 2px; margin-top: 8px; letter-spacing: 0.05em; text-transform: uppercase; font-family: 'IBM Plex Sans', sans-serif; }
+
+  /* components */
+  .components-grid { display: flex; flex-direction: column; gap: 14px; max-width: 300px; }
+  .comp-label { font-size: 9px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--rep-steel); margin-bottom: 7px; }
+
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn-nav { background: var(--rep-navy); color: white; border: none; border-radius: 3px; padding: 9px 16px; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; font-family: 'IBM Plex Sans', sans-serif; }
+  .btn-out { background: transparent; color: var(--rep-navy); border: 1.5px solid var(--rep-navy); border-radius: 3px; padding: 8px 14px; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; font-family: 'IBM Plex Sans', sans-serif; }
+  .btn-gold { background: var(--rep-gold); color: white; border: none; border-radius: 3px; padding: 9px 16px; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; font-family: 'IBM Plex Sans', sans-serif; }
+
+  .tag-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag { font-family: 'IBM Plex Sans', sans-serif; font-size: 9px; font-weight: 600; padding: 3px 9px; border-radius: 2px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .tag-blue { background: var(--rep-blue-lt); color: var(--rep-blue); }
+  .tag-gold { background: var(--rep-gold-lt); color: var(--rep-gold); }
+  .tag-navy { background: var(--rep-navy); color: white; }
+  .tag-mist { background: var(--rep-mist); color: var(--rep-steel); border: 1px solid var(--rep-rule); }
+
+  .district-card { background: white; border: 1px solid var(--rep-rule); border-left: 3px solid var(--rep-navy); border-radius: 2px; padding: 10px 12px; }
+  .dc-title { font-family: 'IBM Plex Sans', sans-serif; font-size: 10px; font-weight: 600; color: var(--rep-navy); letter-spacing: 0.04em; }
+  .dc-sub   { font-family: 'IBM Plex Sans', sans-serif; font-size: 9px; color: var(--rep-steel); margin-top: 2px; }
+  .dc-mono  { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--rep-blue-mid); margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<!-- MASTHEAD -->
+<div class="masthead">
+  <div class="masthead-inner">
+    <div class="masthead-top-row">
+      <div>
+        <div class="rule-top"></div>
+        <div class="logotype">Rep<span class="logotype-period">.</span></div>
+        <div style="margin-top:6px; font-family:'IBM Plex Sans',sans-serif; font-size:10px; font-weight:300; letter-spacing:0.14em; text-transform:uppercase; color:rgba(255,255,255,0.35);">Your representatives. Your district. Your voice.</div>
+      </div>
+      <div class="masthead-meta">
+        <div class="masthead-tagline">Civic accountability platform</div>
+        <div class="masthead-sub">Direct democracy, properly delivered.</div>
+      </div>
+    </div>
+    <div class="masthead-desc">
+      Every elected official and every candidate in your actual voting districts — from city council to Congress — accountable to the people they represent.
+    </div>
+  </div>
+</div>
+
+<!-- LOGO VARIANTS -->
+<div class="section">
+  <div class="section-title">Logo & wordmark</div>
+  <div class="logo-variants">
+    <div class="logo-variant lv-navy">
+      <div class="lv-logotype">Rep<span class="period">.</span></div>
+      <div class="lv-sub">On dark</div>
+    </div>
+    <div class="logo-variant lv-white">
+      <div class="lv-logotype">Rep<span class="period">.</span></div>
+      <div class="lv-sub">On white</div>
+    </div>
+    <div class="logo-variant lv-mist">
+      <div class="lv-logotype">Rep<span class="period">.</span></div>
+      <div class="lv-sub">On mist</div>
+    </div>
+    <div class="logo-variant lv-gold">
+      <div class="lv-logotype">Rep<span class="period">.</span></div>
+      <div class="lv-sub">On gold</div>
+    </div>
+  </div>
+  <div class="icon-row">
+    <div class="app-icon icon-lg icon-navy">
+      <div class="icon-logotype" style="font-size:32px;">R<span class="icon-period-gold">.</span></div>
+    </div>
+    <div class="app-icon icon-md icon-navy">
+      <div class="icon-logotype" style="font-size:22px;">R<span class="icon-period-gold">.</span></div>
+    </div>
+    <div class="app-icon icon-sm icon-gold">
+      <div class="icon-logotype" style="font-size:16px;">R<span class="icon-period-white">.</span></div>
+    </div>
+    <div style="padding-left:8px;">
+      <div style="font-size:9px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--rep-steel);margin-bottom:5px;">Design note</div>
+      <div style="font-family:'IBM Plex Sans',sans-serif;font-size:11px;color:var(--rep-steel);line-height:1.6;max-width:200px;">The period after "Rep" is structural — it reads as abbreviation (representative) and as a full stop (accountability). It's always gold.</div>
+    </div>
+  </div>
+</div>
+
+<!-- PALETTE -->
+<div class="section">
+  <div class="section-title">Color system</div>
+  <div class="palette-row">
+    <div class="swatch">
+      <div class="swatch-color" style="background:#0D1F3C;"></div>
+      <div class="swatch-label"><div class="swatch-name">Navy</div><div class="swatch-hex">#0D1F3C</div></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#1A4A7A;"></div>
+      <div class="swatch-label"><div class="swatch-name">Blue</div><div class="swatch-hex">#1A4A7A</div></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#2E6AAF;"></div>
+      <div class="swatch-label"><div class="swatch-name">Blue mid</div><div class="swatch-hex">#2E6AAF</div></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#E8F0F9;"></div>
+      <div class="swatch-label" style="border:1px solid #ddd;border-top:none;"><div class="swatch-name">Blue light</div><div class="swatch-hex">#E8F0F9</div></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#B8922A;"></div>
+      <div class="swatch-label"><div class="swatch-name">Gold</div><div class="swatch-hex">#B8922A</div></div>
+    </div>
+    <div class="swatch">
+      <div class="swatch-color" style="background:#EEF1F6;"></div>
+      <div class="swatch-label" style="border:1px solid #ddd;border-top:none;"><div class="swatch-name">Mist</div><div class="swatch-hex">#EEF1F6</div></div>
+    </div>
+  </div>
+  <div style="margin-top:14px;font-family:'IBM Plex Sans',sans-serif;font-size:11px;color:var(--rep-steel);line-height:1.75;max-width:560px;">
+    Navy is the primary identity color — headers, buttons, active states. Gold appears only as an accent: the period in the logotype, border highlights, and the unclaimed-profile warning state. Blue mid handles interactive links and tags. Mist is the page background for content-heavy screens.
+  </div>
+</div>
+
+<!-- TYPOGRAPHY -->
+<div class="section">
+  <div class="section-title">Typography</div>
+  <div class="type-grid">
+    <div class="type-block">
+      <div class="type-meta">
+        <div class="type-meta-name">Display</div>
+        <div class="type-meta-spec">Playfair 700<br>40px / −0.01em</div>
+      </div>
+      <div class="t-display">Know your rep.</div>
+    </div>
+    <div class="type-block">
+      <div class="type-meta">
+        <div class="type-meta-name">Heading</div>
+        <div class="type-meta-spec">Playfair 500<br>24px</div>
+      </div>
+      <div class="t-heading">47 neighbors have left questions for your representative</div>
+    </div>
+    <div class="type-block">
+      <div class="type-meta">
+        <div class="type-meta-name">Subhead</div>
+        <div class="type-meta-spec">Playfair 400i<br>18px</div>
+      </div>
+      <div class="t-subhead">"This candidate has not yet joined Rep. Your question will be delivered to them directly."</div>
+    </div>
+    <div class="type-block">
+      <div class="type-meta">
+        <div class="type-meta-name">Body</div>
+        <div class="type-meta-spec">IBM Plex Sans 400<br>14px / 1.75</div>
+      </div>
+      <div class="t-body">Rep identifies every elected official and candidate in your voting districts based on your registered address — from city council and school board up to your congressional and Senate representatives.</div>
+    </div>
+    <div class="type-block">
+      <div class="type-meta">
+        <div class="type-meta-name">Label</div>
+        <div class="type-meta-spec">IBM Plex Sans 600<br>11px / 0.1em UC</div>
+      </div>
+      <div class="t-label">GA Senate · District 40 · Your representative</div>
+    </div>
+    <div class="type-block" style="border:none;padding-bottom:0;">
+      <div class="type-meta">
+        <div class="type-meta-name">Mono</div>
+        <div class="type-meta-spec">IBM Plex Mono 400<br>12px — data & IDs</div>
+      </div>
+      <div class="t-mono">GA-SEN-D40 · Filed 2026-03-03 · GA SOS #0044821</div>
+    </div>
+  </div>
+</div>
+
+<!-- BRAND VOICE -->
+<div class="section">
+  <div class="section-title">Brand voice</div>
+  <div class="voice-grid">
+    <div class="voice-card">
+      <div class="voice-context">Onboarding</div>
+      <div class="voice-headline">Every vote you've ever cast was decided at the district level.</div>
+      <div class="voice-body">Enter your address and Rep will show you every person who is supposed to represent you — from your school board to the Senate.</div>
+    </div>
+    <div class="voice-card">
+      <div class="voice-context">Unclaimed profile</div>
+      <div class="voice-headline">This candidate has not yet joined Rep.</div>
+      <div class="voice-body">Their profile is built from public filing records. Questions left here are delivered directly to their registered campaign contact.</div>
+    </div>
+    <div class="voice-card">
+      <div class="voice-context">Empty state</div>
+      <div class="voice-headline">No activity in your districts today.</div>
+      <div class="voice-body">Leave a question. Your representatives are notified of every submission from their district.</div>
+    </div>
+    <div class="voice-card">
+      <div class="voice-context">Candidate joined</div>
+      <div class="voice-headline">Sandra Reyes has claimed her Rep profile.</div>
+      <div class="voice-body">She has answered 38 questions from District 40 constituents. Response rate: 94%.</div>
+    </div>
+  </div>
+  <div style="margin-top:16px;padding:14px 18px;background:var(--rep-mist);border-left:3px solid var(--rep-navy);border-radius:2px;">
+    <div style="font-size:9px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:var(--rep-steel);margin-bottom:5px;">Voice principle</div>
+    <div style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;color:var(--rep-steel);line-height:1.7;">Rep speaks like a well-edited newspaper, not a startup. Sentences are declarative and complete. No exclamation marks. No "Hey!" No emoji. Data is cited precisely. The tone assumes the reader is a serious adult who cares about how their community is governed.</div>
+  </div>
+</div>
+
+<!-- UI IN CONTEXT -->
+<div class="section" style="border:none;">
+  <div class="section-title">UI in context</div>
+  <div class="mockup-row">
+    <div class="phone-shell">
+      <div class="phone-status"><span>9:41</span><span>●●●</span></div>
+      <div class="onboard-hero">
+        <div class="onboard-logo">Rep<span>.</span></div>
+        <div class="onboard-tagline">Civic accountability platform</div>
+        <div class="onboard-desc">Every person who represents you, in one place.</div>
+      </div>
+      <div class="onboard-body">
+        <div class="field-label">Home address</div>
+        <div class="field-input">123 Main St, Atlanta, GA 30315</div>
+        <div class="btn-primary">Find my representatives</div>
+        <div class="onboard-fine">Your address is used only to determine your voting districts. It is not stored or shared.</div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:16px;">
+
+      <div>
+        <div class="comp-label">Push notification</div>
+        <div class="notif-shell">
+          <div class="notif-header">
+            <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:white;letter-spacing:-0.01em;line-height:1;">Rep<span style="color:var(--rep-gold);">.</span></div>
+            <div class="notif-app-sub">now</div>
+          </div>
+          <div class="notif-body-area">
+            <div class="notif-title">Sandra Reyes posted a video response in your district</div>
+            <div class="notif-body-text">She addressed the question about SB 204 that 89 of your neighbors upvoted this week.</div>
+            <div class="notif-pill">GA Senate · District 40</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="comp-label">Buttons</div>
+        <div class="btn-row">
+          <button class="btn-nav">Find my reps</button>
+          <button class="btn-out">View profile</button>
+          <button class="btn-gold">Claim profile</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="comp-label">Tags & labels</div>
+        <div class="tag-row">
+          <span class="tag tag-navy">Your rep</span>
+          <span class="tag tag-blue">Response to opponent</span>
+          <span class="tag tag-gold">Awaiting reply</span>
+          <span class="tag tag-mist">Unclaimed</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="comp-label">District record card</div>
+        <div class="district-card">
+          <div class="dc-title">GA State Senate · District 40</div>
+          <div class="dc-sub">Incumbent: Sandra Reyes · 2 challengers in race</div>
+          <div class="dc-mono">GA-SEN-D40 · Source: GA SOS</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

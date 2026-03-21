@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rep-navy:        #0D1F3C;
+    --rep-gold:        #B8922A;
+    --rep-gold-lt:     rgba(184,146,42,0.1);
+    --rep-gold-border: rgba(184,146,42,0.35);
+    --rep-rule:        rgba(255,255,255,0.06);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    background: #0d0f14;
+    padding: 28px;
+    display: flex; gap: 28px; flex-wrap: wrap;
+    justify-content: center; align-items: flex-start;
+  }
+  .col { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .screen-label {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 9px; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: rgba(255,255,255,0.25); text-align: center;
+  }
+  .phone {
+    width: 232px;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 36px; overflow: hidden;
+    display: flex; flex-direction: column;
+    background: #080a0e;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.7);
+  }
+  .status-bar {
+    background: #080a0e; padding: 10px 18px 7px;
+    display: flex; justify-content: space-between;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 9px; color: rgba(255,255,255,0.25);
+  }
+  .top-nav {
+    background: rgba(13,31,60,0.97);
+    border-bottom: 1px solid rgba(184,146,42,0.25);
+    padding: 7px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .top-nav-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px; font-weight: 700;
+    color: white; letter-spacing: -0.01em; line-height: 1;
+  }
+  .top-nav-logo span { color: var(--rep-gold); }
+  .top-nav-context {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8px; color: rgba(255,255,255,0.3); letter-spacing: 0.04em;
+  }
+
+  /* compressed video thumb */
+  .video-thumb-bar {
+    height: 100px; position: relative;
+    background: linear-gradient(175deg, #0d1f3c 0%, #030810 100%);
+    flex-shrink: 0;
+    display: flex; align-items: flex-end; padding: 8px 12px;
+    border-bottom: 1px solid rgba(184,146,42,0.2);
+  }
+  .video-thumb-bar::before {
+    content: ''; position: absolute; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.01) 3px, rgba(255,255,255,0.01) 4px);
+    pointer-events: none;
+  }
+  .thumb-play {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -60%);
+    width: 26px; height: 26px; border-radius: 2px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: rgba(255,255,255,0.6);
+  }
+  .thumb-caption {
+    font-family: 'Playfair Display', serif;
+    font-size: 10px; font-style: italic;
+    color: rgba(255,255,255,0.65); line-height: 1.4;
+    position: relative; z-index: 1;
+  }
+
+  /* questions */
+  .drawer-area { flex: 1; background: #080a0e; display: flex; flex-direction: column; }
+  .drawer-header {
+    padding: 9px 12px 8px;
+    border-bottom: 1px solid var(--rep-rule);
+    display: flex; align-items: center; justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .drawer-title {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 9px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+  }
+  .drawer-count { font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--rep-gold); }
+
+  /* QUESTION ITEM — +1 on the left as its own column */
+  .question-item {
+    display: flex; align-items: stretch;
+    border-bottom: 1px solid var(--rep-rule);
+  }
+  .question-item.voted { background: rgba(184,146,42,0.03); }
+
+  /* +1 column */
+  .plus-one-col {
+    width: 44px; flex-shrink: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 3px;
+    border-right: 1px solid var(--rep-rule);
+    padding: 10px 0;
+    cursor: pointer;
+  }
+  .plus-one-col.default { }
+  .plus-one-col.voted   { border-right-color: rgba(184,146,42,0.15); }
+
+  .plus-one-mark {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px; font-weight: 500;
+    line-height: 1;
+  }
+  .plus-one-col.default .plus-one-mark { color: rgba(255,255,255,0.2); }
+  .plus-one-col.voted   .plus-one-mark { color: var(--rep-gold); }
+
+  .plus-one-count {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+  }
+  .plus-one-col.default .plus-one-count { color: rgba(255,255,255,0.2); }
+  .plus-one-col.voted   .plus-one-count { color: var(--rep-gold); }
+
+  /* question body */
+  .q-body { flex: 1; padding: 10px 11px; display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+  .q-text {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 11px; color: rgba(255,255,255,0.78); line-height: 1.5;
+  }
+  .question-item.voted .q-text { color: rgba(255,255,255,0.9); }
+
+  .q-footer { display: flex; align-items: center; justify-content: space-between; }
+  .q-user { font-family: 'IBM Plex Mono', monospace; font-size: 8px; color: rgba(255,255,255,0.2); }
+  .q-answered-badge {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 7px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: rgba(100,180,140,0.7);
+    padding: 2px 6px;
+    border: 1px solid rgba(100,180,140,0.2);
+    border-radius: 2px;
+    background: rgba(100,180,140,0.05);
+  }
+
+  /* answered item — +1 col replaced with check */
+  .answered-col {
+    width: 44px; flex-shrink: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    border-right: 1px solid rgba(100,180,140,0.1);
+    padding: 10px 0;
+  }
+  .answered-check {
+    font-size: 13px; color: rgba(100,180,140,0.5);
+    line-height: 1;
+  }
+  .answered-count {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px; color: rgba(100,180,140,0.35);
+    margin-top: 3px;
+  }
+
+  /* input */
+  .q-input-row {
+    display: flex; gap: 6px;
+    padding: 8px 10px;
+    border-top: 1px solid var(--rep-rule);
+    background: rgba(13,31,60,0.5);
+    flex-shrink: 0;
+    margin-top: auto;
+  }
+  .q-field {
+    flex: 1; background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 2px; padding: 7px 10px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 10px; color: rgba(255,255,255,0.25);
+  }
+  .q-submit {
+    background: var(--rep-navy);
+    border: 1px solid var(--rep-gold-border);
+    color: var(--rep-gold);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 8px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 7px 9px; border-radius: 2px; white-space: nowrap;
+  }
+
+  /* bottom nav */
+  .bottom-nav {
+    background: rgba(13,31,60,0.97);
+    border-top: 1px solid rgba(184,146,42,0.2);
+    display: flex; flex-shrink: 0;
+  }
+  .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 7px 0 5px; gap: 2px; }
+  .nav-icon svg { width: 13px; height: 13px; }
+  .nav-label { font-family: 'IBM Plex Sans', sans-serif; font-size: 7px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.25); }
+  .nav-item.active .nav-label { color: var(--rep-gold); }
+  .nav-item.active .nav-icon svg { fill: var(--rep-gold); }
+  .nav-item:not(.active) .nav-icon svg { fill: rgba(255,255,255,0.25); }
+
+  /* ANATOMY */
+  .anatomy { max-width: 230px; display: flex; flex-direction: column; gap: 12px; padding-top: 32px; }
+  .anatomy-title {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 9px; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: rgba(255,255,255,0.25);
+  }
+  .q-mock {
+    display: flex; align-items: stretch;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 3px; overflow: hidden;
+    background: rgba(13,31,60,0.3);
+  }
+  .q-mock.voted-mock { border-color: rgba(184,146,42,0.2); background: rgba(184,146,42,0.04); }
+  .q-mock.answered-mock { border-color: rgba(100,180,140,0.15); }
+  .mock-label {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 8px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: rgba(255,255,255,0.2); margin-bottom: 5px;
+  }
+  .note-block {
+    padding: 12px 14px;
+    background: rgba(13,31,60,0.3);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-left: 2px solid var(--rep-gold);
+    border-radius: 2px;
+  }
+  .note-text {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 10px; color: rgba(255,255,255,0.45); line-height: 1.6;
+  }
+  .note-text strong { color: rgba(255,255,255,0.7); font-weight: 500; }
+</style>
+</head>
+<body>
+
+<!-- MAIN SCREEN -->
+<div class="col">
+  <div class="screen-label">Questions drawer</div>
+  <div class="phone">
+    <div class="status-bar"><span>9:41</span><span>●●●</span></div>
+    <div class="top-nav">
+      <div class="top-nav-logo">Rep<span>.</span></div>
+      <div class="top-nav-context">GA-SEN-D40 · SB 204</div>
+    </div>
+    <div class="video-thumb-bar">
+      <div class="thumb-play">▶</div>
+      <div class="thumb-caption">"Here is what SB 204 actually does to small business taxes in our district."</div>
+    </div>
+    <div class="drawer-area">
+      <div class="drawer-header">
+        <div class="drawer-title">Questions</div>
+        <div class="drawer-count">47</div>
+      </div>
+
+      <!-- voted -->
+      <div class="question-item voted">
+        <div class="plus-one-col voted">
+          <div class="plus-one-mark">+1</div>
+          <div class="plus-one-count">31</div>
+        </div>
+        <div class="q-body">
+          <div class="q-text">What does this mean for Campbellton Rd businesses specifically?</div>
+          <div class="q-footer"><div class="q-user">@maria_d40</div></div>
+        </div>
+      </div>
+
+      <!-- default -->
+      <div class="question-item">
+        <div class="plus-one-col default">
+          <div class="plus-one-mark">+1</div>
+          <div class="plus-one-count">18</div>
+        </div>
+        <div class="q-body">
+          <div class="q-text">Can you share the CBO report page you're referencing?</div>
+          <div class="q-footer"><div class="q-user">@jose_atl</div></div>
+        </div>
+      </div>
+
+      <!-- answered -->
+      <div class="question-item">
+        <div class="answered-col">
+          <div class="answered-check">✓</div>
+          <div class="answered-count">12</div>
+        </div>
+        <div class="q-body">
+          <div class="q-text">Will you hold a town hall before the vote?</div>
+          <div class="q-footer">
+            <div class="q-user">@keisha_sw</div>
+            <div class="q-answered-badge">Answered</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- default -->
+      <div class="question-item" style="border:none;">
+        <div class="plus-one-col default">
+          <div class="plus-one-mark">+1</div>
+          <div class="plus-one-count">9</div>
+        </div>
+        <div class="q-body">
+          <div class="q-text">How does this compare to the previous version of the bill?</div>
+          <div class="q-footer"><div class="q-user">@dre_nw</div></div>
+        </div>
+      </div>
+
+      <div class="q-input-row">
+        <div class="q-field">Ask your own question...</div>
+        <div class="q-submit">Submit</div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item active">
+        <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></div>
+        <div class="nav-label">Feed</div>
+      </div>
+      <div class="nav-item">
+        <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 12c0 7 9 17 9 17s9-10 9-17c0-4.97-4.03-9-9-9z"/></svg></div>
+        <div class="nav-label">Districts</div>
+      </div>
+      <div class="nav-item">
+        <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div>
+        <div class="nav-label">Ask</div>
+      </div>
+      <div class="nav-item">
+        <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg></div>
+        <div class="nav-label">Reps</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ANATOMY -->
+<div class="anatomy">
+  <div class="anatomy-title">Button states</div>
+
+  <div>
+    <div class="mock-label">Default</div>
+    <div class="q-mock">
+      <div class="plus-one-col default" style="border-radius:0;">
+        <div class="plus-one-mark">+1</div>
+        <div class="plus-one-count">18</div>
+      </div>
+      <div class="q-body">
+        <div class="q-text">Can you share the CBO report page you're referencing?</div>
+        <div class="q-footer"><div class="q-user">@jose_atl</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="mock-label">Voted</div>
+    <div class="q-mock voted-mock">
+      <div class="plus-one-col voted" style="border-radius:0;">
+        <div class="plus-one-mark">+1</div>
+        <div class="plus-one-count">32</div>
+      </div>
+      <div class="q-body">
+        <div class="q-text">What does this mean for Campbellton Rd businesses?</div>
+        <div class="q-footer"><div class="q-user">@maria_d40</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="mock-label">Answered — +1 replaced by check</div>
+    <div class="q-mock answered-mock">
+      <div class="answered-col" style="border-radius:0;">
+        <div class="answered-check">✓</div>
+        <div class="answered-count">12</div>
+      </div>
+      <div class="q-body">
+        <div class="q-text">Will you hold a town hall before the vote?</div>
+        <div class="q-footer">
+          <div class="q-user">@keisha_sw</div>
+          <div class="q-answered-badge">Answered</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note-block">
+    <div class="note-text">The <strong>+1 column is flush left</strong>, making the count scannable down the list before you read the question text — the same way you'd scan a vote tally. Gold on voted, muted on default, green check when closed.</div>
+  </div>
+
+  <div class="note-block" style="border-left-color: rgba(100,180,140,0.5);">
+    <div class="note-text">Once a question is answered, the <strong>+1 becomes a check</strong> and the count stays. The question remains in the list so constituents who arrive late can find the video reply — but there's nothing left to vote on.</div>
+  </div>
+</div>
+
+</body>
+</html>

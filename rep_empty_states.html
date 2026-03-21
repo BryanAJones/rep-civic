@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:   #0D1F3C;
+    --gold:   #B8922A;
+    --gold-lt: rgba(184,146,42,0.08);
+    --gold-border: rgba(184,146,42,0.3);
+    --steel:  #4A5568;
+    --mist:   #EEF1F6;
+    --rule:   #D1D9E6;
+    --white:  #FAFBFC;
+    --ink:    #1A1C22;
+    --green:  rgba(100,180,140,0.75);
+    --green-lt: rgba(100,180,140,0.06);
+    --green-border: rgba(100,180,140,0.2);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    background: #e8e6df;
+    padding: 28px;
+    display: flex; gap: 24px; flex-wrap: wrap;
+    justify-content: center; align-items: flex-start;
+  }
+  .col { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .screen-label {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 9px; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: rgba(0,0,0,0.3); text-align: center;
+  }
+  .phone {
+    width: 240px;
+    border: 1.5px solid rgba(0,0,0,0.15);
+    border-radius: 36px; overflow: hidden;
+    display: flex; flex-direction: column;
+    background: var(--white);
+    box-shadow: 0 16px 48px rgba(13,31,60,0.14);
+    min-height: 560px;
+  }
+  .status-bar {
+    background: #f0efe8; padding: 10px 18px 7px;
+    display: flex; justify-content: space-between;
+    font-size: 9px; color: #aaa;
+  }
+  .top-nav {
+    background: var(--navy);
+    border-bottom: 1px solid var(--gold-border);
+    padding: 8px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .top-nav-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px; font-weight: 700;
+    color: white; letter-spacing: -0.01em;
+  }
+  .top-nav-logo span { color: var(--gold); }
+  .top-nav-back {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 9px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    display: flex; align-items: center; gap: 4px;
+  }
+
+  /* ── PROFILE HEADER ── */
+  .prof-header {
+    padding: 14px 14px 0;
+    border-bottom: 1px solid var(--rule);
+    background: var(--white);
+  }
+  .prof-row { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 12px; }
+  .prof-av {
+    width: 44px; height: 44px; border-radius: 2px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 16px; font-weight: 700; color: white;
+    flex-shrink: 0;
+  }
+  .av-unclaimed { background: #ccc; border: 2px dashed #aaa; color: #888; }
+  .av-claimed   { background: var(--navy); }
+  .prof-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 14px; font-weight: 500; color: var(--ink);
+  }
+  .prof-office {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 10px; color: var(--steel); margin-top: 2px;
+  }
+  .prof-code {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8px; color: rgba(0,0,0,0.25); margin-top: 2px;
+  }
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 8px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 2px; margin-top: 5px;
+  }
+  .pill-unclaimed { background: #fef3d0; color: #8a6500; border: 1px solid #f0c040; }
+  .pill-claimed   { background: var(--green-lt); color: rgba(50,150,100,0.9); border: 1px solid var(--green-border); }
+
+  .prof-stats {
+    display: flex; border-top: 1px solid var(--rule);
+    margin: 0 -14px; padding: 0 14px;
+  }
+  .stat { flex: 1; text-align: center; padding: 8px 0; }
+  .stat-num { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 500; color: var(--ink); }
+  .stat-lbl { font-family: 'IBM Plex Sans', sans-serif; font-size: 8px; color: var(--steel); margin-top: 1px; }
+  .stat + .stat { border-left: 1px solid var(--rule); }
+  .stat-num.muted { color: #ccc; }
+  .stat-lbl.muted { color: #ccc; }
+
+  /* ── TABS ── */
+  .seg-tabs {
+    display: flex; margin: 10px 14px 0;
+    background: var(--mist); border-radius: 2px; padding: 2px;
+  }
+  .seg-tab {
+    flex: 1; text-align: center;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 9px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 5px; border-radius: 2px; color: var(--steel);
+  }
+  .seg-tab.active {
+    background: white; color: var(--navy);
+    border: 1px solid var(--rule);
+  }
+
+  /* ── GENERAL QUESTION BOX (unclaimed, no video) ── */
+  .general-q-box {
+    margin: 10px 14px;
+    border: 1px solid var(--rule);
+    border-radius: 2px; overflow: hidden;
+  }
+  .gq-header {
+    background: var(--mist);
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--rule);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .gq-title {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 9px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--steel);
+  }
+  .gq-count {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px; color: var(--gold);
+  }
+  .gq-input-row {
+    display: flex; gap: 6px; padding: 8px 10px;
+    background: white;
+  }
+  .gq-field {
+    flex: 1; background: var(--mist);
+    border: 1px solid var(--rule);
+    border-radius: 2px; padding: 7px 10px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 10px; color: #bbb;
+  }
+  .gq-submit {
+    background: var(--navy); color: white;
+    border: none; border-radius: 2px;
+    padding: 7px 10px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 8px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  /* ── AUTO-GENERATED TOPICS ── */
+  .topics-section { padding: 0 14px 14px; }
+  .topics-label {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 9px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--steel); margin-bottom: 8px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .topics-source {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8px; color: rgba(0,0,0,0.2);
+    font-weight: 400; letter-spacing: 0; text-transform: none;
+  }
+  .topic-card {
+    border: 1px solid var(--rule);
+    border-radius: 2px; overflow: hidden;
+    margin-bottom: 6px;
+    background: white;
+  }
+  .topic-header {
+    padding: 8px 10px 6px;
+    border-bottom: 1px solid var(--rule);
+    background: var(--mist);
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;
+  }
+  .topic-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 11px; font-weight: 500; color: var(--ink); line-height: 1.4;
+  }
+  .topic-src-pill {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 7px; color: rgba(0,0,0,0.3);
+    background: white; border: 1px solid var(--rule);
+    padding: 2px 5px; border-radius: 2px; white-space: nowrap; flex-shrink: 0;
+  }
+  .topic-questions { }
+  .topic-q-row {
+    display: flex; align-items: stretch;
+    border-bottom: 1px solid #f0efe8;
+  }
+  .topic-q-row:last-child { border-bottom: none; }
+  .tq-plus {
+    width: 36px; flex-shrink: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 2px;
+    border-right: 1px solid #f0efe8;
+    padding: 6px 0;
+  }
+  .tq-mark {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; font-weight: 500; color: #ccc;
+  }
+  .tq-mark.voted { color: var(--gold); }
+  .tq-count {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8px; color: #ccc;
+  }
+  .tq-count.voted { color: var(--gold); }
+  .tq-body { flex: 1; padding: 6px 8px; }
+  .tq-text {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 10px; color: var(--ink); line-height: 1.4;
+  }
+  .tq-user {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 7px; color: #bbb; margin-top: 2px;
+  }
+  .topic-q-row.voted-row { background: rgba(184,146,42,0.03); }
+  .topic-ask-row {
+    display: flex; gap: 5px; padding: 6px 8px;
+    border-top: 1px solid #f0efe8;
+    background: #fafaf8;
+  }
+  .topic-ask-field {
+    flex: 1; background: white;
+    border: 1px solid var(--rule); border-radius: 2px;
+    padding: 5px 8px; font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 9px; color: #bbb;
+  }
+  .topic-ask-btn {
+    background: var(--navy); color: white;
+    border: none; border-radius: 2px;
+    padding: 5px 8px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 7px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+  }
+
+  /* ── EMPTY VIDEO STATE (claimed, no content) ── */
+  .video-empty-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 2px; margin: 0 0 4px;
+  }
+  .video-empty-cell {
+    aspect-ratio: 9/14;
+    background: var(--mist);
+    border: 1px dashed var(--rule);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .vec-plus {
+    font-size: 18px; color: #ccc; font-weight: 300;
+  }
+
+  .empty-prompt {
+    margin: 0 14px 14px;
+    padding: 12px 14px;
+    background: var(--mist);
+    border: 1px solid var(--rule);
+    border-left: 2px solid var(--gold);
+    border-radius: 2px;
+  }
+  .ep-title {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 10px; font-weight: 600; color: var(--ink);
+    margin-bottom: 3px;
+  }
+  .ep-body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 9px; font-weight: 300; color: var(--steel); line-height: 1.5;
+  }
+
+  /* ── GENERAL Q SECTION (claimed, no video) ── */
+  .general-q-section { padding: 0 14px; }
+  .gqs-header {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 9px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--steel); margin-bottom: 8px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .gq-item {
+    display: flex; align-items: stretch;
+    border-bottom: 1px solid var(--rule);
+    background: white;
+    border: 1px solid var(--rule); border-radius: 2px; margin-bottom: 5px;
+  }
+  .gqi-plus {
+    width: 36px; flex-shrink: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 2px;
+    border-right: 1px solid var(--rule); padding: 8px 0;
+  }
+  .gqi-body { flex: 1; padding: 8px 10px; }
+  .gqi-text { font-family: 'IBM Plex Sans', sans-serif; font-size: 10px; color: var(--ink); line-height: 1.4; margin-bottom: 3px; }
+  .gqi-user { font-family: 'IBM Plex Mono', monospace; font-size: 8px; color: #bbb; }
+  .gq-ask-row {
+    display: flex; gap: 6px; margin-top: 8px;
+    padding: 8px 10px;
+    background: var(--mist); border: 1px solid var(--rule); border-radius: 2px;
+  }
+  .gqa-field {
+    flex: 1; background: white; border: 1px solid var(--rule);
+    border-radius: 2px; padding: 6px 9px;
+    font-family: 'IBM Plex Sans', sans-serif; font-size: 10px; color: #bbb;
+  }
+  .gqa-btn {
+    background: var(--navy); color: white; border: none; border-radius: 2px;
+    padding: 6px 10px; font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 8px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+  }
+
+  /* bottom nav */
+  .bottom-nav {
+    background: var(--navy); border-top: 1px solid var(--gold-border);
+    display: flex; margin-top: auto;
+  }
+  .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 7px 0 5px; gap: 2px; }
+  .nav-icon svg { width: 13px; height: 13px; }
+  .nav-label { font-family: 'IBM Plex Sans', sans-serif; font-size: 7px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.25); }
+  .nav-item.active .nav-label { color: var(--gold); }
+  .nav-item.active .nav-icon svg { fill: var(--gold); }
+  .nav-item:not(.active) .nav-icon svg { fill: rgba(255,255,255,0.25); }
+
+  /* NOTES */
+  .notes { max-width: 220px; display: flex; flex-direction: column; gap: 12px; padding-top: 32px; }
+  .notes-title { font-family: 'IBM Plex Sans', sans-serif; font-size: 9px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(0,0,0,0.3); }
+  .note {
+    padding: 12px 14px;
+    background: white; border: 1px solid var(--rule);
+    border-left: 2px solid var(--navy); border-radius: 2px;
+  }
+  .note.gold { border-left-color: var(--gold); }
+  .note-label { font-family: 'IBM Plex Sans', sans-serif; font-size: 8px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--steel); margin-bottom: 5px; }
+  .note-text { font-family: 'IBM Plex Sans', sans-serif; font-size: 10px; color: var(--steel); line-height: 1.65; }
+  .note-text strong { color: var(--ink); font-weight: 500; }
+</style>
+</head>
+<body>
+
+<!-- SCREEN 1: UNCLAIMED — with auto-generated topics -->
+<div class="col">
+  <div class="screen-label">1 — unclaimed, no content</div>
+  <div class="phone">
+    <div class="status-bar"><span>9:41</span><span>●●●</span></div>
+    <div class="top-nav">
+      <div class="top-nav-logo">Rep<span>.</span></div>
+      <div class="top-nav-back">← Districts</div>
+    </div>
+
+    <div class="prof-header">
+      <div class="prof-row">
+        <div class="prof-av av-unclaimed">DK</div>
+        <div>
+          <div class="prof-name">David Kim</div>
+          <div class="prof-office">Candidate · Atlanta School Board</div>
+          <div class="prof-code">ATL-SB-D6 · GA SOS #0044821</div>
+          <div class="status-pill pill-unclaimed">⚬ Not yet joined</div>
+        </div>
+      </div>
+      <div class="prof-stats">
+        <div class="stat">
+          <div class="stat-num muted">—</div>
+          <div class="stat-lbl muted">Videos</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">23</div>
+          <div class="stat-lbl">Questions</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num muted">—</div>
+          <div class="stat-lbl muted">Response rate</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- General question box -->
+    <div class="general-q-box" style="margin-top:10px;">
+      <div class="gq-header">
+        <div class="gq-title">General questions for David</div>
+        <div class="gq-count">23</div>
+      </div>
+      <div class="gq-input-row">
+        <div class="gq-field">Ask David a question...</div>
+        <div class="gq-submit">Submit</div>
+      </div>
+    </div>
+
+    <!-- Auto-generated topics -->
+    <div class="topics-section" style="margin-top:10px;">
+      <div class="topics-label">
+        Topics from public record
+        <span class="topics-source">GA SOS · APS filings</span>
+      </div>
+
+      <div class="topic-card">
+        <div class="topic-header">
+          <div class="topic-title">Woodland Hills Elementary overcrowding</div>
+          <span class="topic-src-pill">APS enrollment data</span>
+        </div>
+        <div class="topic-questions">
+          <div class="topic-q-row voted-row">
+            <div class="tq-plus"><div class="tq-mark voted">+1</div><div class="tq-count voted">31</div></div>
+            <div class="tq-body"><div class="tq-text">What is your specific plan to address this?</div><div class="tq-user">@terri_d6</div></div>
+          </div>
+          <div class="topic-q-row">
+            <div class="tq-plus"><div class="tq-mark">+1</div><div class="tq-count">14</div></div>
+            <div class="tq-body"><div class="tq-text">Would you support a new school build or redistricting?</div><div class="tq-user">@james_nw</div></div>
+          </div>
+          <div class="topic-ask-row">
+            <div class="topic-ask-field">Ask about this topic...</div>
+            <div class="topic-ask-btn">Submit</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="topic-card">
+        <div class="topic-header">
+          <div class="topic-title">Proposed 2026–27 school calendar change</div>
+          <span class="topic-src-pill">APS board agenda</span>
+        </div>
+        <div class="topic-questions">
+          <div class="topic-q-row">
+            <div class="tq-plus"><div class="tq-mark">+1</div><div class="tq-count">18</div></div>
+            <div class="tq-body"><div class="tq-text">Do you support the proposed calendar change?</div><div class="tq-user">@jose_nw</div></div>
+          </div>
+          <div class="topic-ask-row">
+            <div class="topic-ask-field">Ask about this topic...</div>
+            <div class="topic-ask-btn">Submit</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></div><div class="nav-label">Feed</div></div>
+      <div class="nav-item active"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 12c0 7 9 17 9 17s9-10 9-17c0-4.97-4.03-9-9-9z"/></svg></div><div class="nav-label">Districts</div></div>
+      <div class="nav-item"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div><div class="nav-label">Ask</div></div>
+      <div class="nav-item"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg></div><div class="nav-label">Reps</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 2: CLAIMED, NO VIDEOS YET -->
+<div class="col">
+  <div class="screen-label">2 — claimed, no videos posted</div>
+  <div class="phone">
+    <div class="status-bar"><span>9:41</span><span>●●●</span></div>
+    <div class="top-nav">
+      <div class="top-nav-logo">Rep<span>.</span></div>
+      <div class="top-nav-back">← Districts</div>
+    </div>
+
+    <div class="prof-header">
+      <div class="prof-row">
+        <div class="prof-av av-claimed">DK</div>
+        <div>
+          <div class="prof-name">David Kim</div>
+          <div class="prof-office">Candidate · Atlanta School Board</div>
+          <div class="prof-code">ATL-SB-D6</div>
+          <div class="status-pill pill-claimed">✓ Active on Rep.</div>
+        </div>
+      </div>
+      <div class="prof-stats">
+        <div class="stat">
+          <div class="stat-num muted">0</div>
+          <div class="stat-lbl">Videos</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">23</div>
+          <div class="stat-lbl">Questions</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num muted">—</div>
+          <div class="stat-lbl muted">Response rate</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="seg-tabs">
+      <div class="seg-tab">Positions</div>
+      <div class="seg-tab active">Videos</div>
+      <div class="seg-tab">Q&A</div>
+    </div>
+
+    <!-- Empty video grid -->
+    <div class="video-empty-grid" style="margin-top:8px;">
+      <div class="video-empty-cell"><div class="vec-plus">+</div></div>
+      <div class="video-empty-cell"><div class="vec-plus">+</div></div>
+      <div class="video-empty-cell"><div class="vec-plus">+</div></div>
+    </div>
+
+    <!-- Empty state prompt -->
+    <div class="empty-prompt">
+      <div class="ep-title">No videos posted yet.</div>
+      <div class="ep-body">David has joined Rep. but hasn't posted a video. 23 questions from District 6 residents are waiting for a reply.</div>
+    </div>
+
+    <!-- General questions still visible -->
+    <div class="general-q-section">
+      <div class="gqs-header">
+        Questions waiting
+        <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--gold);font-weight:400;letter-spacing:0;text-transform:none;">23</span>
+      </div>
+      <div class="gq-item">
+        <div class="gqi-plus">
+          <div class="tq-mark voted">+1</div>
+          <div class="tq-count voted">31</div>
+        </div>
+        <div class="gqi-body">
+          <div class="gqi-text">What is your plan for overcrowding at Woodland Hills?</div>
+          <div class="gqi-user">@terri_d6</div>
+        </div>
+      </div>
+      <div class="gq-item" style="margin-bottom:0;">
+        <div class="gqi-plus">
+          <div class="tq-mark">+1</div>
+          <div class="tq-count" style="color:#ccc;">18</div>
+        </div>
+        <div class="gqi-body">
+          <div class="gqi-text">Do you support the proposed calendar change?</div>
+          <div class="gqi-user">@jose_nw</div>
+        </div>
+      </div>
+      <div class="gq-ask-row">
+        <div class="gqa-field">Ask David a question...</div>
+        <div class="gqa-btn">Submit</div>
+      </div>
+    </div>
+
+    <div class="bottom-nav" style="margin-top:auto;">
+      <div class="nav-item"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></div><div class="nav-label">Feed</div></div>
+      <div class="nav-item active"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 12c0 7 9 17 9 17s9-10 9-17c0-4.97-4.03-9-9-9z"/></svg></div><div class="nav-label">Districts</div></div>
+      <div class="nav-item"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div><div class="nav-label">Ask</div></div>
+      <div class="nav-item"><div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg></div><div class="nav-label">Reps</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- NOTES -->
+<div class="notes">
+  <div class="notes-title">Design decisions</div>
+
+  <div class="note gold">
+    <div class="note-label">Auto-generated topics</div>
+    <div class="note-text">Topics are pulled from <strong>public data sources</strong> — school board agendas, APS enrollment reports, budget filings. Each topic card has its own source badge and its own +1 question list. A constituent asking about overcrowding stays in that context rather than a generic box.</div>
+  </div>
+
+  <div class="note gold">
+    <div class="note-label">General question box</div>
+    <div class="note-text">Sits above the topics. Catches anything that doesn't fit a generated topic — and once the candidate claims their profile, <strong>general questions migrate to their Q&A tab</strong> alongside the topic questions.</div>
+  </div>
+
+  <div class="note">
+    <div class="note-label">Stats on unclaimed profile</div>
+    <div class="note-text">Videos and Response rate show <strong>em dash (—)</strong> not zero. Zero implies the candidate has been active and answered nothing. A dash signals the data simply doesn't exist yet — honest about the state.</div>
+  </div>
+
+  <div class="note">
+    <div class="note-label">Claimed but empty video grid</div>
+    <div class="note-text">Three dashed placeholder cells with a <strong>+ symbol</strong> — visible only to constituents on the Videos tab. The empty-state prompt counts the waiting questions, which creates pressure without being accusatory. Response rate stays as — until the first video reply.</div>
+  </div>
+
+  <div class="note">
+    <div class="note-label">Questions persist across states</div>
+    <div class="note-text">Questions asked before a candidate joins <strong>carry forward</strong> into their claimed profile. Nothing is lost. When they post their first video, they can reply to any of them and the reply links back to the original question.</div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rep. — Know your district. Know your representatives.</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,900;1,400;1,600&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:   #0D1F3C;
+    --blue:   #1A4A7A;
+    --gold:   #B8922A;
+    --gold-lt:#F5EED8;
+    --ink:    #1A1C22;
+    --steel:  #4A5568;
+    --mist:   #EEF1F6;
+    --rule:   #D1D9E6;
+    --white:  #FAFBFC;
+    --cream:  #F7F5EF;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    background: var(--white);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── UTILITY ── */
+  .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+  .label {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--steel);
+  }
+
+  /* ─────────────────────────────────────────
+     1. TOP RULE
+  ───────────────────────────────────────── */
+  .top-rule {
+    background: var(--navy);
+    height: 4px;
+  }
+
+  /* ─────────────────────────────────────────
+     2. MASTHEAD
+  ───────────────────────────────────────── */
+  .masthead {
+    background: var(--navy);
+    border-bottom: 3px solid var(--gold);
+    padding: 0 0 0;
+  }
+  .masthead-inner {
+    max-width: 960px; margin: 0 auto; padding: 0 24px;
+  }
+  .masthead-meta-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 0 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .masthead-dateline {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; color: rgba(255,255,255,0.35);
+    letter-spacing: 0.06em;
+  }
+  .masthead-edition {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 10px; font-weight: 300;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+  }
+
+  .masthead-logo-row {
+    padding: 28px 0 22px;
+    display: flex; align-items: flex-end;
+    justify-content: space-between; gap: 24px;
+  }
+  .logotype {
+    font-family: 'Playfair Display', serif;
+    font-size: 96px; font-weight: 900;
+    color: var(--white);
+    letter-spacing: -0.02em; line-height: 1;
+  }
+  .logotype-period { color: var(--gold); }
+
+  .masthead-right { text-align: right; padding-bottom: 8px; }
+  .masthead-tagline {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 11px; font-weight: 300;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 6px;
+  }
+  .masthead-desc {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px; font-style: italic;
+    color: rgba(255,255,255,0.65);
+    line-height: 1.5; max-width: 340px;
+  }
+
+  /* ─────────────────────────────────────────
+     3. HOOK
+  ───────────────────────────────────────── */
+  .hook {
+    background: var(--cream);
+    border-bottom: 1px solid var(--rule);
+    padding: 64px 0;
+  }
+  .hook-inner {
+    max-width: 960px; margin: 0 auto; padding: 0 24px;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 64px; align-items: center;
+  }
+  .hook-text {}
+  .hook-kicker {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .hook-kicker::before {
+    content: ''; display: block;
+    width: 24px; height: 2px; background: var(--gold);
+  }
+  .hook-headline {
+    font-family: 'Playfair Display', serif;
+    font-size: 42px; font-weight: 700;
+    color: var(--navy); line-height: 1.15;
+    letter-spacing: -0.01em; margin-bottom: 20px;
+  }
+  .hook-body {
+    font-size: 16px; font-weight: 300;
+    color: var(--steel); line-height: 1.8;
+    margin-bottom: 28px;
+  }
+  .hook-cta-row { display: flex; align-items: center; gap: 12px; }
+  .btn-primary {
+    display: inline-block;
+    background: var(--navy); color: white;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 13px 24px; border-radius: 2px;
+    text-decoration: none; border: none; cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-primary:hover { background: var(--blue); }
+  .btn-secondary-link {
+    font-size: 12px; font-weight: 500;
+    color: var(--steel); text-decoration: none;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 1px;
+  }
+
+  /* phone mockup — hook */
+  .hook-phone-wrap {
+    display: flex; justify-content: center; align-items: flex-start;
+    position: relative;
+  }
+  .hook-phone {
+    width: 200px;
+    border: 1.5px solid rgba(0,0,0,0.15);
+    border-radius: 32px; overflow: hidden;
+    background: #080a0e;
+    box-shadow: 0 24px 64px rgba(13,31,60,0.2);
+    position: relative; z-index: 1;
+  }
+  .hp-status { background: #080a0e; padding: 9px 16px 6px; display: flex; justify-content: space-between; font-family: 'IBM Plex Sans', sans-serif; font-size: 8px; color: rgba(255,255,255,0.25); }
+  .hp-nav { background: rgba(13,31,60,0.97); border-bottom: 1px solid rgba(184,146,42,0.25); padding: 7px 12px; display: flex; align-items: center; justify-content: space-between; }
+  .hp-logo { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: white; letter-spacing: -0.01em; }
+  .hp-logo span { color: var(--gold); }
+  .hp-ctx { font-family: 'IBM Plex Mono', monospace; font-size: 7px; color: rgba(255,255,255,0.3); }
+  .hp-video {
+    height: 220px; position: relative;
+    background: linear-gradient(175deg, #0d1f3c 0%, #030810 100%);
+    display: flex; flex-direction: column; justify-content: flex-end;
+  }
+  .hp-video::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.01) 3px, rgba(255,255,255,0.01) 4px); pointer-events: none; }
+  .hp-rail { position: absolute; right: 8px; bottom: 14px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .hp-rail-btn { width: 28px; height: 28px; border-radius: 2px; background: rgba(13,31,60,0.65); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; }
+  .hp-rail-btn svg { width: 12px; height: 12px; fill: rgba(255,255,255,0.65); }
+  .hp-rail-count { font-family: 'IBM Plex Mono', monospace; font-size: 7px; color: rgba(255,255,255,0.4); }
+  .hp-overlay { position: absolute; bottom: 0; left: 0; right: 40px; padding: 32px 10px 10px; background: linear-gradient(to top, rgba(4,7,14,0.94) 0%, transparent 100%); }
+  .hp-caption { font-family: 'Playfair Display', serif; font-size: 10px; font-style: italic; color: rgba(255,255,255,0.88); line-height: 1.5; margin-bottom: 5px; }
+  .hp-tag { font-family: 'IBM Plex Sans', sans-serif; font-size: 6px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 6px; border-radius: 2px; background: rgba(13,31,60,0.8); color: rgba(184,146,42,0.9); border: 1px solid rgba(184,146,42,0.25); }
+  .hp-scroll { background: #080a0e; text-align: center; padding: 4px 0; font-family: 'IBM Plex Sans', sans-serif; font-size: 6px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.15); }
+  .hp-bottom-nav { background: rgba(13,31,60,0.97); border-top: 1px solid rgba(184,146,42,0.2); display: flex; }
+  .hp-nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 6px 0 4px; gap: 2px; }
+  .hp-nav-item svg { width: 11px; height: 11px; }
+  .hp-nav-label { font-family: 'IBM Plex Sans', sans-serif; font-size: 6px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.25); }
+  .hp-nav-item.active .hp-nav-label { color: var(--gold); }
+  .hp-nav-item.active svg { fill: var(--gold); }
+  .hp-nav-item:not(.active) svg { fill: rgba(255,255,255,0.25); }
+
+  /* second phone, offset */
+  .hook-phone-2 {
+    width: 172px;
+    border: 1.5px solid rgba(0,0,0,0.12);
+    border-radius: 28px; overflow: hidden;
+    background: #fafbfc;
+    box-shadow: 0 16px 48px rgba(13,31,60,0.14);
+    position: absolute; right: -20px; top: 48px;
+    z-index: 0;
+  }
+  .hp2-status { background: #f0efe8; padding: 8px 14px 6px; display: flex; justify-content: space-between; font-size: 8px; color: #aaa; }
+  .hp2-nav { background: rgba(13,31,60,0.97); border-bottom: 1px solid rgba(184,146,42,0.25); padding: 6px 11px; display: flex; justify-content: space-between; align-items: center; }
+  .hp2-logo { font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; color: white; }
+  .hp2-logo span { color: var(--gold); }
+  .hp2-ctx { font-family: 'IBM Plex Mono', monospace; font-size: 6px; color: rgba(255,255,255,0.3); }
+  .hp2-thumb { height: 76px; background: linear-gradient(175deg, #0d1f3c 0%, #030810 100%); position: relative; border-bottom: 1px solid rgba(184,146,42,0.2); display: flex; align-items: flex-end; padding: 6px 10px; }
+  .hp2-thumb::before { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.01) 3px, rgba(255,255,255,0.01) 4px); }
+  .hp2-play { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-65%); width: 20px; height: 20px; border-radius: 2px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 8px; color: rgba(255,255,255,0.6); }
+  .hp2-cap { font-family: 'Playfair Display', serif; font-size: 8px; font-style: italic; color: rgba(255,255,255,0.6); line-height: 1.4; position: relative; z-index: 1; }
+  .hp2-header { padding: 7px 10px 5px; border-bottom: 1px solid #e8e6df; display: flex; justify-content: space-between; }
+  .hp2-title { font-family: 'IBM Plex Sans', sans-serif; font-size: 7px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #888; }
+  .hp2-count { font-family: 'IBM Plex Mono', monospace; font-size: 7px; color: var(--gold); }
+  .hp2-q { display: flex; border-bottom: 1px solid #eeede6; }
+  .hp2-plus { width: 32px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-right: 1px solid #eeede6; padding: 7px 0; }
+  .hp2-mark { font-family: 'IBM Plex Mono', monospace; font-size: 10px; font-weight: 500; }
+  .hp2-mark.d { color: #ccc; }
+  .hp2-mark.v { color: var(--gold); }
+  .hp2-num { font-family: 'IBM Plex Mono', monospace; font-size: 7px; }
+  .hp2-num.d { color: #ccc; }
+  .hp2-num.v { color: var(--gold); }
+  .hp2-body { flex: 1; padding: 7px 8px; }
+  .hp2-qtext { font-family: 'IBM Plex Sans', sans-serif; font-size: 8px; color: #333; line-height: 1.4; margin-bottom: 3px; }
+  .hp2-user { font-family: 'IBM Plex Mono', monospace; font-size: 6px; color: #bbb; }
+  .hp2-q.voted { background: rgba(184,146,42,0.04); }
+  .hp2-input-row { display: flex; gap: 5px; padding: 6px 8px; background: rgba(13,31,60,0.05); border-top: 1px solid #e8e6df; }
+  .hp2-field { flex: 1; background: white; border: 1px solid #ddd; border-radius: 2px; padding: 5px 7px; font-size: 7px; color: #bbb; }
+  .hp2-submit { background: var(--navy); color: white; border: none; border-radius: 2px; padding: 5px 7px; font-size: 6px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+
+  /* ─────────────────────────────────────────
+     4. HOW IT WORKS
+  ───────────────────────────────────────── */
+  .how {
+    background: var(--white);
+    border-bottom: 1px solid var(--rule);
+    padding: 72px 0;
+  }
+  .how-inner { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+  .section-eyebrow {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-eyebrow::before { content: ''; display: block; width: 24px; height: 2px; background: var(--gold); }
+  .section-headline {
+    font-family: 'Playfair Display', serif;
+    font-size: 34px; font-weight: 700;
+    color: var(--navy); line-height: 1.2;
+    margin-bottom: 48px; max-width: 480px;
+  }
+  .steps { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2px; }
+  .step {
+    background: var(--mist);
+    padding: 28px 24px;
+    position: relative;
+  }
+  .step:first-child { border-radius: 2px 0 0 2px; }
+  .step:last-child  { border-radius: 0 2px 2px 0; }
+  .step-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 56px; font-weight: 900;
+    color: rgba(13,31,60,0.08);
+    line-height: 1; margin-bottom: 16px;
+    letter-spacing: -0.02em;
+  }
+  .step-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px; font-weight: 500;
+    color: var(--navy); line-height: 1.3;
+    margin-bottom: 10px;
+  }
+  .step-body {
+    font-size: 13px; font-weight: 300;
+    color: var(--steel); line-height: 1.7;
+  }
+  .step-connector {
+    position: absolute; right: -14px; top: 50%;
+    transform: translateY(-50%);
+    width: 28px; height: 28px;
+    background: white; border: 1px solid var(--rule);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; color: var(--steel);
+    z-index: 1;
+  }
+
+  /* ─────────────────────────────────────────
+     5. TESTIMONIAL / PROOF BAND
+  ───────────────────────────────────────── */
+  .proof {
+    background: var(--navy);
+    border-top: 3px solid var(--gold);
+    border-bottom: 3px solid var(--gold);
+    padding: 48px 0;
+  }
+  .proof-inner { max-width: 960px; margin: 0 auto; padding: 0 24px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; background: rgba(255,255,255,0.08); }
+  .proof-item { background: var(--navy); padding: 28px 32px; }
+  .proof-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 52px; font-weight: 700;
+    color: var(--white); letter-spacing: -0.02em; line-height: 1;
+    margin-bottom: 6px;
+  }
+  .proof-num span { color: var(--gold); }
+  .proof-label { font-size: 13px; font-weight: 300; color: rgba(255,255,255,0.5); line-height: 1.5; }
+
+  /* ─────────────────────────────────────────
+     6. CANDIDATE SECTION
+  ───────────────────────────────────────── */
+  .candidate-section {
+    background: var(--cream);
+    border-bottom: 1px solid var(--rule);
+    padding: 72px 0;
+  }
+  .candidate-inner { max-width: 960px; margin: 0 auto; padding: 0 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+  .candidate-text {}
+  .candidate-headline {
+    font-family: 'Playfair Display', serif;
+    font-size: 34px; font-weight: 700;
+    color: var(--navy); line-height: 1.2;
+    margin-bottom: 16px;
+  }
+  .candidate-body { font-size: 15px; font-weight: 300; color: var(--steel); line-height: 1.8; margin-bottom: 24px; }
+  .candidate-steps { display: flex; flex-direction: column; gap: 14px; margin-bottom: 28px; }
+  .c-step { display: flex; gap: 12px; align-items: flex-start; }
+  .c-step-num {
+    width: 22px; height: 22px; border-radius: 2px;
+    background: var(--navy); color: white;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; font-weight: 500;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .c-step-text { font-size: 13px; color: var(--steel); line-height: 1.6; }
+  .btn-gold {
+    display: inline-block;
+    background: var(--gold); color: white;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 13px 24px; border-radius: 2px;
+    text-decoration: none; cursor: pointer;
+    transition: background 0.15s;
+  }
+  .btn-gold:hover { background: #9a7a22; }
+
+  /* unclaimed card mockup */
+  .unclaimed-card {
+    background: white;
+    border: 1px solid var(--rule);
+    border-radius: 4px; overflow: hidden;
+    box-shadow: 0 8px 32px rgba(13,31,60,0.1);
+  }
+  .uc-banner {
+    background: repeating-linear-gradient(45deg, #fef9ec, #fef9ec 6px, #fdf3d4 6px, #fdf3d4 12px);
+    border-bottom: 1.5px solid #f0c040;
+    padding: 8px 12px;
+    display: flex; gap: 7px;
+  }
+  .uc-banner-text { font-size: 11px; color: #7a5a00; line-height: 1.5; }
+  .uc-banner-text strong { font-weight: 600; }
+  .uc-header { background: #f5f4f0; padding: 14px 16px; display: flex; gap: 10px; border-bottom: 1px solid var(--rule); }
+  .uc-av { width: 42px; height: 42px; border-radius: 50%; background: #dddcd4; border: 2px dashed #bbb; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 500; color: #888; flex-shrink: 0; }
+  .uc-name { font-size: 13px; font-weight: 500; color: #222; }
+  .uc-role { font-size: 10px; color: #666; margin-top: 1px; }
+  .uc-pill { display: inline-block; background: #fef3d0; color: #8a6500; border: 0.5px solid #f0c040; font-size: 8px; padding: 2px 7px; border-radius: 10px; margin-top: 4px; font-weight: 500; }
+  .uc-body { padding: 12px 16px; }
+  .uc-q { background: #f5f4f0; border-radius: 6px; padding: 8px 10px; margin-bottom: 6px; }
+  .uc-q-text { font-size: 11px; color: #333; line-height: 1.4; }
+  .uc-q-meta { font-size: 8px; color: #aaa; margin-top: 3px; display: flex; justify-content: space-between; }
+  .uc-q-votes { color: var(--gold); font-weight: 500; }
+  .uc-input-row { display: flex; gap: 6px; margin-top: 10px; }
+  .uc-field { flex: 1; background: white; border: 0.5px solid #ccc; border-radius: 2px; padding: 8px 10px; font-size: 10px; color: #bbb; }
+  .uc-submit { background: var(--navy); color: white; border: none; border-radius: 2px; padding: 8px 12px; font-size: 9px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+
+  /* ─────────────────────────────────────────
+     7. WAITLIST
+  ───────────────────────────────────────── */
+  .waitlist {
+    background: var(--navy);
+    padding: 80px 0;
+  }
+  .waitlist-inner { max-width: 600px; margin: 0 auto; padding: 0 24px; text-align: center; }
+  .waitlist-eyebrow { font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); margin-bottom: 16px; }
+  .waitlist-headline {
+    font-family: 'Playfair Display', serif;
+    font-size: 40px; font-weight: 700;
+    color: white; line-height: 1.2;
+    letter-spacing: -0.01em; margin-bottom: 14px;
+  }
+  .waitlist-headline span { color: var(--gold); }
+  .waitlist-sub { font-size: 15px; font-weight: 300; color: rgba(255,255,255,0.5); line-height: 1.7; margin-bottom: 36px; }
+  .waitlist-form { display: flex; flex-direction: column; gap: 10px; max-width: 440px; margin: 0 auto 16px; }
+  .form-row { display: flex; gap: 10px; }
+  .form-input {
+    flex: 1; background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 2px; padding: 14px 16px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14px; color: white;
+    outline: none;
+  }
+  .form-input::placeholder { color: rgba(255,255,255,0.3); }
+  .form-input:focus { border-color: rgba(184,146,42,0.6); background: rgba(255,255,255,0.08); }
+  .form-input.zip { max-width: 120px; }
+  .form-submit {
+    background: var(--gold); color: white;
+    border: none; border-radius: 2px;
+    padding: 14px 28px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    cursor: pointer; white-space: nowrap;
+    transition: background 0.15s;
+  }
+  .form-submit:hover { background: #9a7a22; }
+  .waitlist-fine { font-size: 11px; font-weight: 300; color: rgba(255,255,255,0.3); line-height: 1.6; }
+  .waitlist-fine a { color: rgba(255,255,255,0.4); }
+
+  /* ─────────────────────────────────────────
+     8. FOOTER
+  ───────────────────────────────────────── */
+  .footer {
+    background: var(--ink);
+    border-top: 3px solid var(--gold);
+    padding: 28px 0;
+  }
+  .footer-inner {
+    max-width: 960px; margin: 0 auto; padding: 0 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px;
+  }
+  .footer-logo { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: rgba(255,255,255,0.7); letter-spacing: -0.01em; }
+  .footer-logo span { color: var(--gold); }
+  .footer-text { font-size: 11px; font-weight: 300; color: rgba(255,255,255,0.3); line-height: 1.6; }
+  .footer-links { display: flex; gap: 16px; }
+  .footer-link { font-size: 11px; color: rgba(255,255,255,0.3); text-decoration: none; }
+  .footer-link:hover { color: rgba(255,255,255,0.6); }
+
+  /* ─────────────────────────────────────────
+     RESPONSIVE
+  ───────────────────────────────────────── */
+  @media (max-width: 720px) {
+    .logotype { font-size: 64px; }
+    .masthead-desc { display: none; }
+    .hook-inner { grid-template-columns: 1fr; gap: 40px; }
+    .hook-phone-2 { display: none; }
+    .steps { grid-template-columns: 1fr; gap: 2px; }
+    .step:first-child { border-radius: 2px 2px 0 0; }
+    .step:last-child  { border-radius: 0 0 2px 2px; }
+    .step-connector { display: none; }
+    .proof-inner { grid-template-columns: 1fr; }
+    .candidate-inner { grid-template-columns: 1fr; gap: 40px; }
+    .form-row { flex-direction: column; }
+    .form-input.zip { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP RULE -->
+<div class="top-rule"></div>
+
+<!-- MASTHEAD -->
+<div class="masthead">
+  <div class="masthead-inner">
+    <div class="masthead-meta-row">
+      <div class="masthead-dateline">Atlanta, GA · Est. 2026</div>
+      <div class="masthead-edition">Civic accountability platform · Free to join</div>
+    </div>
+    <div class="masthead-logo-row">
+      <div class="logotype">Rep<span class="logotype-period">.</span></div>
+      <div class="masthead-right">
+        <div class="masthead-tagline">Know your district. Know your representatives.</div>
+        <div class="masthead-desc">Every person elected to represent you — from school board to Senate — directly accountable to your neighborhood.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOOK -->
+<div class="hook">
+  <div class="hook-inner">
+    <div class="hook-text">
+      <div class="hook-kicker">The problem</div>
+      <div class="hook-headline">You voted for these people. Do you know what they're doing?</div>
+      <div class="hook-body">Most people can't name their city council member, let alone their state representative. Rep. changes that — by showing you every official in your actual voting districts and giving you a direct line to ask them anything.</div>
+      <div class="hook-cta-row">
+        <a href="#waitlist" class="btn-primary">Join the waitlist</a>
+        <a href="#how" class="btn-secondary-link">See how it works →</a>
+      </div>
+    </div>
+    <div class="hook-phone-wrap">
+      <!-- Primary phone: video feed -->
+      <div class="hook-phone">
+        <div class="hp-status"><span>9:41</span><span>●●●</span></div>
+        <div class="hp-nav">
+          <div class="hp-logo">Rep<span>.</span></div>
+          <div class="hp-ctx">GA-SEN-D40</div>
+        </div>
+        <div class="hp-video">
+          <div class="hp-rail">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+              <div class="hp-rail-btn"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></div>
+              <div class="hp-rail-count">214</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+              <div class="hp-rail-btn"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg></div>
+              <div class="hp-rail-count">89</div>
+            </div>
+            <div class="hp-rail-btn"><svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg></div>
+          </div>
+          <div class="hp-overlay">
+            <div class="hp-caption">"Here is what SB 204 actually does to small business taxes in our district."</div>
+            <span class="hp-tag">Response to opponent</span>
+          </div>
+        </div>
+        <div class="hp-scroll">Swipe for next district video</div>
+        <div class="hp-bottom-nav">
+          <div class="hp-nav-item active"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><div class="hp-nav-label">Feed</div></div>
+          <div class="hp-nav-item"><svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 12c0 7 9 17 9 17s9-10 9-17c0-4.97-4.03-9-9-9z"/></svg><div class="hp-nav-label">Districts</div></div>
+          <div class="hp-nav-item"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg><div class="hp-nav-label">Ask</div></div>
+          <div class="hp-nav-item"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg><div class="hp-nav-label">Reps</div></div>
+        </div>
+      </div>
+      <!-- Secondary phone: questions drawer -->
+      <div class="hook-phone-2">
+        <div class="hp2-status"><span>9:41</span><span>●●●</span></div>
+        <div class="hp2-nav">
+          <div class="hp2-logo">Rep<span>.</span></div>
+          <div class="hp2-ctx">GA-SEN-D40</div>
+        </div>
+        <div class="hp2-thumb">
+          <div class="hp2-play">▶</div>
+          <div class="hp2-cap">"Here is what SB 204 actually does..."</div>
+        </div>
+        <div class="hp2-header">
+          <div class="hp2-title">Questions</div>
+          <div class="hp2-count">47</div>
+        </div>
+        <div class="hp2-q voted">
+          <div class="hp2-plus"><div class="hp2-mark v">+1</div><div class="hp2-num v">31</div></div>
+          <div class="hp2-body"><div class="hp2-qtext">What does this mean for Campbellton Rd businesses?</div><div class="hp2-user">@maria_d40</div></div>
+        </div>
+        <div class="hp2-q">
+          <div class="hp2-plus"><div class="hp2-mark d">+1</div><div class="hp2-num d">18</div></div>
+          <div class="hp2-body"><div class="hp2-qtext">Can you share the CBO report you referenced?</div><div class="hp2-user">@jose_atl</div></div>
+        </div>
+        <div class="hp2-q" style="border:none;">
+          <div class="hp2-plus"><div class="hp2-mark d">+1</div><div class="hp2-num d">9</div></div>
+          <div class="hp2-body"><div class="hp2-qtext">How does this compare to the last version?</div><div class="hp2-user">@dre_nw</div></div>
+        </div>
+        <div class="hp2-input-row">
+          <div class="hp2-field">Ask a question...</div>
+          <div class="hp2-submit">Submit</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="how" id="how">
+  <div class="how-inner">
+    <div class="section-eyebrow">How it works</div>
+    <div class="section-headline">Three steps to knowing who represents you.</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-title">Enter your address</div>
+        <div class="step-body">Rep. uses your home address to identify every voting district you belong to — from city council and school board up to your congressional and Senate districts.</div>
+        <div class="step-connector">→</div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-title">See your representatives</div>
+        <div class="step-body">Every elected official and every candidate in your actual districts appears in your feed — pulled from public records. Nothing from outside your districts. Nothing irrelevant.</div>
+        <div class="step-connector">→</div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-title">Hold them accountable</div>
+        <div class="step-body">Watch their videos, read their positions, +1 questions your neighbors have asked. Candidates who join Rep. can respond directly — on video, on the record.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROOF BAND -->
+<div class="proof">
+  <div class="proof-inner">
+    <div class="proof-item">
+      <div class="proof-num">73<span>%</span></div>
+      <div class="proof-label">of Americans can't name their state representative</div>
+    </div>
+    <div class="proof-item">
+      <div class="proof-num">6<span>+</span></div>
+      <div class="proof-label">elected officials represent the average US address across all levels of government</div>
+    </div>
+    <div class="proof-item">
+      <div class="proof-num">83<span>%</span></div>
+      <div class="proof-label">of local races are decided by fewer than 500 votes</div>
+    </div>
+  </div>
+</div>
+
+<!-- CANDIDATE SECTION -->
+<div class="candidate-section">
+  <div class="candidate-inner">
+    <div class="unclaimed-card">
+      <div class="uc-banner">
+        <div class="uc-banner-text"><strong>This candidate hasn't joined yet.</strong> Their profile is built from public filing records. Questions left here are delivered directly to them.</div>
+      </div>
+      <div class="uc-header">
+        <div class="uc-av">DK</div>
+        <div>
+          <div class="uc-name">David Kim</div>
+          <div class="uc-role">Candidate · Atlanta School Board D6</div>
+          <div class="uc-pill">⚬ Not yet claimed</div>
+        </div>
+      </div>
+      <div class="uc-body">
+        <div class="uc-q">
+          <div class="uc-q-text">"What's your plan for overcrowding at Woodland Hills Elementary?"</div>
+          <div class="uc-q-meta"><span>@terri_d6 · 3h</span><span class="uc-q-votes">+1 · 31</span></div>
+        </div>
+        <div class="uc-q">
+          <div class="uc-q-text">"Do you support the proposed school calendar change?"</div>
+          <div class="uc-q-meta"><span>@jose_nw · 1d</span><span class="uc-q-votes">+1 · 18</span></div>
+        </div>
+        <div class="uc-input-row">
+          <div class="uc-field">Ask David a question...</div>
+          <div class="uc-submit">Submit</div>
+        </div>
+      </div>
+    </div>
+    <div class="candidate-text">
+      <div class="section-eyebrow">For candidates</div>
+      <div class="candidate-headline">Your constituents are already asking questions.</div>
+      <div class="candidate-body">Rep. builds a profile for every candidate from public filing records. If you're running for office, your profile exists — and voters in your district are leaving questions on it right now.</div>
+      <div class="candidate-steps">
+        <div class="c-step">
+          <div class="c-step-num">1</div>
+          <div class="c-step-text">Claim your profile — free, takes two minutes</div>
+        </div>
+        <div class="c-step">
+          <div class="c-step-num">2</div>
+          <div class="c-step-text">Add your positions and respond to questions by video</div>
+        </div>
+        <div class="c-step">
+          <div class="c-step-num">3</div>
+          <div class="c-step-text">Reach voters in your actual district — no ad spend required</div>
+        </div>
+      </div>
+      <a href="#waitlist" class="btn-gold">Claim your profile</a>
+    </div>
+  </div>
+</div>
+
+<!-- WAITLIST -->
+<div class="waitlist" id="waitlist">
+  <div class="waitlist-inner">
+    <div class="waitlist-eyebrow">Join the waitlist</div>
+    <div class="waitlist-headline">Rep<span>.</span> is coming to your district.</div>
+    <div class="waitlist-sub">We're launching city by city, starting in Atlanta. Enter your email and zip code and we'll notify you the moment Rep. covers your districts.</div>
+    <div class="waitlist-form">
+      <input class="form-input" type="email" placeholder="Your email address">
+      <div class="form-row">
+        <input class="form-input zip" type="text" placeholder="Zip code" maxlength="5">
+        <button class="form-submit">Notify me</button>
+      </div>
+    </div>
+    <div class="waitlist-fine">Your email is used only to notify you about Rep. We won't share it or send you anything else.<br>Candidates: <a href="#">claim your profile here</a>.</div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo">Rep<span>.</span></div>
+    <div class="footer-text">Built in Atlanta, GA · 2026</div>
+    <div class="footer-links">
+      <a href="#" class="footer-link">Privacy</a>
+      <a href="#" class="footer-link">Terms</a>
+      <a href="#" class="footer-link">For candidates</a>
+      <a href="#" class="footer-link">Contact</a>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

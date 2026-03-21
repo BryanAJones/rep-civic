@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: #f0efe8; padding: 24px; display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; align-items: flex-start; }
+
+  .col { display: flex; flex-direction: column; align-items: center; }
+  .screen-label { font-size: 11px; color: #888; text-align: center; margin-bottom: 8px; letter-spacing: 0.05em; text-transform: uppercase; }
+
+  /* PHONE SHELL */
+  .phone { width: 240px; border: 1.5px solid rgba(0,0,0,0.18); border-radius: 28px; overflow: hidden; display: flex; flex-direction: column; background: #fff; }
+  .status-bar { background: #f5f4f0; padding: 10px 16px 7px; display: flex; justify-content: space-between; font-size: 9px; color: #999; border-bottom: 0.5px solid #e8e6df; }
+
+  /* UNCLAIMED PROFILE */
+  .unclaimed-banner {
+    background: repeating-linear-gradient(
+      45deg,
+      #fef9ec,
+      #fef9ec 6px,
+      #fdf3d4 6px,
+      #fdf3d4 12px
+    );
+    border-bottom: 1.5px solid #f0c040;
+    padding: 8px 12px;
+    display: flex;
+    gap: 7px;
+    align-items: flex-start;
+  }
+  .banner-icon { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
+  .banner-text { font-size: 9px; color: #7a5a00; line-height: 1.5; }
+  .banner-bold { font-weight: 600; }
+
+  .prof-hero { background: #f5f4f0; padding: 14px; display: flex; gap: 10px; border-bottom: 0.5px solid #e8e6df; }
+  .prof-av-wrap { position: relative; flex-shrink: 0; }
+  .prof-av {
+    width: 46px; height: 46px; border-radius: 50%;
+    background: #dddcd4;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 500; color: #888;
+    border: 2px dashed #bbb;
+  }
+  .prof-av-claimed {
+    background: #534AB7; color: white; border: none;
+  }
+  .unclaimed-dot {
+    position: absolute; bottom: 0; right: 0;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: #f0c040; border: 1.5px solid white;
+  }
+  .claimed-dot {
+    position: absolute; bottom: 0; right: 0;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: #1D9E75; border: 1.5px solid white;
+  }
+  .prof-info { flex: 1; }
+  .prof-name { font-size: 13px; font-weight: 500; color: #222; }
+  .prof-role { font-size: 10px; color: #666; margin-top: 1px; }
+  .prof-district { font-size: 9px; color: #888; margin-top: 2px; }
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 8px; padding: 2px 7px; border-radius: 10px; margin-top: 5px;
+  }
+  .pill-unclaimed { background: #fef3d0; color: #8a6500; border: 0.5px solid #f0c040; }
+  .pill-claimed { background: #E1F5EE; color: #0F6E56; border: 0.5px solid #5DCAA5; }
+
+  .pub-data-section { padding: 10px 14px; border-bottom: 0.5px solid #e8e6df; }
+  .section-label { font-size: 9px; font-weight: 500; color: #999; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; display: flex; align-items: center; gap: 4px; }
+  .src-badge { font-size: 7px; background: #eee; color: #888; padding: 1px 5px; border-radius: 4px; font-weight: 400; text-transform: none; letter-spacing: 0; }
+  .data-row { display: flex; justify-content: space-between; font-size: 10px; padding: 3px 0; border-bottom: 0.5px solid #f0efe8; color: #333; }
+  .data-val { color: #555; }
+
+  .positions-section { padding: 10px 14px; border-bottom: 0.5px solid #e8e6df; }
+  .pos-placeholder {
+    background: #f5f4f0; border: 1px dashed #ccc; border-radius: 8px;
+    padding: 12px; text-align: center;
+  }
+  .pos-placeholder-text { font-size: 10px; color: #aaa; line-height: 1.5; }
+
+  .questions-section { padding: 10px 14px; }
+  .q-card { background: #f5f4f0; border-radius: 8px; padding: 8px 10px; margin-bottom: 6px; }
+  .q-text { font-size: 10px; color: #333; line-height: 1.4; }
+  .q-meta { font-size: 8px; color: #999; margin-top: 3px; display: flex; justify-content: space-between; }
+  .q-upvotes { color: #534AB7; font-weight: 500; }
+  .q-awaiting { color: #c08000; }
+  .q-answered { color: #0F6E56; }
+
+  .ask-bar { display: flex; gap: 6px; align-items: center; margin-top: 8px; }
+  .ask-input { flex: 1; background: #fff; border: 0.5px solid #ccc; border-radius: 20px; padding: 7px 11px; font-size: 10px; color: #aaa; }
+  .ask-send { background: #534AB7; color: white; border: none; border-radius: 20px; padding: 7px 10px; font-size: 9px; font-weight: 500; }
+
+  /* EMAIL MOCKUP */
+  .email-shell {
+    width: 280px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  .email-topbar { background: #f5f4f0; padding: 10px 14px; border-bottom: 0.5px solid #e0dfd8; }
+  .email-client-dots { display: flex; gap: 5px; margin-bottom: 7px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot-r { background: #ff6058; }
+  .dot-y { background: #ffc130; }
+  .dot-g { background: #27c93f; }
+  .email-from { font-size: 9px; color: #888; }
+  .email-from span { color: #333; font-weight: 500; }
+  .email-subject { font-size: 10px; font-weight: 500; color: #222; margin-top: 2px; }
+
+  .email-body { padding: 16px; }
+  .email-logo { display: flex; align-items: center; gap: 6px; margin-bottom: 14px; }
+  .logo-mark { width: 22px; height: 22px; border-radius: 6px; background: #534AB7; display: flex; align-items: center; justify-content: center; }
+  .logo-mark svg { width: 13px; height: 13px; fill: white; }
+  .logo-name { font-size: 11px; font-weight: 600; color: #222; letter-spacing: -0.02em; }
+
+  .email-greeting { font-size: 12px; font-weight: 500; color: #222; margin-bottom: 8px; }
+  .email-p { font-size: 10px; color: #555; line-height: 1.6; margin-bottom: 10px; }
+  .email-stat-row { display: flex; gap: 8px; margin: 12px 0; }
+  .email-stat { flex: 1; background: #f5f4f0; border-radius: 8px; padding: 8px; text-align: center; }
+  .email-stat-num { font-size: 18px; font-weight: 600; color: #534AB7; }
+  .email-stat-lbl { font-size: 8px; color: #888; margin-top: 1px; }
+
+  .email-q-preview { background: #EEEDFE; border-radius: 8px; padding: 8px 10px; margin-bottom: 10px; border-left: 2.5px solid #534AB7; }
+  .email-q-text { font-size: 10px; color: #3C3489; line-height: 1.4; font-style: italic; }
+  .email-q-from { font-size: 8px; color: #7a72c0; margin-top: 3px; }
+
+  .email-cta { display: block; background: #534AB7; color: white; text-align: center; border-radius: 8px; padding: 10px; font-size: 11px; font-weight: 500; margin-bottom: 10px; text-decoration: none; }
+  .email-fine { font-size: 8px; color: #bbb; line-height: 1.5; text-align: center; }
+
+  /* CLAIMED additions */
+  .video-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2px; }
+  .video-thumb { aspect-ratio: 9/14; display: flex; align-items: flex-end; padding: 5px; position: relative; }
+  .vt-a { background: linear-gradient(160deg, #2a2240, #1a1a2e); }
+  .vt-b { background: linear-gradient(160deg, #0d1a14, #1d2a1d); }
+  .vt-c { background: linear-gradient(160deg, #1a100d, #2a1508); }
+  .vt-label { font-size: 7px; color: rgba(255,255,255,0.75); line-height: 1.3; }
+
+  .seg-tabs { display: flex; margin: 8px 12px; background: #f0efe8; border-radius: 8px; padding: 2px; }
+  .seg-tab { flex: 1; text-align: center; font-size: 9px; padding: 5px; border-radius: 6px; color: #888; }
+  .seg-tab.active { background: white; color: #222; font-weight: 500; border: 0.5px solid #e0dfd8; }
+
+  .response-badge { background: #E1F5EE; color: #0F6E56; font-size: 8px; padding: 2px 7px; border-radius: 6px; margin-top: 3px; display: inline-block; }
+  .pending-badge { background: #fef3d0; color: #8a6500; font-size: 8px; padding: 2px 7px; border-radius: 6px; margin-top: 3px; display: inline-block; }
+</style>
+</head>
+<body>
+
+<!-- SCREEN 1: UNCLAIMED PROFILE -->
+<div class="col">
+  <div class="screen-label">1 — unclaimed profile (constituent view)</div>
+  <div class="phone">
+    <div class="status-bar"><span>9:41</span><span>●●●</span></div>
+    <div class="unclaimed-banner">
+      <div class="banner-icon">⚠</div>
+      <div class="banner-text"><span class="banner-bold">This candidate hasn't joined yet.</span> Their profile is built from public records. Leave a question — they'll be notified.</div>
+    </div>
+    <div class="prof-hero">
+      <div class="prof-av-wrap">
+        <div class="prof-av">DK</div>
+        <div class="unclaimed-dot"></div>
+      </div>
+      <div class="prof-info">
+        <div class="prof-name">David Kim</div>
+        <div class="prof-role">Candidate · Atlanta School Board</div>
+        <div class="prof-district">District 6 · Your district</div>
+        <div class="status-pill pill-unclaimed">⚬ Not yet claimed</div>
+      </div>
+    </div>
+    <div class="pub-data-section">
+      <div class="section-label">Public record info <span class="src-badge">GA SOS filing</span></div>
+      <div class="data-row"><span>Party</span><span class="data-val">Nonpartisan</span></div>
+      <div class="data-row"><span>Filed</span><span class="data-val">March 3, 2026</span></div>
+      <div class="data-row"><span>Campaign site</span><span class="data-val" style="color:#534AB7;">davidkim2026.com</span></div>
+      <div class="data-row" style="border:none;"><span>Opponent(s)</span><span class="data-val">3 in race</span></div>
+    </div>
+    <div class="positions-section">
+      <div class="section-label">Positions</div>
+      <div class="pos-placeholder">
+        <div class="pos-placeholder-text">David hasn't added his positions yet.<br>Questions below will be sent to him.</div>
+      </div>
+    </div>
+    <div class="questions-section">
+      <div class="section-label">Questions from your neighbors <span class="src-badge">47 total</span></div>
+      <div class="q-card">
+        <div class="q-text">"What's your plan for overcrowding at Woodland Hills Elementary?"</div>
+        <div class="q-meta"><span>@terri_d6 · 3h</span><span class="q-upvotes">↑ 31</span><span class="q-awaiting">Awaiting reply</span></div>
+      </div>
+      <div class="q-card">
+        <div class="q-text">"Do you support the proposed school calendar change?"</div>
+        <div class="q-meta"><span>@jose_nw · 1d</span><span class="q-upvotes">↑ 18</span><span class="q-awaiting">Awaiting reply</span></div>
+      </div>
+      <div class="ask-bar">
+        <div class="ask-input">Ask David a question...</div>
+        <div class="ask-send">Ask ↗</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 2: EMAIL TO CANDIDATE -->
+<div class="col">
+  <div class="screen-label">2 — notification email to candidate</div>
+  <div class="email-shell">
+    <div class="email-topbar">
+      <div class="email-client-dots">
+        <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+      </div>
+      <div class="email-from">From: <span>District — hello@district.app</span></div>
+      <div class="email-subject">47 voters in District 6 have questions for you</div>
+    </div>
+    <div class="email-body">
+      <div class="email-logo">
+        <div class="logo-mark">
+          <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+        </div>
+        <div class="logo-name">District</div>
+      </div>
+      <div class="email-greeting">Hi David,</div>
+      <div class="email-p">You have a profile on District — built from your public campaign filing. Voters in District 6 are already asking questions.</div>
+      <div class="email-stat-row">
+        <div class="email-stat"><div class="email-stat-num">47</div><div class="email-stat-lbl">questions waiting</div></div>
+        <div class="email-stat"><div class="email-stat-num">312</div><div class="email-stat-lbl">district residents</div></div>
+        <div class="email-stat"><div class="email-stat-num">3</div><div class="email-stat-lbl">opponents active</div></div>
+      </div>
+      <div class="email-p" style="margin-bottom:6px;">Your most upvoted question so far:</div>
+      <div class="email-q-preview">
+        <div class="email-q-text">"What's your plan for overcrowding at Woodland Hills Elementary?"</div>
+        <div class="email-q-from">↑ 31 upvotes · @terri_d6 · District 6 resident</div>
+      </div>
+      <div class="email-p">Claim your profile to respond with video, add your positions, and reach voters directly — no campaign manager needed.</div>
+      <a class="email-cta">Claim your profile — it's free</a>
+      <div class="email-fine">District connects candidates directly with their constituents.<br>You were emailed because you filed as a candidate with the GA Secretary of State. Unsubscribe.</div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 3: CLAIMED PROFILE -->
+<div class="col">
+  <div class="screen-label">3 — claimed profile (constituent view)</div>
+  <div class="phone">
+    <div class="status-bar"><span>9:41</span><span>●●●</span></div>
+    <div class="prof-hero">
+      <div class="prof-av-wrap">
+        <div class="prof-av prof-av-claimed">DK</div>
+        <div class="claimed-dot"></div>
+      </div>
+      <div class="prof-info">
+        <div class="prof-name">David Kim</div>
+        <div class="prof-role">Candidate · Atlanta School Board</div>
+        <div class="prof-district">District 6 · Your district</div>
+        <div class="status-pill pill-claimed">✓ Active on District</div>
+      </div>
+    </div>
+    <div class="prof-stats" style="display:flex; border-bottom: 0.5px solid #e8e6df;">
+      <div style="flex:1;text-align:center;padding:8px 0;">
+        <div style="font-size:13px;font-weight:500;color:#222;">12</div>
+        <div style="font-size:8px;color:#888;">Videos</div>
+      </div>
+      <div style="flex:1;text-align:center;padding:8px 0;border-left:0.5px solid #e8e6df;">
+        <div style="font-size:13px;font-weight:500;color:#222;">38</div>
+        <div style="font-size:8px;color:#888;">Q's answered</div>
+      </div>
+      <div style="flex:1;text-align:center;padding:8px 0;border-left:0.5px solid #e8e6df;">
+        <div style="font-size:13px;font-weight:500;color:#222;">81%</div>
+        <div style="font-size:8px;color:#888;">Response rate</div>
+      </div>
+    </div>
+    <div class="seg-tabs">
+      <div class="seg-tab active">Positions</div>
+      <div class="seg-tab">Videos</div>
+      <div class="seg-tab">Q&A</div>
+    </div>
+    <div class="pub-data-section">
+      <div class="section-label">On the issues</div>
+      <div style="display:flex;flex-direction:column;gap:5px;">
+        <div style="display:flex;gap:6px;align-items:flex-start;">
+          <div style="width:6px;height:6px;border-radius:50%;background:#534AB7;flex-shrink:0;margin-top:4px;"></div>
+          <div style="font-size:10px;color:#222;line-height:1.4;">Rebuild Woodland Hills within 2 years</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:flex-start;">
+          <div style="width:6px;height:6px;border-radius:50%;background:#534AB7;flex-shrink:0;margin-top:4px;"></div>
+          <div style="font-size:10px;color:#222;line-height:1.4;">Oppose proposed calendar changes</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:flex-start;">
+          <div style="width:6px;height:6px;border-radius:50%;background:#534AB7;flex-shrink:0;margin-top:4px;"></div>
+          <div style="font-size:10px;color:#222;line-height:1.4;">Increase teacher pay, cut admin overhead</div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:6px 0 2px;">
+      <div class="video-grid">
+        <div class="video-thumb vt-a"><span class="vt-label">Woodland Hills plan</span></div>
+        <div class="video-thumb vt-b"><span class="vt-label">Answering @terri</span></div>
+        <div class="video-thumb vt-c"><span class="vt-label">Calendar vote</span></div>
+      </div>
+    </div>
+    <div class="questions-section">
+      <div class="section-label">Recent Q&A</div>
+      <div class="q-card">
+        <div class="q-text">"What's your plan for overcrowding at Woodland Hills?"</div>
+        <div class="q-meta"><span>@terri_d6 · ↑ 31</span><span class="q-answered">✓ Answered by video</span></div>
+      </div>
+      <div class="q-card">
+        <div class="q-text">"Do you support the proposed school calendar change?"</div>
+        <div class="q-meta"><span>@jose_nw · ↑ 18</span><span class="q-awaiting">Awaiting reply</span></div>
+      </div>
+      <div class="ask-bar">
+        <div class="ask-input">Ask David a question...</div>
+        <div class="ask-send">Ask ↗</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
