@@ -1,0 +1,38 @@
+/* Type utility classes */
+
+.t-display {
+  font-family: var(--rep-font-display);
+  font-weight: 700;
+}
+
+.t-heading {
+  font-family: var(--rep-font-display);
+  font-weight: 500;
+}
+
+.t-subhead {
+  font-family: var(--rep-font-display);
+  font-weight: 400;
+  font-style: italic;
+}
+
+.t-label {
+  font-family: var(--rep-font-ui);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.t-body {
+  font-family: var(--rep-font-ui);
+  font-weight: 400;
+}
+
+.t-body-light {
+  font-family: var(--rep-font-ui);
+  font-weight: 300;
+}
+
+.t-mono {
+  font-family: var(--rep-font-mono);
+}

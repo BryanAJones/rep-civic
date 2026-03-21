@@ -1,0 +1,36 @@
+:root {
+  /* Color */
+  --rep-navy:         #0D1F3C;
+  --rep-blue:         #1A4A7A;
+  --rep-blue-mid:     #2E6AAF;
+  --rep-blue-lt:      #E8F0F9;
+  --rep-gold:         #B8922A;
+  --rep-gold-lt:      #F5EED8;
+  --rep-gold-wash:    rgba(184, 146, 42, 0.08);
+  --rep-gold-border:  rgba(184, 146, 42, 0.25);
+  --rep-ink:          #1A1C22;
+  --rep-steel:        #4A5568;
+  --rep-mist:         #EEF1F6;
+  --rep-cream:        #F7F5EF;
+  --rep-white:        #FAFBFC;
+  --rep-rule:         #D1D9E6;
+  --rep-green:        rgba(100, 180, 140, 0.75);
+  --rep-green-lt:     rgba(100, 180, 140, 0.06);
+  --rep-green-border: rgba(100, 180, 140, 0.2);
+
+  /* Dark UI (video screens) */
+  --rep-dark-bg:      #080a0e;
+  --rep-dark-nav:     rgba(13, 31, 60, 0.97);
+  --rep-dark-rule:    rgba(255, 255, 255, 0.06);
+
+  /* Typography */
+  --rep-font-display: 'Playfair Display', serif;
+  --rep-font-ui:      'IBM Plex Sans', system-ui, sans-serif;
+  --rep-font-mono:    'IBM Plex Mono', monospace;
+
+  /* Border radius — 2px everywhere, non-negotiable */
+  --rep-radius:       2px;
+
+  /* Transitions */
+  --rep-transition:   0.15s ease;
+}

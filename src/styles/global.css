@@ -1,0 +1,23 @@
+@import './tokens.css';
+@import './reset.css';
+@import './typography.css';
+@import './textures.css';
+@import './animations.css';
+
+body {
+  font-family: var(--rep-font-ui);
+  font-weight: 400;
+  color: var(--rep-ink);
+  background-color: var(--rep-mist);
+  line-height: 1.5;
+}
+
+::selection {
+  background-color: var(--rep-gold);
+  color: var(--rep-white);
+}
+
+:focus-visible {
+  outline: 2px solid var(--rep-blue-mid);
+  outline-offset: 2px;
+}
