@@ -1,0 +1,21 @@
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--rep-font-ui);
+  font-weight: 600;
+  border-radius: var(--rep-radius);
+  flex-shrink: 0;
+}
+
+.avatar--claimed {
+  background: var(--rep-navy);
+  color: white;
+  border: none;
+}
+
+.avatar--unclaimed {
+  background: var(--rep-mist);
+  color: var(--rep-steel);
+  border: 2px dashed var(--rep-rule);
+}

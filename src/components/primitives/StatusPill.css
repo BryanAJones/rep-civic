@@ -1,0 +1,23 @@
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--rep-font-ui);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: var(--rep-radius);
+}
+
+.status-pill--unclaimed {
+  background: var(--rep-gold-wash);
+  color: var(--rep-gold);
+  border: 1px solid var(--rep-gold-border);
+}
+
+.status-pill--claimed {
+  background: var(--rep-green-lt);
+  color: var(--rep-green);
+  border: 1px solid var(--rep-green-border);
+}

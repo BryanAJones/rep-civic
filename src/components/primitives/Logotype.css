@@ -1,0 +1,18 @@
+.logotype {
+  font-family: var(--rep-font-display);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+.logotype--on-dark {
+  color: white;
+}
+
+.logotype--on-light {
+  color: var(--rep-navy);
+}
+
+.logotype__period {
+  color: var(--rep-gold);
+}

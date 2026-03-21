@@ -1,0 +1,70 @@
+/* 44px fixed-width column — the contract for question row layout */
+.plus-one {
+  width: 44px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 10px 0;
+  cursor: pointer;
+  border-right: 1px solid var(--rep-dark-rule);
+  transition: background var(--rep-transition);
+}
+
+.plus-one:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Mark: the "+1" text or checkmark */
+.plus-one__mark {
+  font-family: var(--rep-font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+/* Count below the mark */
+.plus-one__count {
+  font-family: var(--rep-font-mono);
+  font-size: 9px;
+}
+
+/* --- DEFAULT state --- */
+.plus-one--default .plus-one__mark {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.plus-one--default .plus-one__count {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+/* --- VOTED state --- */
+.plus-one--voted {
+  border-right-color: rgba(184, 146, 42, 0.15);
+}
+
+.plus-one--voted .plus-one__mark {
+  color: var(--rep-gold);
+}
+
+.plus-one--voted .plus-one__count {
+  color: var(--rep-gold);
+}
+
+/* --- ANSWERED state --- */
+.plus-one--answered {
+  border-right-color: rgba(100, 180, 140, 0.1);
+  cursor: pointer;
+}
+
+.plus-one--answered .plus-one__mark {
+  font-family: inherit;
+  font-size: 13px;
+  color: rgba(100, 180, 140, 0.5);
+}
+
+.plus-one--answered .plus-one__count {
+  color: rgba(100, 180, 140, 0.35);
+}

@@ -1,0 +1,6 @@
+.gold-rule {
+  height: 1px;
+  background: var(--rep-gold);
+  width: 100%;
+  flex-shrink: 0;
+}

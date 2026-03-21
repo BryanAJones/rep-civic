@@ -1,0 +1,49 @@
+.tag {
+  font-family: var(--rep-font-ui);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: var(--rep-radius);
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.tag--blue {
+  background: var(--rep-blue-lt);
+  color: var(--rep-blue);
+}
+
+.tag--gold {
+  background: var(--rep-gold-lt);
+  color: var(--rep-gold);
+}
+
+.tag--navy {
+  background: var(--rep-navy);
+  color: white;
+}
+
+.tag--mist {
+  background: var(--rep-mist);
+  color: var(--rep-steel);
+  border: 1px solid var(--rep-rule);
+}
+
+.tag--green {
+  background: var(--rep-green-lt);
+  color: var(--rep-green);
+  border: 1px solid var(--rep-green-border);
+}
+
+/* Dark UI variant — used on video overlays */
+.tag--dark {
+  background: rgba(13, 31, 60, 0.8);
+  color: rgba(184, 146, 42, 0.9);
+  border: 1px solid var(--rep-gold-border);
+  font-size: 7px;
+  letter-spacing: 0.08em;
+  padding: 3px 7px;
+}
