@@ -1,25 +1,33 @@
+import { useMemo } from 'react';
+import { VideoCard } from '../../components/video';
+import { useVideoFeed } from '../../hooks/useVideoFeed';
+import { useUser } from '../../context/UserContext';
+import './FeedPage.css';
+
 export function FeedPage() {
+  const { state } = useUser();
+  const districtCodes = useMemo(
+    () => state.districts.map((d) => d.code),
+    [state.districts],
+  );
+  const { videos, loading, error } = useVideoFeed(districtCodes);
+
+  if (loading) {
+    return <div className="feed__loading">Loading feed...</div>;
+  }
+
+  if (error) {
+    return <div className="feed__error">{error}</div>;
+  }
+
   return (
-    <div style={{ padding: '2rem 1rem', textAlign: 'center' }}>
-      <p style={{
-        fontFamily: 'var(--rep-font-ui)',
-        fontSize: 11,
-        color: 'rgba(255,255,255,0.35)',
-        letterSpacing: '0.1em',
-        textTransform: 'uppercase',
-        fontWeight: 600,
-      }}>
-        Video feed
-      </p>
-      <p style={{
-        fontFamily: 'var(--rep-font-display)',
-        fontStyle: 'italic',
-        fontSize: 14,
-        color: 'rgba(255,255,255,0.5)',
-        marginTop: 8,
-      }}>
-        Coming in Phase 4.
-      </p>
+    <div className="feed">
+      {videos.map((video) => (
+        <VideoCard
+          key={video.id}
+          video={video}
+        />
+      ))}
     </div>
   );
 }

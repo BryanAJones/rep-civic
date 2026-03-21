@@ -1,0 +1,8 @@
+.video-caption {
+  font-family: var(--rep-font-display);
+  font-size: 13px;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.5;
+  margin-bottom: 7px;
+}

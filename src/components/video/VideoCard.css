@@ -1,0 +1,36 @@
+.video-card {
+  position: relative;
+  height: 100%;
+  min-height: 380px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: linear-gradient(175deg, #0d1f3c 0%, #071428 40%, #030810 100%);
+  scroll-snap-align: start;
+  flex-shrink: 0;
+}
+
+/* Bottom overlay with gradient fade */
+.video-card__bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 52px;
+  padding: 48px 12px 12px;
+  background: linear-gradient(to top, rgba(4, 7, 14, 0.92) 0%, transparent 100%);
+  z-index: 2;
+}
+
+/* Scroll hint between videos */
+.video-card__scroll-hint {
+  font-family: var(--rep-font-ui);
+  font-size: 7px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.15);
+  text-align: center;
+  padding: 4px 0 2px;
+  position: relative;
+  z-index: 2;
+}
