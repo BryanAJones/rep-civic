@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { changelog } from '../../data/changelog';
 import './LandingPage.css';
 
 export function LandingPage() {
   const navigate = useNavigate();
+  const [devlogExpanded, setDevlogExpanded] = useState(false);
+  const visibleEntries = devlogExpanded ? changelog : changelog.slice(0, 1);
 
   return (
     <div className="landing">
@@ -276,7 +279,7 @@ export function LandingPage() {
             What we shipped.
           </h2>
           <div className="landing__devlog-entries">
-            {changelog.map((entry) => (
+            {visibleEntries.map((entry) => (
               <article key={entry.version} className="landing__devlog-entry">
                 <div className="landing__devlog-meta">
                   <span className="landing__devlog-version">v{entry.version}</span>
@@ -291,6 +294,17 @@ export function LandingPage() {
               </article>
             ))}
           </div>
+          {changelog.length > 1 && (
+            <button
+              className="landing__devlog-toggle"
+              type="button"
+              onClick={() => setDevlogExpanded(!devlogExpanded)}
+            >
+              {devlogExpanded
+                ? 'Show less'
+                : `Show ${changelog.length - 1} earlier update${changelog.length > 2 ? 's' : ''}`}
+            </button>
+          )}
         </div>
       </section>
 

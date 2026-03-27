@@ -646,6 +646,28 @@
   background: var(--rep-gold, #B8922A);
 }
 
+.landing__devlog-toggle {
+  display: block;
+  margin: 24px auto 0;
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rep-blue-mid, #2E6AAF);
+  background: none;
+  border: 1px solid var(--rep-rule, #D1D9E6);
+  border-radius: var(--rep-radius, 2px);
+  padding: 10px 24px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.landing__devlog-toggle:hover {
+  background: var(--rep-blue-lt, #E8F0F9);
+  border-color: var(--rep-blue-mid, #2E6AAF);
+}
+
 /* CTA section */
 .landing__cta-section {
   background: var(--rep-cream, #F7F5EF);
