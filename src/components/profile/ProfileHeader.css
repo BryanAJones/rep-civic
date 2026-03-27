@@ -1,0 +1,33 @@
+.profile-header {
+  display: flex;
+  gap: 12px;
+  padding: 16px 12px 12px;
+  align-items: flex-start;
+}
+
+.profile-header__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-header__name {
+  font-family: var(--rep-font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--rep-ink);
+  margin: 0 0 2px;
+  line-height: 1.2;
+}
+
+.profile-header__office {
+  font-family: var(--rep-font-ui);
+  font-size: 11px;
+  color: var(--rep-steel);
+  margin: 0 0 6px;
+}
+
+.profile-header__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

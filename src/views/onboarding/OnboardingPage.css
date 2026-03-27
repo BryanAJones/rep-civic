@@ -1,0 +1,116 @@
+.onboarding {
+  min-height: 100vh;
+  background: var(--rep-mist, #EEF1F6);
+}
+
+.onboarding__hero {
+  background: var(--rep-navy, #0D1F3C);
+  border-bottom: 3px solid var(--rep-gold, #B8922A);
+  padding: 28px 20px 22px;
+  text-align: center;
+}
+
+.onboarding__logo {
+  font-family: var(--rep-font-display, 'Playfair Display', serif);
+  font-size: 42px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+
+.onboarding__period {
+  color: var(--rep-gold, #B8922A);
+}
+
+.onboarding__tagline {
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  font-size: 9px;
+  font-weight: 300;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.58);
+  margin-bottom: 10px;
+}
+
+.onboarding__desc {
+  font-family: var(--rep-font-display, 'Playfair Display', serif);
+  font-size: 12px;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.onboarding__body {
+  padding: 18px 16px;
+}
+
+.onboarding__label {
+  display: block;
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--rep-steel, #4A5568);
+  margin-bottom: 5px;
+}
+
+.onboarding__input {
+  width: 100%;
+  background: white;
+  border: 1px solid var(--rep-rule, #D1D9E6);
+  border-radius: 2px;
+  padding: 9px 12px;
+  font-size: 11px;
+  color: var(--rep-ink, #1A1C22);
+  margin-bottom: 12px;
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  box-sizing: border-box;
+}
+
+.onboarding__input::placeholder {
+  color: #bbb;
+}
+
+.onboarding__input:disabled {
+  opacity: 0.6;
+}
+
+.onboarding__error {
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  font-size: 11px;
+  color: #c53030;
+  margin: 0 0 8px;
+}
+
+.onboarding__submit {
+  width: 100%;
+  background: var(--rep-navy, #0D1F3C);
+  color: white;
+  border: none;
+  border-radius: 2px;
+  padding: 11px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-align: center;
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  cursor: pointer;
+}
+
+.onboarding__submit:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.onboarding__fine {
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  font-size: 9px;
+  color: var(--rep-steel, #4A5568);
+  text-align: center;
+  margin-top: 10px;
+  line-height: 1.6;
+}

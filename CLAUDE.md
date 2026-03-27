@@ -83,6 +83,32 @@ These are identity-level decisions. Do not deviate.
 
 **Not yet built:** Everything. No working prototype exists. The HTML wireframes are reference only.
 
+## Backlog and Changelog
+
+Three files work together to track what's built and what's next:
+
+1. **`BACKLOG.md`** — The feature backlog. Every feature has a status (`done`, `in-progress`, `planned`, `idea`), a category, and a notes column. This is the internal planning document.
+2. **`CHANGELOG.md`** — Detailed record of what shipped, organized by phase. Includes commit hashes and bullet-point descriptions.
+3. **`src/data/changelog.ts`** — TypeScript data file that drives the "Development log" section on the landing page. Concise, user-facing descriptions.
+
+### When shipping a feature or completing a phase:
+
+1. Update `BACKLOG.md` — set completed items to `done`, move in-progress items forward
+2. Add an entry to `CHANGELOG.md` with commit hash and details
+3. Add an entry to the top of the `changelog` array in `src/data/changelog.ts` (newest first)
+4. Increment the version string (0.1, 0.2, ... matching the phase number loosely)
+
+### When adding new feature ideas:
+
+- Add them to the "Ideas" section at the bottom of `BACKLOG.md` with status `idea`
+- Only promote to `planned` when scope and phase are determined
+
+### Tone for changelog entries:
+
+- Declarative, institutional tone (no emoji, no exclamation marks — same as the rest of the brand)
+- User-facing in `src/data/changelog.ts`, dev-facing in `CHANGELOG.md`
+- Keep landing page entries to 3-5 bullets per version
+
 ## Key Product Decisions
 
 - Constituents ask text questions only. Officials/candidates post video.

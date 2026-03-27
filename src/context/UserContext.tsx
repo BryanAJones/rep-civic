@@ -1,6 +1,10 @@
 import { createContext, useContext, useReducer, type ReactNode } from 'react';
 import type { District, QuestionId } from '../types/domain';
 
+// SECURITY: Only non-sensitive app state belongs in UserState / localStorage.
+// Session tokens, auth credentials, and user PII must NEVER be stored here.
+// When auth is added, use HttpOnly cookies managed by the server.
+
 interface UserState {
   hasCompletedOnboarding: boolean;
   districts: District[];
@@ -10,19 +14,41 @@ interface UserState {
 type UserAction =
   | { type: 'COMPLETE_ONBOARDING'; districts: District[] }
   | { type: 'VOTE_QUESTION'; questionId: QuestionId }
+  | { type: 'UNVOTE_QUESTION'; questionId: QuestionId }
   | { type: 'RESET' };
 
 const STORAGE_KEY = 'rep_user_state';
+
+function isValidDistrict(d: unknown): d is District {
+  if (typeof d !== 'object' || d === null) return false;
+  const obj = d as Record<string, unknown>;
+  return (
+    typeof obj.code === 'string' && obj.code.length > 0 &&
+    typeof obj.level === 'string' && ['city', 'county', 'state', 'federal'].includes(obj.level) &&
+    typeof obj.officeTitle === 'string' &&
+    typeof obj.districtName === 'string' &&
+    typeof obj.displayLabel === 'string' &&
+    Array.isArray(obj.candidateIds)
+  );
+}
 
 function loadFromStorage(): Partial<UserState> {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return {};
     const parsed = JSON.parse(raw);
+    const districts = Array.isArray(parsed.districts)
+      ? parsed.districts.filter(isValidDistrict)
+      : [];
+    const hasCompletedOnboarding = parsed.hasCompletedOnboarding === true && districts.length > 0;
     return {
-      hasCompletedOnboarding: parsed.hasCompletedOnboarding ?? false,
-      districts: parsed.districts ?? [],
-      votedQuestionIds: new Set(parsed.votedQuestionIds ?? []),
+      hasCompletedOnboarding,
+      districts,
+      votedQuestionIds: new Set(
+        Array.isArray(parsed.votedQuestionIds)
+          ? parsed.votedQuestionIds.filter((id: unknown) => typeof id === 'string')
+          : [],
+      ),
     };
   } catch {
     return {};
@@ -67,6 +93,12 @@ function userReducer(state: UserState, action: UserAction): UserState {
       const newVoted = new Set(state.votedQuestionIds);
       newVoted.add(action.questionId);
       next = { ...state, votedQuestionIds: newVoted };
+      break;
+    }
+    case 'UNVOTE_QUESTION': {
+      const reduced = new Set(state.votedQuestionIds);
+      reduced.delete(action.questionId);
+      next = { ...state, votedQuestionIds: reduced };
       break;
     }
     case 'RESET':

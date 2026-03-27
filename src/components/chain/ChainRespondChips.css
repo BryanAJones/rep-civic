@@ -1,0 +1,30 @@
+.chain-respond-chips {
+  margin-top: 16px;
+  padding: 12px;
+  background: var(--rep-cream, #F7F5EF);
+  border: 1px solid var(--rep-rule, #D1D9E6);
+  border-radius: 2px;
+}
+
+.chain-respond-chips__label {
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--rep-steel, #4A5568);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.chain-respond-chips__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chain-respond-chips__chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}

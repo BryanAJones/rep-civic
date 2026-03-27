@@ -285,6 +285,157 @@ const mockVideos: Video[] = [
     questionCount: 18,
     publishedAt: '2026-03-15T08:30:00Z',
   },
+
+  // --- Additional City-level videos (c-ross: ATL-SB-D6) ---
+  {
+    id: 'v-007',
+    candidateId: 'c-ross',
+    postType: 'statement',
+    caption: 'We closed 3 schools last year. Not one parent was consulted.',
+    thumbnailUrl: '',
+    videoUrl: '',
+    reactionCount: 203,
+    questionCount: 34,
+    publishedAt: '2026-03-20T09:00:00Z',
+  },
+  {
+    id: 'v-008',
+    candidateId: 'c-ross',
+    postType: 'statement',
+    caption: 'The district spent $4.2M on consultants while teachers bought their own supplies.',
+    thumbnailUrl: '',
+    videoUrl: '',
+    reactionCount: 178,
+    questionCount: 27,
+    publishedAt: '2026-03-14T11:30:00Z',
+  },
+
+  // --- Additional County-level videos (c-hall: FULTON-CC-D2) ---
+  {
+    id: 'v-009',
+    candidateId: 'c-hall',
+    postType: 'statement',
+    caption: 'The county budget allocates 14% to transit. Our ridership says it should be 22%.',
+    thumbnailUrl: '',
+    videoUrl: '',
+    reactionCount: 127,
+    questionCount: 19,
+    publishedAt: '2026-03-19T08:00:00Z',
+  },
+  {
+    id: 'v-010',
+    candidateId: 'c-hall',
+    postType: 'qa-reply',
+    caption: 'Here is exactly where the affordable housing trust fund money goes.',
+    thumbnailUrl: '',
+    videoUrl: '',
+    reactionCount: 84,
+    questionCount: 11,
+    publishedAt: '2026-03-17T14:00:00Z',
+  },
+  {
+    id: 'v-011',
+    candidateId: 'c-hall',
+    postType: 'statement',
+    caption: 'Three developers got tax abatements. Zero built the units they promised.',
+    thumbnailUrl: '',
+    videoUrl: '',
+    reactionCount: 156,
+    questionCount: 22,
+    publishedAt: '2026-03-13T10:15:00Z',
+  },
+
+  // --- Additional State-level videos (c-johnson: GA-SH-D40, c-reed: GA-SEN-D40) ---
+  {
+    id: 'v-012',
+    candidateId: 'c-johnson',
+    postType: 'qa-reply',
+    caption: 'Medicaid expansion would cover 500,000 Georgians. Here is the math.',
+    thumbnailUrl: '',
+    videoUrl: '',
+    reactionCount: 167,
+    questionCount: 29,
+    publishedAt: '2026-03-20T15:30:00Z',
+  },
+  {
+    id: 'v-013',
+    candidateId: 'c-reed',
+    postType: 'statement',
+    caption: 'SB 118 would require landlords to disclose code violations before signing a lease.',
+    thumbnailUrl: '',
+    videoUrl: '',
+    reactionCount: 112,
+    questionCount: 16,
+    publishedAt: '2026-03-18T09:45:00Z',
+  },
+  {
+    id: 'v-014',
+    candidateId: 'c-johnson',
+    postType: 'statement',
+    caption: 'Criminal justice reform is not a partisan issue. These are our neighbors.',
+    thumbnailUrl: '',
+    videoUrl: '',
+    reactionCount: 241,
+    questionCount: 38,
+    publishedAt: '2026-03-12T13:00:00Z',
+  },
+
+  // --- Additional Federal-level videos (c-williams: GA-05, c-warnock: GA-SEN-US-1) ---
+  {
+    id: 'v-015',
+    candidateId: 'c-warnock',
+    postType: 'statement',
+    caption: 'Insulin costs Georgia families $1,200 a year. The $35 cap is not negotiable.',
+    thumbnailUrl: '',
+    videoUrl: '',
+    reactionCount: 412,
+    questionCount: 56,
+    publishedAt: '2026-03-21T10:00:00Z',
+  },
+  {
+    id: 'v-016',
+    candidateId: 'c-williams',
+    postType: 'qa-reply',
+    caption: 'The Bankhead station timeline. Construction starts Q4 and here is why it matters.',
+    thumbnailUrl: '',
+    videoUrl: '',
+    reactionCount: 189,
+    questionCount: 24,
+    publishedAt: '2026-03-16T16:00:00Z',
+  },
+  {
+    id: 'v-017',
+    candidateId: 'c-warnock',
+    postType: 'statement',
+    caption: 'Student loan borrowers in Georgia carry $67 billion in debt. We can do better.',
+    thumbnailUrl: '',
+    videoUrl: '',
+    reactionCount: 334,
+    questionCount: 47,
+    publishedAt: '2026-03-14T08:30:00Z',
+  },
+  {
+    id: 'v-018',
+    candidateId: 'c-williams',
+    postType: 'statement',
+    caption: 'GA-05 has the longest average commute in the metro. That is a federal problem.',
+    thumbnailUrl: '',
+    videoUrl: '',
+    reactionCount: 145,
+    questionCount: 20,
+    publishedAt: '2026-03-11T12:00:00Z',
+  },
+  {
+    id: 'v-019',
+    candidateId: 'c-warnock',
+    postType: 'qa-reply',
+    caption: 'Voting rights are not a talking point. Here is what the bill actually does.',
+    thumbnailUrl: '',
+    videoUrl: '',
+    reactionCount: 521,
+    questionCount: 63,
+    publishedAt: '2026-03-19T17:00:00Z',
+  },
 ];
 
 // --- Mock Questions ---
@@ -424,8 +575,23 @@ export const mockService: DataService = {
     return delay(mockDistricts);
   },
 
-  getFeedVideos(_districtCodes: DistrictCode[]) {
-    const sorted = [...mockVideos].sort(
+  getFeedVideos(districtCodes: DistrictCode[], filter?: DistrictLevel) {
+    let filtered = mockVideos.filter((v) => {
+      const candidate = mockCandidates[v.candidateId];
+      if (!candidate) return false;
+      return districtCodes.includes(candidate.districtCode);
+    });
+
+    if (filter) {
+      filtered = filtered.filter((v) => {
+        const candidate = mockCandidates[v.candidateId];
+        if (!candidate) return false;
+        const district = mockDistricts.find((d) => d.code === candidate.districtCode);
+        return district?.level === filter;
+      });
+    }
+
+    const sorted = [...filtered].sort(
       (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
     );
     return delay(sorted);

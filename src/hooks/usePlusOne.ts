@@ -27,7 +27,8 @@ export function usePlusOne(
     try {
       await service.voteQuestion(questionId);
     } catch {
-      // Rollback on error
+      // Rollback on error — both local questions state and UserContext
+      dispatch({ type: 'UNVOTE_QUESTION', questionId });
       setQuestions((prev) =>
         prev
           .map((q) =>

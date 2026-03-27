@@ -22,6 +22,7 @@ export interface District {
 export interface UserProfile {
   id: UserId;
   handle: string;
+  /** @deprecated Onboarding input only. Must not persist to server-side user record or client storage. */
   registeredAddress: string;
   districts: District[];
   votedQuestionIds: QuestionId[];
@@ -93,6 +94,7 @@ export interface Question {
   topicId?: string;
   candidateId: CandidateId;
   text: string;
+  /** SECURITY: Must be server-derived from the authenticated session. Never accept from client. */
   authorHandle: string;
   plusOneCount: number;
   state: QuestionState;

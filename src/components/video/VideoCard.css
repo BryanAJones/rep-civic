@@ -10,6 +10,38 @@
   flex-shrink: 0;
 }
 
+/* Centered play button placeholder */
+.video-card__play-area {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 52px;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.video-card__play-btn {
+  width: 64px;
+  height: 64px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.15s ease;
+}
+
+.video-card__play-btn:hover {
+  transform: scale(1.1);
+}
+
+.video-card__play-btn svg {
+  width: 64px;
+  height: 64px;
+}
+
 /* Bottom overlay with gradient fade */
 .video-card__bottom {
   position: absolute;

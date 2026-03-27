@@ -1,0 +1,31 @@
+.empty-video-grid__cells {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  margin-bottom: 12px;
+}
+
+.empty-video-grid__cell {
+  aspect-ratio: 9 / 16;
+  border: 1px dashed var(--rep-rule);
+  border-radius: var(--rep-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--rep-mist);
+}
+
+.empty-video-grid__plus {
+  font-family: var(--rep-font-ui);
+  font-size: 18px;
+  font-weight: 300;
+  color: var(--rep-rule);
+}
+
+.empty-video-grid__prompt {
+  font-family: var(--rep-font-ui);
+  font-size: 10px;
+  color: var(--rep-steel);
+  line-height: 1.5;
+  margin: 0;
+}

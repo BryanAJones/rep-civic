@@ -42,5 +42,5 @@ export function useQuestions(videoId: VideoId | null) {
     }
   }, [videoId]);
 
-  return { questions, loading, error, submitQuestion };
+  return { questions, setQuestions, loading, error, submitQuestion };
 }

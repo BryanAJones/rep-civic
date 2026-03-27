@@ -23,12 +23,15 @@ export interface DataService {
   // Questions
   getQuestionsForVideo(videoId: VideoId): Promise<Question[]>;
   getQuestionsForCandidate(candidateId: CandidateId): Promise<Question[]>;
+  // SECURITY: candidateId is a temporary client param for mock data only.
+  // Real backend must derive candidateId from the video and authorHandle from the session.
   submitQuestion(
     candidateId: CandidateId,
     videoId: VideoId | null,
     text: string,
     topicId?: string,
   ): Promise<Question>;
+  // SECURITY: Server must enforce one vote per (userId, questionId). Client check is UX only.
   voteQuestion(questionId: QuestionId): Promise<{ newCount: number }>;
 
   // Candidates

@@ -15,6 +15,16 @@ export function VideoCard({ video, onQuestionsPress }: VideoCardProps) {
     <div className="video-card">
       <ScanlineOverlay />
 
+      {/* Placeholder play button — replaced by real video player later */}
+      <div className="video-card__play-area">
+        <button className="video-card__play-btn" type="button" aria-label="Play video">
+          <svg viewBox="0 0 48 48" aria-hidden="true">
+            <circle cx="24" cy="24" r="23" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" />
+            <polygon points="18,14 36,24 18,34" fill="rgba(255,255,255,0.6)" />
+          </svg>
+        </button>
+      </div>
+
       <VideoRightRail
         reactionCount={video.reactionCount}
         questionCount={video.questionCount}

@@ -30,6 +30,7 @@ export function QuestionInput({ placeholder = 'Ask your own question...', onSubm
         type="text"
         placeholder={placeholder}
         value={text}
+        maxLength={280}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={handleKeyDown}
       />

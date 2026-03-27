@@ -2,12 +2,11 @@ import { Logotype } from '../primitives';
 import './TopNav.css';
 
 interface TopNavProps {
-  contextString?: string;
   backLabel?: string;
   onBack?: () => void;
 }
 
-export function TopNav({ contextString, backLabel, onBack }: TopNavProps) {
+export function TopNav({ backLabel, onBack }: TopNavProps) {
   return (
     <nav className="top-nav">
       {backLabel ? (
@@ -17,9 +16,6 @@ export function TopNav({ contextString, backLabel, onBack }: TopNavProps) {
         </button>
       ) : (
         <Logotype size={18} onDark />
-      )}
-      {contextString && (
-        <span className="top-nav__context">{contextString}</span>
       )}
     </nav>
   );

@@ -1,0 +1,30 @@
+.debate-chain {
+  padding: 16px 12px;
+}
+
+.debate-chain__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--rep-rule, #D1D9E6);
+}
+
+.debate-chain__topic {
+  font-family: var(--rep-font-display, 'Playfair Display', serif);
+  font-weight: 500;
+  font-size: 18px;
+  color: var(--rep-ink, #1A1C22);
+  margin: 0;
+}
+
+.debate-chain__tree {
+  margin-bottom: 12px;
+}
+
+.debate-chain__stats {
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--rep-rule, #D1D9E6);
+}

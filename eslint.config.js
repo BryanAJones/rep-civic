@@ -19,5 +19,26 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      'no-restricted-imports': ['error', {
+        patterns: [
+          {
+            group: ['**/services/civicApi*'],
+            message: 'Import from services/index.ts instead. Components must not import API clients directly.',
+          },
+          {
+            group: ['**/services/mockData*'],
+            message: 'Import from services/index.ts instead.',
+          },
+        ],
+      }],
+    },
+  },
+  {
+    files: ['**/services/**', '**/test/**', '**/*.test.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': 'off',
+      'react-refresh/only-export-components': 'off',
+    },
   },
 ])

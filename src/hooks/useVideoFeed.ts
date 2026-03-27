@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
-import type { Video } from '../types/domain';
+import type { DistrictLevel, Video } from '../types/domain';
 import { service } from '../services';
 
-export function useVideoFeed(districtCodes: string[]) {
+export function useVideoFeed(districtCodes: string[], level?: DistrictLevel | null) {
   const [videos, setVideos] = useState<Video[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // null means "All" — pass undefined to service so it skips level filtering
+  const filterLevel = level ?? undefined;
 
   useEffect(() => {
     let cancelled = false;
@@ -14,7 +17,7 @@ export function useVideoFeed(districtCodes: string[]) {
       setLoading(true);
       setError(null);
       try {
-        const result = await service.getFeedVideos(districtCodes);
+        const result = await service.getFeedVideos(districtCodes, filterLevel);
         if (!cancelled) {
           setVideos(result);
         }
@@ -31,7 +34,7 @@ export function useVideoFeed(districtCodes: string[]) {
 
     fetch();
     return () => { cancelled = true; };
-  }, [districtCodes.join(',')]);
+  }, [districtCodes.join(','), filterLevel]);
 
   return { videos, loading, error };
 }

@@ -1,0 +1,15 @@
+.chain-page {
+  min-height: 100%;
+  background: var(--rep-mist, #EEF1F6);
+}
+
+.chain-page__loading,
+.chain-page__error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  font-size: 14px;
+  color: var(--rep-steel, #4A5568);
+}

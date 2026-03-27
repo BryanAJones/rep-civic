@@ -3,7 +3,7 @@
   flex-direction: column;
   height: 100dvh;
   background: var(--rep-dark-bg);
-  max-width: 480px;
+  max-width: 600px;
   margin: 0 auto;
 }
 
@@ -12,4 +12,10 @@
   overflow-y: auto;
   overflow-x: hidden;
   position: relative;
+}
+
+@media (min-width: 720px) {
+  .app-shell {
+    max-width: 720px;
+  }
 }

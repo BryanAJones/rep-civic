@@ -1,29 +1,32 @@
-.feed {
-  height: 100%;
-  overflow-y: scroll;
-  scroll-snap-type: y mandatory;
-  -webkit-overflow-scrolling: touch;
+/* Carousel container — clips overflow, fills remaining height */
+.feed-carousel {
+  flex: 1;
+  overflow: hidden;
   position: relative;
+  touch-action: pan-y;
 }
 
-.feed__loading,
-.feed__error {
+/* Horizontal track holding all panels side by side */
+.feed-carousel__track {
   display: flex;
-  align-items: center;
-  justify-content: center;
   height: 100%;
-  font-family: var(--rep-font-ui);
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.35);
+  will-change: transform;
 }
 
-/* Drawer overlay */
+/* Each panel takes its computed width share */
+.feed-carousel__panel {
+  height: 100%;
+  flex-shrink: 0;
+}
+
+/* Drawer overlay — sits outside carousel so scroll position doesn't affect it */
 .feed__drawer-overlay {
   position: absolute;
   inset: 0;
   z-index: 10;
   display: flex;
   flex-direction: column;
+  background: var(--rep-dark-bg);
   animation: slideUp 0.25s ease-out;
 }
 

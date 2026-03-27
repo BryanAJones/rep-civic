@@ -1,0 +1,43 @@
+.chain-node-card {
+  position: relative;
+  padding-left: 12px;
+}
+
+.chain-node-card__connector {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--rep-rule, #D1D9E6);
+}
+
+.chain-node-card__content {
+  background: var(--rep-white, #FAFBFC);
+  border: 1px solid var(--rep-rule, #D1D9E6);
+  border-radius: 2px;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+
+.chain-node-card__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.chain-node-card__name {
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--rep-ink, #1A1C22);
+}
+
+.chain-node-card__caption {
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--rep-steel, #4A5568);
+  margin: 0;
+}

@@ -1,0 +1,29 @@
+.profile-tabs__strip {
+  display: flex;
+  border-bottom: 1px solid var(--rep-rule);
+}
+
+.profile-tabs__tab {
+  flex: 1;
+  padding: 8px 0;
+  font-family: var(--rep-font-ui);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rep-steel);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color var(--rep-transition), border-color var(--rep-transition);
+}
+
+.profile-tabs__tab--active {
+  color: var(--rep-gold);
+  border-bottom-color: var(--rep-gold);
+}
+
+.profile-tabs__content {
+  padding: 12px;
+}

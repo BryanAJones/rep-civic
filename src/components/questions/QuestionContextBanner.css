@@ -1,0 +1,27 @@
+.question-banner {
+  background: rgba(13, 31, 60, 0.82);
+  border: 1px solid var(--rep-green-border);
+  border-radius: var(--rep-radius);
+  padding: 6px 10px;
+  margin-bottom: 8px;
+}
+
+.question-banner__label {
+  display: block;
+  font-family: var(--rep-font-ui);
+  font-size: 7px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--rep-green);
+  margin-bottom: 3px;
+}
+
+.question-banner__text {
+  font-family: var(--rep-font-ui);
+  font-size: 9px;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.4;
+  margin: 0;
+}

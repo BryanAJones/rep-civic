@@ -1,0 +1,40 @@
+.topic-card {
+  border: 1px solid var(--rep-rule);
+  border-radius: var(--rep-radius);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.topic-card__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--rep-mist);
+  border-bottom: 1px solid var(--rep-rule);
+}
+
+.topic-card__title {
+  font-family: var(--rep-font-display);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--rep-ink);
+  line-height: 1.3;
+}
+
+.topic-card__badge {
+  flex-shrink: 0;
+  padding: 2px 6px;
+  border: 1px solid var(--rep-rule);
+  border-radius: var(--rep-radius);
+  white-space: nowrap;
+}
+
+.topic-card__questions {
+  border-bottom: 1px solid var(--rep-rule);
+}
+
+.topic-card__ask {
+  padding: 0;
+}

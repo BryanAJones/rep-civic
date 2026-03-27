@@ -7,24 +7,21 @@ import './AppShell.css';
 
 interface AppShellProps {
   children: ReactNode;
-  contextString?: string;
 }
 
 const pathToTab: Record<string, NavTab> = {
   '/app/feed': 'feed',
   '/app/districts': 'districts',
-  '/app/ask': 'ask',
   '/app/reps': 'reps',
 };
 
 const tabToPath: Record<NavTab, string> = {
   feed: '/app/feed',
   districts: '/app/districts',
-  ask: '/app/ask',
   reps: '/app/reps',
 };
 
-export function AppShell({ children, contextString }: AppShellProps) {
+export function AppShell({ children }: AppShellProps) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -36,7 +33,7 @@ export function AppShell({ children, contextString }: AppShellProps) {
 
   return (
     <div className="app-shell">
-      <TopNav contextString={contextString} />
+      <TopNav />
       <div className="app-shell__content">
         {children}
       </div>

@@ -1,0 +1,24 @@
+.general-q-box {
+  border: 1px solid var(--rep-rule);
+  border-radius: var(--rep-radius);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.general-q-box__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: var(--rep-mist);
+  border-bottom: 1px solid var(--rep-rule);
+}
+
+.general-q-box__title {
+  font-family: var(--rep-font-ui);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rep-steel);
+}

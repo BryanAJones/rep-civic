@@ -1,0 +1,65 @@
+.level-tab-strip {
+  flex-shrink: 0;
+  overflow: hidden;
+  background: var(--rep-dark-nav);
+  border-bottom: 1px solid var(--rep-dark-rule);
+  padding: 10px 0 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Sliding track — each label is 100% wide, centered */
+.level-tab-strip__track {
+  display: flex;
+  width: 100%;
+  will-change: transform;
+  transition: transform 0.05s linear;
+}
+
+.level-tab-strip--settled .level-tab-strip__track {
+  transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.level-tab-strip__label {
+  flex-shrink: 0;
+  width: 100%;
+  text-align: center;
+  font-family: var(--rep-font-ui);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.9);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  will-change: opacity;
+}
+
+/* Dot row */
+.level-tab-strip__dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.level-tab-strip__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: background var(--rep-transition), width var(--rep-transition);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.level-tab-strip__dot--active {
+  width: 14px;
+  background: var(--rep-gold);
+}
