@@ -53,6 +53,20 @@
   z-index: 2;
 }
 
+/* Candidate identity line */
+.video-card__identity {
+  font-family: var(--rep-font-ui);
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 4px;
+}
+
+.video-card__identity span {
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.5);
+}
+
 /* Scroll hint between videos */
 .video-card__scroll-hint {
   font-family: var(--rep-font-ui);

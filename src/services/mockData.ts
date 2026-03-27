@@ -592,7 +592,16 @@ export const mockService: DataService = {
       });
     }
 
-    const sorted = [...filtered].sort(
+    const enriched = filtered.map((v) => {
+      const candidate = mockCandidates[v.candidateId];
+      return {
+        ...v,
+        candidateName: candidate?.name,
+        candidateOffice: candidate?.officeTitle,
+      };
+    });
+
+    const sorted = enriched.sort(
       (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
     );
     return delay(sorted);

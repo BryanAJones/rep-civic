@@ -83,6 +83,9 @@ export interface Video {
   answersQuestionId?: QuestionId;
   chainId?: ChainId;
   chainDepth?: number;
+  /** Denormalized for feed display — populated by service, not stored */
+  candidateName?: string;
+  candidateOffice?: string;
 }
 
 // Questions

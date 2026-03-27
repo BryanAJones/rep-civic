@@ -32,6 +32,12 @@ export function VideoCard({ video, onQuestionsPress }: VideoCardProps) {
       />
 
       <div className="video-card__bottom">
+        {video.candidateName && (
+          <div className="video-card__identity">
+            {video.candidateName}
+            {video.candidateOffice && <span> · {video.candidateOffice}</span>}
+          </div>
+        )}
         <VideoCaption text={video.caption} />
         <VideoTag postType={video.postType} />
       </div>
