@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef } from 'react';
 import { VideoCard } from '../../components/video';
 import type { Video, VideoId } from '../../types/domain';
 import './FeedPanel.css';

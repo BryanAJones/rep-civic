@@ -7,6 +7,7 @@ import type {
   DebateChain,
   District,
   DistrictCode,
+  DistrictLevel,
   Question,
   QuestionId,
   Topic,
