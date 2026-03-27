@@ -3,11 +3,11 @@
   overflow: hidden;
   background: var(--rep-dark-nav);
   border-bottom: 1px solid var(--rep-dark-rule);
-  padding: 10px 0 8px;
+  padding: var(--rep-space-md) 0 var(--rep-space-sm);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: var(--rep-space-sm);
 }
 
 /* Sliding track — each label is 100% wide, centered */
@@ -27,7 +27,7 @@
   width: 100%;
   text-align: center;
   font-family: var(--rep-font-ui);
-  font-size: 13px;
+  font-size: var(--rep-text-md);
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -43,7 +43,7 @@
 /* Dot row */
 .level-tab-strip__dots {
   display: flex;
-  gap: 6px;
+  gap: var(--rep-space-sm);
   align-items: center;
 }
 

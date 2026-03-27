@@ -1,10 +1,10 @@
 .video-tag {
   font-family: var(--rep-font-ui);
-  font-size: 7px;
+  font-size: var(--rep-text-2xs);
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 3px 7px;
+  padding: 3px var(--rep-space-sm);
   border-radius: var(--rep-radius);
   display: inline-flex;
   align-items: center;

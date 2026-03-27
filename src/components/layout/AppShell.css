@@ -5,6 +5,7 @@
   background: var(--rep-dark-bg);
   max-width: 600px;
   margin: 0 auto;
+  container-type: inline-size;
 }
 
 .app-shell__content {

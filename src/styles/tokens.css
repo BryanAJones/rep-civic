@@ -33,4 +33,26 @@
 
   /* Transitions */
   --rep-transition:   0.15s ease;
+
+  /* Fluid sizing — scales with container width (375px → 600px) */
+  /* Text */
+  --rep-text-2xs:     clamp(7px, 1.8cqi, 9px);
+  --rep-text-xs:      clamp(8px, 2.2cqi, 10px);
+  --rep-text-sm:      clamp(10px, 2.8cqi, 12px);
+  --rep-text-md:      clamp(12px, 3.2cqi, 15px);
+  --rep-text-lg:      clamp(14px, 3.8cqi, 17px);
+
+  /* Spacing */
+  --rep-space-xs:     clamp(4px, 1.2cqi, 6px);
+  --rep-space-sm:     clamp(6px, 1.8cqi, 10px);
+  --rep-space-md:     clamp(10px, 2.8cqi, 14px);
+  --rep-space-lg:     clamp(14px, 4cqi, 20px);
+  --rep-space-xl:     clamp(16px, 5cqi, 24px);
+
+  /* Touch targets and icons */
+  --rep-icon-sm:      clamp(14px, 3.7cqi, 18px);
+  --rep-icon-md:      clamp(20px, 5.5cqi, 26px);
+  --rep-icon-lg:      clamp(48px, 14cqi, 68px);
+  --rep-touch:        clamp(32px, 8.5cqi, 40px);
+  --rep-touch-lg:     clamp(44px, 11cqi, 52px);
 }

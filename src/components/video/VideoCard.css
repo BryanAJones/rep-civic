@@ -24,8 +24,8 @@
 }
 
 .video-card__play-btn {
-  width: 64px;
-  height: 64px;
+  width: var(--rep-icon-lg);
+  height: var(--rep-icon-lg);
   background: none;
   border: none;
   cursor: pointer;
@@ -38,8 +38,8 @@
 }
 
 .video-card__play-btn svg {
-  width: 64px;
-  height: 64px;
+  width: 100%;
+  height: 100%;
 }
 
 /* Bottom overlay with gradient fade */
@@ -48,7 +48,8 @@
   bottom: 0;
   left: 0;
   right: 52px;
-  padding: 48px 12px 12px;
+  padding: var(--rep-space-xl) var(--rep-space-md) var(--rep-space-md);
+  padding-top: calc(var(--rep-space-xl) * 2.5);
   background: linear-gradient(to top, rgba(4, 7, 14, 0.92) 0%, transparent 100%);
   z-index: 2;
 }
@@ -56,10 +57,10 @@
 /* Candidate identity line */
 .video-card__identity {
   font-family: var(--rep-font-ui);
-  font-size: 11px;
+  font-size: var(--rep-text-sm);
   font-weight: 600;
   color: rgba(255, 255, 255, 0.85);
-  margin-bottom: 4px;
+  margin-bottom: var(--rep-space-xs);
 }
 
 .video-card__identity span {
@@ -70,13 +71,13 @@
 /* Scroll hint between videos */
 .video-card__scroll-hint {
   font-family: var(--rep-font-ui);
-  font-size: 7px;
+  font-size: var(--rep-text-2xs);
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.15);
   text-align: center;
-  padding: 4px 0 2px;
+  padding: var(--rep-space-xs) 0 2px;
   position: relative;
   z-index: 2;
 }

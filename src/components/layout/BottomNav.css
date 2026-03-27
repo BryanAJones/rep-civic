@@ -11,25 +11,25 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 10px 0 8px;
-  gap: 4px;
+  padding: var(--rep-space-md) 0 var(--rep-space-sm);
+  gap: var(--rep-space-xs);
   background: none;
   border: none;
   cursor: pointer;
-  min-height: 48px;
+  min-height: var(--rep-touch-lg);
 }
 
 .bottom-nav__icon {
-  width: 24px;
-  height: 24px;
+  width: var(--rep-icon-md);
+  height: var(--rep-icon-md);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .bottom-nav__icon svg {
-  width: 22px;
-  height: 22px;
+  width: 100%;
+  height: 100%;
   fill: rgba(255, 255, 255, 0.55);
 }
 
@@ -39,7 +39,7 @@
 
 .bottom-nav__label {
   font-family: var(--rep-font-ui);
-  font-size: 10px;
+  font-size: var(--rep-text-xs);
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
