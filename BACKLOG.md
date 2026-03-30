@@ -173,6 +173,8 @@
 | S-17 | Backend proxy for Civic API (remove key from client) | planned | Real backend |
 | S-18 | Rate-limit question submission | planned | Real backend |
 | S-19 | Audit log for candidate state transitions | planned | Candidate auth |
+| S-22 | Question relevance validation in submit-question Edge Function | planned | Real backend (B3-1) |
+| S-23 | Office-level topic map for relevance scoring | planned | Real backend (B3-1) |
 
 ### Bug Fixes (from security review)
 
@@ -183,25 +185,89 @@
 
 ---
 
+## Backend — Phase B1: Database Schema + Data Import
+
+| # | Feature | Status | Notes |
+|---|---------|--------|-------|
+| B1-1 | Create Supabase project (free tier) | done | Project ID: ocpcejomntxqsboswhrx |
+| B1-2 | Database migration: districts table | done | code PK, level, office_title, district_name, display_label |
+| B1-3 | Database migration: candidates table | done | Discriminated union via status CHECK constraint |
+| B1-4 | Database migration: videos, questions, topics, debate chain tables | done | All remaining tables + FKs |
+| B1-5 | Database migration: question_votes table | done | Composite PK (user_id, question_id) for dedup |
+| B1-6 | Database migration: feedback table | done | Simple insert target |
+| B1-7 | RLS policies: public reads on all tables | done | SELECT for anon role |
+| B1-8 | Type generation setup (supabase gen types) | done | Auto-generated src/types/supabase.ts |
+| B1-9 | Candidate data sources decided | done | FEC bulk CSV (federal) + OpenStates bulk CSV (state legislature). ~465 candidates. Local (city/county) deferred. |
+| B1-10 | Download + parse FEC GA candidate CSV | done | 243 GA federal candidates from fec.gov 2026 cycle bulk file |
+| B1-11 | Download + parse OpenStates GA legislator CSV | done | 233 GA state legislators from data.openstates.org |
+| B1-12 | Transform script (scripts/import/transform.ts) | done | Maps FEC + OpenStates to Rep schema; OCD-ID based district codes |
+| B1-13 | Seed script (scripts/import/seed.ts) | done | Upserts districts + candidates into Supabase via service_role key |
+| B1-14 | District code mapping table | done | Implicit via OCD-ID format — no separate lookup table needed |
+| B1-15 | Swap civicApi.ts to Geocodio | done | Geocodio geocode with fields=cd,stateleg. Same OCD-ID district codes. 6 tests pass. |
+
+## Backend — Phase B2: Read API
+
+| # | Feature | Status | Notes |
+|---|---------|--------|-------|
+| B2-1 | Supabase client init (src/services/supabaseClient.ts) | planned | Anon key + project URL from env vars |
+| B2-2 | SupabaseDataService (src/services/supabaseService.ts) | planned | Implements DataService for all 9 read methods |
+| B2-3 | Swap service export from mock to real | planned | One-line change in src/services/index.ts |
+| B2-4 | getFeedVideos with candidate/district joins | planned | Most complex read query |
+| B2-5 | getDebateChain with nodes + participants | planned | Nested join query |
+
+## Backend — Phase B3: Write API (Edge Functions)
+
+| # | Feature | Status | Notes |
+|---|---------|--------|-------|
+| B3-1 | Edge Function: submit-question | planned | Server-side candidateId derivation, authorHandle assignment, relevance validation (S-22, S-23) |
+| B3-2 | Edge Function: vote-question | planned | Transaction + ON CONFLICT dedup (solves S-7) |
+| B3-3 | Edge Function: submit-feedback | planned | Simple insert |
+| B3-4 | Edge Function: proxy-civic-api | planned | Server-side API key, solves S-17 |
+| B3-5 | CORS configuration for Edge Functions | planned | Required for client → function calls |
+
+## Backend — Phase B4: Anonymous Identity
+
+| # | Feature | Status | Notes |
+|---|---------|--------|-------|
+| B4-1 | Enable Supabase anonymous auth | planned | signInAnonymously() on client init |
+| B4-2 | user_profiles table + auto-create trigger | planned | handle auto-generated as @voter_<short_id> |
+| B4-3 | RLS: question_votes INSERT requires auth.uid() match | planned | Server-side vote ownership enforcement |
+| B4-4 | Sync UserContext with Supabase auth state | planned | Migrate localStorage votedQuestionIds |
+
+## Backend — Phase B5: Real Auth
+
+| # | Feature | Status | Notes |
+|---|---------|--------|-------|
+| B5-1 | Constituent auth: magic link (signInWithOtp) | planned | Anonymous → authenticated upgrade preserves data |
+| B5-2 | Custom handle selection after auth upgrade | planned | Unique constraint on user_profiles.handle |
+| B5-3 | candidate_claims table + claim flow | planned | Write-once ownership, verification ceremony (solves S-10, S-13) |
+| B5-4 | Candidate status transition on verified claim | planned | unclaimed → claimed state machine |
+| B5-5 | Separate candidate/constituent auth contexts | planned | Solves S-11 |
+
+---
+
 ## Ideas (Not Yet Scoped)
 
 | # | Feature | Status | Notes |
 |---|---------|--------|-------|
-| 59 | Candidate claim flow (/claim/:candidateId) | idea | Separate route, mentioned in ARCHITECTURE.md |
+| 59 | Candidate claim flow (/claim/:candidateId) | planned | Scoped in Phase B5, ties to candidate auth |
 | 60 | District browser page (real content) | idea | Currently a stub |
-| 61 | Reps page (real content) | idea | Currently a stub |
+| 61 | You page (account + districts + feedback) | done | Replaced Reps stub with You tab; account placeholder, district listing, feedback link |
 | 62 | Search / discovery | idea | Not yet designed |
 | 63 | Notifications | idea | Not yet designed |
 | 64 | Settings page | idea | Not yet designed |
-| 65 | Real backend API | idea | Stack TBD |
-| 66 | Real-time +1 via WebSocket/SSE | idea | Hook-level change only |
+| 66 | Real-time +1 via WebSocket/SSE | idea | Supabase Realtime subscriptions; hook-level change only |
 | 67 | Candidate dashboard | idea | Not yet designed |
 | 68 | Multi-market expansion (beyond Atlanta) | idea | District types will grow |
 | 69 | Candidate verification (official status) | idea | Verify candidates are who they claim; trust signals beyond soft v1 approach |
 | 70 | PWA hot refresh on updates | idea | Push new content to installed PWA without manual reload; critical for phone installs |
-| 71 | Authentication (constituents) | idea | User accounts, login, persistent identity across devices |
-| 72 | Authentication (candidates) | idea | Candidate login, ties to claim flow and video posting |
 | 73 | Functioning side rail buttons | idea | VideoRightRail buttons wired to real actions (not just counts) |
 | 74 | Horizontal swipe: local ↔ federal | done | Swipe gesture to shift feed between district levels (city → county → state → federal) |
 | 76 | Unclaimed candidate view as primary voter experience | planned | Pre-auth default: voters see unclaimed profiles with questions and +1 voting; video feed becomes post-auth/post-claim |
 | 77 | PWA install instructions | idea | In-app guidance for installing the PWA on iOS and Android; prompt or banner with platform-specific steps |
+| 78 | Feedback system (modal + mock storage) | done | FeedbackModal with category tagging (bug/feature/general), available from TopNav, You page, and landing footer |
+| 79 | Coming soon / roadmap section on landing page | done | Voter-facing roadmap from backlog planned items with upvote/downvote buttons |
+| 80 | Fluid responsive sizing (container query units) | done | clamp() tokens with cqi units for text, spacing, icons, and touch targets |
+| 81 | Candidate identity on video cards | done | Denormalized candidateName + candidateOffice displayed on feed cards |
+| 82 | Question relevance checks (office-aware validation) | planned | Client hint + server enforcement; reject questions outside candidate's jurisdiction. See S-22, S-23 |
+| 83 | Office context hint in QuestionInput | idea | Show candidate's officeTitle + district level near input to nudge on-topic questions (client-side, pre-backend) |

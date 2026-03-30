@@ -1,6 +1,6 @@
 .video-card {
   position: relative;
-  height: 100%;
+  height: var(--panel-height, 100%);
   min-height: 380px;
   display: flex;
   flex-direction: column;
@@ -8,6 +8,16 @@
   background: linear-gradient(175deg, #0d1f3c 0%, #071428 40%, #030810 100%);
   scroll-snap-align: start;
   flex-shrink: 0;
+}
+
+/* Subtle background image — faded and blurred to suggest video content */
+.video-card__bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.12;
+  filter: blur(2px) saturate(0.3);
 }
 
 /* Centered play button placeholder */

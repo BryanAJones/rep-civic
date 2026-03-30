@@ -7,6 +7,15 @@
   background: linear-gradient(175deg, #0a1a0a 0%, #030810 100%);
 }
 
+.answer-page__bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.12;
+  filter: blur(2px) saturate(0.3);
+}
+
 .answer-page__loading,
 .answer-page__error {
   display: flex;

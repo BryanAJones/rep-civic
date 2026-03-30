@@ -47,4 +47,12 @@ export interface DataService {
   // Videos
   getVideo(videoId: VideoId): Promise<Video>;
   getVideosForCandidate(candidateId: CandidateId): Promise<Video[]>;
+
+  // Feedback
+  submitFeedback(feedback: {
+    text: string;
+    category: 'bug' | 'feature' | 'general';
+    email?: string;
+    page: string;
+  }): Promise<{ id: string }>;
 }

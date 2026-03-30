@@ -26,6 +26,7 @@ export function createMockService(
     getDebateChain: vi.fn().mockRejectedValue(new Error('Not found')),
     getVideo: vi.fn().mockRejectedValue(new Error('Not found')),
     getVideosForCandidate: vi.fn().mockResolvedValue([]),
+    submitFeedback: vi.fn().mockResolvedValue({ id: 'fb-test' }),
     ...overrides,
   };
 }

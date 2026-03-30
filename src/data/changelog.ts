@@ -16,6 +16,29 @@ export interface ChangelogEntry {
  */
 export const changelog: ChangelogEntry[] = [
   {
+    version: '0.14',
+    date: '2026-03-29',
+    title: 'Real candidate data and district resolution',
+    items: [
+      'Database schema deployed to Supabase with 11 tables and public-read policies',
+      '465 Georgia candidates imported from FEC and OpenStates public records',
+      'District resolution switched from Google Civic to Geocodio API',
+      'Data pipeline: download, transform, and seed scripts for repeatable imports',
+    ],
+  },
+  {
+    version: '0.13',
+    date: '2026-03-27',
+    title: 'Feedback, roadmap, and account tab',
+    items: [
+      'Feedback modal accessible from every screen with category tagging',
+      'Coming soon section on landing page with community upvote/downvote',
+      'You tab replacing Reps with district listing and account placeholder',
+      'Fluid responsive sizing using container query units',
+      'Candidate name and office restored on video feed cards',
+    ],
+  },
+  {
     version: '0.12',
     date: '2026-03-27',
     title: 'District level swipe navigation',

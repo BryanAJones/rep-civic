@@ -5,6 +5,21 @@
 
 ---
 
+## Backend Phase B1 — Schema, Data Import, Geocodio Swap
+**Commit:** pending | **Status:** Shipped
+
+- Supabase project created and linked (project ID: ocpcejomntxqsboswhrx)
+- Initial migration deployed: 11 tables (districts, candidates, videos, questions, topics, debate_chains, chain_participants, chain_nodes, question_votes, candidate_positions, feedback), indexes, RLS public-read policies, updated_at trigger
+- TypeScript types auto-generated at src/types/supabase.ts
+- Data import pipeline: FEC bulk CSV (243 GA federal candidates) + OpenStates CSV (233 GA state legislators) = 465 candidates across 250 districts
+- Three-step pipeline: `npm run import:download` → `import:transform` → `import:seed`
+- District codes use OCD-ID format (STATE:GA-CD:5, STATE:GA-SLDL:60, STATE:GA-SLDU:34) matching Geocodio output
+- Replaced Google Civic Information API (shut down April 2025) with Geocodio geocode API (fields=cd,stateleg)
+- U.S. Senate at-large district auto-added for Georgia addresses
+- All 110 tests pass (6 new Geocodio tests)
+
+---
+
 ## Horizontal Swipe — District Level Navigation
 **Commit:** pending | **Status:** Shipped
 

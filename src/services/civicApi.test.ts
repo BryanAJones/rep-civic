@@ -1,9 +1,9 @@
 import { resolveDistricts } from './civicApi';
 
-describe('civicApi', () => {
+describe('civicApi (Geocodio)', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
-    vi.stubEnv('VITE_CIVIC_API_KEY', 'test-key');
+    vi.stubEnv('VITE_GEOCODIO_API_KEY', 'test-key');
   });
 
   afterEach(() => {
@@ -11,30 +11,45 @@ describe('civicApi', () => {
   });
 
   it('returns empty array when API key is not set', async () => {
-    vi.stubEnv('VITE_CIVIC_API_KEY', '');
+    vi.stubEnv('VITE_GEOCODIO_API_KEY', '');
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     const result = await resolveDistricts('123 Main St');
     expect(result).toEqual([]);
     expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('VITE_CIVIC_API_KEY not set'),
+      expect.stringContaining('VITE_GEOCODIO_API_KEY not set'),
     );
   });
 
-  it('maps a Civic API response to District[]', async () => {
+  it('maps a Geocodio response to District[]', async () => {
     const mockResponse = {
-      offices: [
+      results: [
         {
-          name: 'GA State Senate',
-          divisionId: 'ocd-division/country:us/state:ga/sldu:40',
-          levels: ['administrativeArea1'],
-          officialIndices: [0],
-        },
-        {
-          name: 'U.S. House',
-          divisionId: 'ocd-division/country:us/state:ga/cd:5',
-          levels: ['country'],
-          officialIndices: [1],
+          fields: {
+            congressional_districts: [
+              {
+                name: 'Congressional District 5',
+                district_number: 5,
+                ocd_id: 'ocd-division/country:us/state:ga/cd:5',
+              },
+            ],
+            state_legislative_districts: {
+              senate: [
+                {
+                  name: 'State Senate District 40',
+                  district_number: 40,
+                  ocd_id: 'ocd-division/country:us/state:ga/sldu:40',
+                },
+              ],
+              house: [
+                {
+                  name: 'State House District 60',
+                  district_number: 60,
+                  ocd_id: 'ocd-division/country:us/state:ga/sldl:60',
+                },
+              ],
+            },
+          },
         },
       ],
     };
@@ -46,51 +61,70 @@ describe('civicApi', () => {
 
     const districts = await resolveDistricts('123 Atlanta Ave');
 
-    expect(districts).toHaveLength(2);
-    expect(districts[0]!.officeTitle).toBe('GA State Senate');
-    expect(districts[0]!.level).toBe('state');
-    expect(districts[0]!.code).toBe('STATE:GA-SLDU:40');
-    expect(districts[1]!.level).toBe('federal');
+    // CD + Senate + House + U.S. Senate at-large = 4
+    expect(districts).toHaveLength(4);
+
+    // Congressional district
+    expect(districts[0]!.code).toBe('STATE:GA-CD:5');
+    expect(districts[0]!.level).toBe('federal');
+    expect(districts[0]!.officeTitle).toBe('U.S. Representative, District 5');
+
+    // State Senate
+    expect(districts[1]!.code).toBe('STATE:GA-SLDU:40');
+    expect(districts[1]!.level).toBe('state');
+
+    // State House
+    expect(districts[2]!.code).toBe('STATE:GA-SLDL:60');
+    expect(districts[2]!.level).toBe('state');
+
+    // U.S. Senate (auto-added)
+    expect(districts[3]!.code).toBe('STATE:GA');
+    expect(districts[3]!.level).toBe('federal');
+    expect(districts[3]!.officeTitle).toBe('U.S. Senator');
   });
 
-  it('returns empty array when offices is missing', async () => {
+  it('returns empty array when results is empty', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({}),
+      json: () => Promise.resolve({ results: [] }),
     } as Response);
 
     const result = await resolveDistricts('No Results Addr');
     expect(result).toEqual([]);
   });
 
+  it('returns empty array when fields is missing', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ results: [{}] }),
+    } as Response);
+
+    const result = await resolveDistricts('Missing Fields Addr');
+    expect(result).toEqual([]);
+  });
+
   it('throws on non-ok response', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue({
       ok: false,
-      status: 400,
-      statusText: 'Bad Request',
+      status: 403,
+      statusText: 'Forbidden',
     } as Response);
 
     await expect(resolveDistricts('Bad address')).rejects.toThrow(
-      'Civic API error: 400 Bad Request',
+      'Geocodio API error: 403 Forbidden',
     );
   });
 
-  it('correctly classifies city-level divisions', async () => {
+  it('does not add U.S. Senate when no districts found', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue({
       ok: true,
       json: () =>
         Promise.resolve({
-          offices: [
-            {
-              name: 'City Council',
-              divisionId: 'ocd-division/country:us/state:ga/place:atlanta/ward:1',
-              officialIndices: [0],
-            },
-          ],
+          results: [{ fields: {} }],
         }),
     } as Response);
 
-    const districts = await resolveDistricts('Atlanta');
-    expect(districts[0]!.level).toBe('city');
+    const districts = await resolveDistricts('Empty');
+    expect(districts).toEqual([]);
   });
 });

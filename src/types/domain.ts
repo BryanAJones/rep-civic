@@ -86,6 +86,7 @@ export interface Video {
   /** Denormalized for feed display — populated by service, not stored */
   candidateName?: string;
   candidateOffice?: string;
+  districtLevel?: DistrictLevel;
 }
 
 // Questions

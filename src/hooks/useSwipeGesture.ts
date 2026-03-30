@@ -84,7 +84,8 @@ export function useSwipeGesture({
       if (pointerId.current !== null) return;
       pointerId.current = e.pointerId;
       containerRef.current = e.currentTarget;
-      e.currentTarget.setPointerCapture(e.pointerId);
+      // Don't setPointerCapture here — it blocks clicks on child elements.
+      // Capture is deferred to onPointerMove once horizontal axis is locked.
 
       startX.current = e.clientX;
       startY.current = e.clientY;
@@ -110,6 +111,8 @@ export function useSwipeGesture({
         axisLocked.current = absDx > absDy ? 'horizontal' : 'vertical';
         if (axisLocked.current === 'horizontal') {
           setIsDragging(true);
+          // Now capture pointer to prevent it leaving during drag
+          containerRef.current?.setPointerCapture(e.pointerId);
         }
       }
 

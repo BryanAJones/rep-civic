@@ -33,6 +33,7 @@ export function FeedPage() {
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
         setContainerWidth(entry.contentRect.width);
+        el.style.setProperty('--panel-height', `${entry.contentRect.height}px`);
       }
     });
     observer.observe(el);
@@ -90,7 +91,7 @@ export function FeedPage() {
   };
 
   return (
-    <>
+    <div className="feed-page">
       <LevelTabStrip
         tabs={tabs}
         progress={progress}
@@ -149,6 +150,6 @@ export function FeedPage() {
           />
         </div>
       )}
-    </>
+    </div>
   );
 }

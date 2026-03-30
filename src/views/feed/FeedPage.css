@@ -1,3 +1,12 @@
+/* Page wrapper — flex column to constrain carousel height */
+.feed-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
 /* Carousel container — clips overflow, fills remaining height */
 .feed-carousel {
   flex: 1;
