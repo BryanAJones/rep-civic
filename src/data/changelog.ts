@@ -16,6 +16,16 @@ export interface ChangelogEntry {
  */
 export const changelog: ChangelogEntry[] = [
   {
+    version: '0.15',
+    date: '2026-03-30',
+    title: 'Live data from Supabase',
+    items: [
+      'App now reads candidates, videos, questions, and debates from Supabase',
+      'District resolution populates real candidate profiles for your address',
+      'Feedback submissions saved to the database',
+    ],
+  },
+  {
     version: '0.14',
     date: '2026-03-29',
     title: 'Real candidate data and district resolution',

@@ -204,8 +204,8 @@ Per-level scroll positions are preserved when swiping between levels. Empty leve
 
 | Phase | What ships | Status |
 |-------|-----------|--------|
-| B1 | Database schema, migrations, FEC + OpenStates data import, Geocodio swap | in-progress |
-| B2 | Real read queries via `SupabaseDataService`, swap out mock | planned |
+| B1 | Database schema, migrations, FEC + OpenStates data import, Geocodio swap | done |
+| B2 | Real read queries via `SupabaseDataService`, swap out mock | done |
 | B3 | Edge Functions for writes (questions, votes, feedback, Geocodio proxy) | planned |
 | B4 | Anonymous auth (device-based identity, vote dedup) | planned |
 | B5 | Magic link auth (constituents), candidate claim flow | planned |

@@ -209,11 +209,11 @@
 
 | # | Feature | Status | Notes |
 |---|---------|--------|-------|
-| B2-1 | Supabase client init (src/services/supabaseClient.ts) | planned | Anon key + project URL from env vars |
-| B2-2 | SupabaseDataService (src/services/supabaseService.ts) | planned | Implements DataService for all 9 read methods |
-| B2-3 | Swap service export from mock to real | planned | One-line change in src/services/index.ts |
-| B2-4 | getFeedVideos with candidate/district joins | planned | Most complex read query |
-| B2-5 | getDebateChain with nodes + participants | planned | Nested join query |
+| B2-1 | Supabase client init (src/services/supabaseClient.ts) | done | Anon key + project URL from env vars |
+| B2-2 | SupabaseDataService (src/services/supabaseService.ts) | done | Implements DataService for all read methods + temporary client writes |
+| B2-3 | Swap service export from mock to real | done | One-line change in src/services/index.ts |
+| B2-4 | getFeedVideos with candidate/district joins | done | Multi-query with denormalized candidateName, candidateOffice, districtLevel |
+| B2-5 | getDebateChain with nodes + participants | done | Parallel fetch of chain_nodes + chain_participants |
 
 ## Backend — Phase B3: Write API (Edge Functions)
 

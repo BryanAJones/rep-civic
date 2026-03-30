@@ -350,11 +350,11 @@ interface DataService {
 
 **`mockData.ts`** — Complete static implementation matching wireframe content. Used during development and as the test double.
 
-**`supabaseService.ts`** (planned) — Real implementation backed by Supabase. Reads use the Supabase client with RLS. Writes call Edge Functions.
+**`supabaseService.ts`** — Real implementation backed by Supabase. Reads use the Supabase client with RLS. Writes are temporary client-side inserts until Edge Functions (B3).
 
-**`supabaseClient.ts`** (planned) — Initializes the Supabase client with anon key and project URL from `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` env vars.
+**`supabaseClient.ts`** — Initializes the Supabase client with anon key and project URL from `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` env vars.
 
-**`civicApi.ts`** — Implements only `resolveDistricts`. Maps Google Civic API response to `District[]`. Will be replaced by an Edge Function proxy in Phase B3.
+**`civicApi.ts`** — Implements `resolveDistricts` via Geocodio API. Maps response to `District[]`. Will be replaced by an Edge Function proxy in Phase B3.
 
 **`services/index.ts`** — Exports a single `service` instance. Swap implementation here without touching any component.
 

@@ -5,6 +5,19 @@
 
 ---
 
+## Backend Phase B2 — Real Read API
+**Commit:** pending | **Status:** Shipped
+
+- Created `supabaseClient.ts` — typed Supabase client init from env vars
+- Created `supabaseService.ts` — implements full DataService interface against Supabase
+- Swapped service export from mockService to supabaseService in `index.ts`
+- `getFeedVideos` queries candidates by district code, fetches videos, denormalizes candidate name/office/level
+- `getDebateChain` uses parallel fetch for chain_nodes + chain_participants
+- Write methods (submitQuestion, voteQuestion, submitFeedback) use temporary client-side inserts until Edge Functions (B3)
+- All 110 tests pass
+
+---
+
 ## Backend Phase B1 — Schema, Data Import, Geocodio Swap
 **Commit:** pending | **Status:** Shipped
 
