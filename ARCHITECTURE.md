@@ -361,10 +361,10 @@ interface DataService {
 **Enforcement:** No component should ever import from `civicApi.ts` or `supabaseClient.ts` directly. All data access goes through the `service` singleton. Enforce with ESLint `no-restricted-imports`.
 
 **Edge Functions (Deno, in `supabase/functions/`):**
-- `submit-question` — validates candidateId, derives authorHandle from session, inserts question
-- `vote-question` — INSERT with ON CONFLICT DO NOTHING + atomic count increment
-- `submit-feedback` — simple insert
-- `proxy-civic-api` — proxies Google Civic API with server-side key
+- `submit-question` — validates candidateId existence, enforces 280-char limit, inserts with service_role. authorHandle = @anonymous until B4.
+- `vote-question` — INSERT vote record (ON CONFLICT = 409 already voted), atomic increment via `increment_plus_one` RPC. Solves S-7.
+- `submit-feedback` — validated insert (category check, text 2000 chars, email 254 chars)
+- `proxy-geocodio` — proxies Geocodio API with server-side GEOCODIO_API_KEY secret, address validation (200 chars). Solves S-17.
 
 ---
 

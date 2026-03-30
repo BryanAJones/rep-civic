@@ -63,7 +63,7 @@ function codeFromOcdId(ocdId: string): string {
     .toUpperCase();
 }
 
-function mapGeocodioResponse(data: GeocodioResponse): District[] {
+export function mapGeocodioResponse(data: GeocodioResponse): District[] {
   const topResult = data.results?.[0];
   if (!topResult?.fields) return [];
 

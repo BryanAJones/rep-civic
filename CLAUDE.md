@@ -206,7 +206,7 @@ Per-level scroll positions are preserved when swiping between levels. Empty leve
 |-------|-----------|--------|
 | B1 | Database schema, migrations, FEC + OpenStates data import, Geocodio swap | done |
 | B2 | Real read queries via `SupabaseDataService`, swap out mock | done |
-| B3 | Edge Functions for writes (questions, votes, feedback, Geocodio proxy) | planned |
+| B3 | Edge Functions for writes (questions, votes, feedback, Geocodio proxy) | done |
 | B4 | Anonymous auth (device-based identity, vote dedup) | planned |
 | B5 | Magic link auth (constituents), candidate claim flow | planned |
 
@@ -224,10 +224,13 @@ Per-level scroll positions are preserved when swiping between levels. Empty leve
 
 **District resolution:** Geocodio geocode API with `fields=cd,stateleg`. Replaces Google Civic Information API (shut down April 2025). Same OCD-ID based district codes. Free tier: 2,500 lookups/day.
 
-**Environment variables (when backend is active):**
+**Environment variables (client, in `.env`):**
 - `VITE_SUPABASE_URL` — Supabase project URL
 - `VITE_SUPABASE_ANON_KEY` — Supabase anonymous/public key
-- `VITE_GEOCODIO_API_KEY` — Geocodio API key (free tier, 2500/day; moves to Edge Function secret in B3)
+
+**Supabase Edge Function secrets (set via `supabase secrets set`):**
+- `GEOCODIO_API_KEY` — Geocodio API key (free tier, 2500/day). Used by proxy-geocodio function.
+- `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` — auto-injected by Supabase runtime.
 
 ## Key Product Decisions
 

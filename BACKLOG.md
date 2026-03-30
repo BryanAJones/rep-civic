@@ -134,7 +134,7 @@
 
 | # | Item | Status | Gates |
 |---|------|--------|-------|
-| S-1 | Restrict Civic API key to production domain (Google Cloud Console) | planned | Any deploy |
+| S-1 | Restrict Geocodio API key to production domain | planned | Any deploy |
 | S-2 | maxLength on QuestionInput (280) and address input (200) | done | Any deploy |
 | S-3 | Guard localStorage against session tokens + validate districts shape | done | Constituent auth |
 | S-4 | Deprecate registeredAddress in UserProfile (do not persist server-side) | done | Real backend |
@@ -145,7 +145,7 @@
 | # | Item | Status | Gates |
 |---|------|--------|-------|
 | S-6 | Choose and document session mechanism (magic link vs OAuth) | planned | Constituent auth |
-| S-7 | Server-side vote deduplication on (userId, questionId) | planned | Real-time voting |
+| S-7 | Server-side vote deduplication on (userId, questionId) | done | Real-time voting — implemented via ON CONFLICT in vote-question Edge Function (B3-2) |
 | S-8 | Handle reservation policy (block candidate-name squatting) | planned | Constituent auth |
 | S-9 | Content-Security-Policy headers on HTML responses | planned | Any auth feature |
 
@@ -170,7 +170,7 @@
 
 | # | Item | Status | Gates |
 |---|------|--------|-------|
-| S-17 | Backend proxy for Civic API (remove key from client) | planned | Real backend |
+| S-17 | Backend proxy for Geocodio API (remove key from client) | done | Solved by proxy-geocodio Edge Function (B3-4). Key is now a Supabase secret. |
 | S-18 | Rate-limit question submission | planned | Real backend |
 | S-19 | Audit log for candidate state transitions | planned | Candidate auth |
 | S-22 | Question relevance validation in submit-question Edge Function | planned | Real backend (B3-1) |
@@ -219,11 +219,11 @@
 
 | # | Feature | Status | Notes |
 |---|---------|--------|-------|
-| B3-1 | Edge Function: submit-question | planned | Server-side candidateId derivation, authorHandle assignment, relevance validation (S-22, S-23) |
-| B3-2 | Edge Function: vote-question | planned | Transaction + ON CONFLICT dedup (solves S-7) |
-| B3-3 | Edge Function: submit-feedback | planned | Simple insert |
-| B3-4 | Edge Function: proxy-civic-api | planned | Server-side API key, solves S-17 |
-| B3-5 | CORS configuration for Edge Functions | planned | Required for client → function calls |
+| B3-1 | Edge Function: submit-question | done | Server-side insert via service_role, text length validation (280 chars), candidate existence check. authorHandle = @anonymous until B4. Relevance validation (S-22, S-23) deferred. |
+| B3-2 | Edge Function: vote-question | done | Insert vote record with ON CONFLICT dedup (solves S-7), atomic increment via increment_plus_one RPC. Migration added. |
+| B3-3 | Edge Function: submit-feedback | done | Validated insert with category check, text length (2000), email length (254) |
+| B3-4 | Edge Function: proxy-geocodio | done | Server-side Geocodio API key via GEOCODIO_API_KEY secret, address length validation (200). Solves S-17. |
+| B3-5 | CORS configuration for Edge Functions | done | Uses @supabase/supabase-js/cors built-in corsHeaders. No shared file needed. |
 
 ## Backend — Phase B4: Anonymous Identity
 

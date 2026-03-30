@@ -1,5 +1,5 @@
 import { supabase } from './supabaseClient';
-import { resolveDistricts as geocodioResolve } from './civicApi';
+import { mapGeocodioResponse } from './civicApi';
 import type { DataService } from './dataService';
 import type {
   Candidate,
@@ -143,8 +143,13 @@ function mapQuestion(row: {
 // ── Service implementation ──────────────────────────────────
 
 export const supabaseService: DataService = {
-  resolveDistricts(address: string): Promise<District[]> {
-    return geocodioResolve(address);
+  async resolveDistricts(address: string): Promise<District[]> {
+    const { data, error } = await supabase.functions.invoke('proxy-geocodio', {
+      body: { address },
+    });
+
+    if (error) throw error;
+    return mapGeocodioResponse(data);
   },
 
   async getFeedVideos(
@@ -250,51 +255,30 @@ export const supabaseService: DataService = {
     return (data ?? []).map(mapQuestion);
   },
 
-  // TEMPORARY: Client-side write until Edge Functions (B3)
   async submitQuestion(
     candidateId: CandidateId,
     videoId: VideoId | null,
     text: string,
     topicId?: string,
   ): Promise<Question> {
-    const { data, error } = await supabase
-      .from('questions')
-      .insert({
-        candidate_id: candidateId,
-        video_id: videoId,
-        text,
-        topic_id: topicId ?? null,
-        author_handle: '@anonymous',
-        plus_one_count: 1,
-        state: 'default',
-      })
-      .select()
-      .single();
+    const { data, error } = await supabase.functions.invoke('submit-question', {
+      body: { candidateId, videoId, text, topicId },
+    });
 
     if (error) throw error;
     return mapQuestion(data);
   },
 
-  // TEMPORARY: Client-side write until Edge Functions (B3)
   async voteQuestion(questionId: QuestionId): Promise<{ newCount: number }> {
-    // Read current count
-    const { data: current, error: readErr } = await supabase
-      .from('questions')
-      .select('plus_one_count')
-      .eq('id', questionId)
-      .single();
+    // userId is a placeholder until anonymous auth (B4)
+    const userId = crypto.randomUUID();
 
-    if (readErr) throw readErr;
+    const { data, error } = await supabase.functions.invoke('vote-question', {
+      body: { questionId, userId },
+    });
 
-    const newCount = (current?.plus_one_count ?? 0) + 1;
-
-    const { error: updateErr } = await supabase
-      .from('questions')
-      .update({ plus_one_count: newCount })
-      .eq('id', questionId);
-
-    if (updateErr) throw updateErr;
-    return { newCount };
+    if (error) throw error;
+    return { newCount: data.newCount };
   },
 
   async getCandidate(candidateId: CandidateId): Promise<Candidate> {
@@ -437,23 +421,15 @@ export const supabaseService: DataService = {
     return (data ?? []).map(mapVideo);
   },
 
-  // TEMPORARY: Client-side write until Edge Functions (B3)
   async submitFeedback(feedback: {
     text: string;
     category: 'bug' | 'feature' | 'general';
     email?: string;
     page: string;
   }): Promise<{ id: string }> {
-    const { data, error } = await supabase
-      .from('feedback')
-      .insert({
-        text: feedback.text,
-        category: feedback.category,
-        email: feedback.email ?? null,
-        page: feedback.page,
-      })
-      .select('id')
-      .single();
+    const { data, error } = await supabase.functions.invoke('submit-feedback', {
+      body: feedback,
+    });
 
     if (error) throw error;
     return { id: data.id };

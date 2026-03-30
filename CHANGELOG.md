@@ -5,6 +5,21 @@
 
 ---
 
+## Backend Phase B3 — Write API (Edge Functions)
+**Commit:** pending | **Status:** Shipped
+
+- Created 4 Supabase Edge Functions (Deno): submit-question, vote-question, submit-feedback, proxy-geocodio
+- submit-question: server-side insert with text length validation (280), candidate existence check, service_role auth
+- vote-question: ON CONFLICT dedup (solves S-7) + atomic increment via `increment_plus_one` SQL RPC
+- submit-feedback: validated insert with category/text/email checks
+- proxy-geocodio: server-side Geocodio API key (solves S-17), address validation (200 chars)
+- Added migration for `increment_plus_one` RPC function
+- Updated supabaseService.ts to call Edge Functions via `supabase.functions.invoke()` for all writes + district resolution
+- CORS handled via `@supabase/supabase-js/cors` built-in (no shared file needed)
+- All 110 tests pass
+
+---
+
 ## Backend Phase B2 — Real Read API
 **Commit:** pending | **Status:** Shipped
 

@@ -16,6 +16,16 @@ export interface ChangelogEntry {
  */
 export const changelog: ChangelogEntry[] = [
   {
+    version: '0.16',
+    date: '2026-03-30',
+    title: 'Server-side writes and API security',
+    items: [
+      'Questions, votes, and feedback now processed through secure server functions',
+      'Vote deduplication prevents double-counting',
+      'District lookup API key moved server-side',
+    ],
+  },
+  {
     version: '0.15',
     date: '2026-03-30',
     title: 'Live data from Supabase',
