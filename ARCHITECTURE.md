@@ -365,6 +365,7 @@ interface DataService {
 - `vote-question` — INSERT vote record (ON CONFLICT = 409 already voted), atomic increment via `increment_plus_one` RPC. Solves S-7.
 - `submit-feedback` — validated insert (category check, text 2000 chars, email 254 chars)
 - `proxy-geocodio` — proxies Geocodio API with server-side GEOCODIO_API_KEY secret, address validation (200 chars). Solves S-17.
+- `claim-candidate` — write-once candidate claim. Requires non-anonymous auth (email verified). Checks candidate is unclaimed, inserts into candidate_claims, transitions status to claimed.
 
 ---
 

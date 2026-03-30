@@ -12,6 +12,8 @@ interface UserState {
   votedQuestionIds: Set<QuestionId>;
   authUserId: string | null;
   handle: string | null;
+  email: string | null;
+  isAnonymous: boolean;
   authReady: boolean;
 }
 
@@ -19,7 +21,16 @@ type UserAction =
   | { type: 'COMPLETE_ONBOARDING'; districts: District[] }
   | { type: 'VOTE_QUESTION'; questionId: QuestionId }
   | { type: 'UNVOTE_QUESTION'; questionId: QuestionId }
-  | { type: 'AUTH_READY'; userId: string; handle: string | null; votedQuestionIds: Set<QuestionId> }
+  | {
+      type: 'AUTH_READY';
+      userId: string;
+      handle: string | null;
+      email: string | null;
+      isAnonymous: boolean;
+      votedQuestionIds: Set<QuestionId>;
+    }
+  | { type: 'AUTH_UPGRADED'; email: string; handle: string }
+  | { type: 'HANDLE_UPDATED'; handle: string }
   | { type: 'RESET' };
 
 const STORAGE_KEY = 'rep_user_state';
@@ -49,8 +60,6 @@ function loadFromStorage(): Partial<UserState> {
     return {
       hasCompletedOnboarding,
       districts,
-      // votedQuestionIds loaded from localStorage as a fallback cache
-      // until auth is ready and we hydrate from question_votes table
       votedQuestionIds: new Set(
         Array.isArray(parsed.votedQuestionIds)
           ? parsed.votedQuestionIds.filter((id: unknown) => typeof id === 'string')
@@ -85,6 +94,8 @@ const initialState: UserState = {
   votedQuestionIds: stored.votedQuestionIds ?? new Set(),
   authUserId: null,
   handle: null,
+  email: null,
+  isAnonymous: true,
   authReady: false,
 };
 
@@ -116,9 +127,24 @@ function userReducer(state: UserState, action: UserAction): UserState {
         ...state,
         authUserId: action.userId,
         handle: action.handle,
-        // Merge server votes with any localStorage cache
+        email: action.email,
+        isAnonymous: action.isAnonymous,
         votedQuestionIds: new Set([...state.votedQuestionIds, ...action.votedQuestionIds]),
         authReady: true,
+      };
+      break;
+    case 'AUTH_UPGRADED':
+      next = {
+        ...state,
+        email: action.email,
+        handle: action.handle,
+        isAnonymous: false,
+      };
+      break;
+    case 'HANDLE_UPDATED':
+      next = {
+        ...state,
+        handle: action.handle,
       };
       break;
     case 'RESET':
@@ -128,6 +154,8 @@ function userReducer(state: UserState, action: UserAction): UserState {
         votedQuestionIds: new Set(),
         authUserId: null,
         handle: null,
+        email: null,
+        isAnonymous: true,
         authReady: false,
       };
       break;
@@ -155,14 +183,14 @@ export function UserProvider({ children }: { children: ReactNode }) {
       const userId = await ensureAnonymousSession();
       if (cancelled || !userId) return;
 
-      // Fetch user handle from user_profiles
+      // Fetch user profile
       const { data: profile } = await supabase
         .from('user_profiles')
-        .select('handle')
+        .select('handle, email, is_anonymous')
         .eq('id', userId)
         .single();
 
-      // Fetch voted question IDs from question_votes
+      // Fetch voted question IDs
       const { data: votes } = await supabase
         .from('question_votes')
         .select('question_id')
@@ -177,6 +205,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
           type: 'AUTH_READY',
           userId,
           handle: profile?.handle ?? null,
+          email: profile?.email ?? null,
+          isAnonymous: profile?.is_anonymous ?? true,
           votedQuestionIds: serverVotes,
         });
       }
@@ -184,6 +214,31 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
     init();
     return () => { cancelled = true; };
+  }, []);
+
+  // Listen for auth state changes (magic link callback)
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user && !session.user.is_anonymous) {
+          // User upgraded from anonymous to authenticated via magic link
+          const { data: profile } = await supabase
+            .from('user_profiles')
+            .select('handle')
+            .eq('id', session.user.id)
+            .single();
+
+          dispatch({
+            type: 'AUTH_UPGRADED',
+            email: session.user.email ?? '',
+            handle: profile?.handle ?? state.handle ?? '',
+          });
+        }
+      },
+    );
+
+    return () => { subscription.unsubscribe(); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

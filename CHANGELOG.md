@@ -5,6 +5,19 @@
 
 ---
 
+## Backend Phase B5 — Real Auth + Candidate Claims
+**Commit:** pending | **Status:** Shipped
+
+- Migration: candidate_claims table (write-once, UNIQUE on candidate_id), user_profiles gains email + is_anonymous columns
+- authService.ts: sendMagicLink (signInWithOtp), updateHandle (pattern validation + unique check), getAuthStatus
+- UserContext: AUTH_UPGRADED + HANDLE_UPDATED actions, onAuthStateChange listener for magic link callback
+- claim-candidate Edge Function: verifies non-anonymous auth, checks candidate is unclaimed, write-once insert, transitions status to claimed
+- YouPage wired to live auth state: shows handle/email/status, magic link upgrade CTA, inline handle editing
+- upgrade_user_profile SQL function for anonymous → authenticated transition
+- All 110 tests pass
+
+---
+
 ## Backend Phase B4 — Anonymous Identity
 **Commit:** pending | **Status:** Shipped
 

@@ -16,6 +16,16 @@ export interface ChangelogEntry {
  */
 export const changelog: ChangelogEntry[] = [
   {
+    version: '0.18',
+    date: '2026-03-30',
+    title: 'Email sign-in and candidate claims',
+    items: [
+      'Verify your email to keep your account across devices',
+      'Choose a custom handle after email verification',
+      'Candidates can claim their auto-generated profiles',
+    ],
+  },
+  {
     version: '0.17',
     date: '2026-03-30',
     title: 'Anonymous identity and vote tracking',

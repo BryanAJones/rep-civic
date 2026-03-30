@@ -208,7 +208,7 @@ Per-level scroll positions are preserved when swiping between levels. Empty leve
 | B2 | Real read queries via `SupabaseDataService`, swap out mock | done |
 | B3 | Edge Functions for writes (questions, votes, feedback, Geocodio proxy) | done |
 | B4 | Anonymous auth (device-based identity, vote dedup) | done |
-| B5 | Magic link auth (constituents), candidate claim flow | planned |
+| B5 | Magic link auth (constituents), candidate claim flow | done |
 
 **Service layer swap:** The `DataService` interface in `src/services/dataService.ts` is the contract. The swap happens in `src/services/index.ts` — change the export from `mockService` to `supabaseService`. No other files change.
 

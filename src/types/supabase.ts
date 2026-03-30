@@ -309,20 +309,61 @@ export type Database = {
           },
         ]
       }
+      candidate_claims: {
+        Row: {
+          id: string
+          candidate_id: string
+          user_id: string
+          claimed_at: string
+          verification_method: string | null
+          verified_at: string | null
+        }
+        Insert: {
+          id?: string
+          candidate_id: string
+          user_id: string
+          claimed_at?: string
+          verification_method?: string | null
+          verified_at?: string | null
+        }
+        Update: {
+          id?: string
+          candidate_id?: string
+          user_id?: string
+          claimed_at?: string
+          verification_method?: string | null
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidate_claims_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: true
+            referencedRelation: "candidates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_profiles: {
         Row: {
           id: string
           handle: string
+          email: string | null
+          is_anonymous: boolean
           created_at: string
         }
         Insert: {
           id: string
           handle: string
+          email?: string | null
+          is_anonymous?: boolean
           created_at?: string
         }
         Update: {
           id?: string
           handle?: string
+          email?: string | null
+          is_anonymous?: boolean
           created_at?: string
         }
         Relationships: []

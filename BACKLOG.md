@@ -144,7 +144,7 @@
 
 | # | Item | Status | Gates |
 |---|------|--------|-------|
-| S-6 | Choose and document session mechanism (magic link vs OAuth) | planned | Constituent auth |
+| S-6 | Choose and document session mechanism (magic link vs OAuth) | done | Magic link (signInWithOtp). Anonymous → authenticated upgrade preserves user data. |
 | S-7 | Server-side vote deduplication on (userId, questionId) | done | Real-time voting — implemented via ON CONFLICT in vote-question Edge Function (B3-2) |
 | S-8 | Handle reservation policy (block candidate-name squatting) | planned | Constituent auth |
 | S-9 | Content-Security-Policy headers on HTML responses | planned | Any auth feature |
@@ -153,10 +153,10 @@
 
 | # | Item | Status | Gates |
 |---|------|--------|-------|
-| S-10 | Claim verification ceremony spec (highest-risk item) | planned | Candidate claim flow |
-| S-11 | Separate candidate and constituent auth contexts | planned | Candidate auth |
+| S-10 | Claim verification ceremony spec (highest-risk item) | done | v1: self-attestation with email verification required. verification_method + verified_at columns for future ceremony upgrade. |
+| S-11 | Separate candidate and constituent auth contexts | done | Anonymous = constituent only. Non-anonymous (email verified) = eligible to claim. |
 | S-12 | Server derives candidateId from session on candidate writes | planned | Candidate auth |
-| S-13 | Write-once ownership table on candidate claim | planned | Candidate claim flow |
+| S-13 | Write-once ownership table on candidate claim | done | candidate_claims table with UNIQUE on candidate_id. One claim per user enforced in Edge Function. |
 
 ### Tier 4 — Before Real-Time Voting
 
@@ -238,11 +238,11 @@
 
 | # | Feature | Status | Notes |
 |---|---------|--------|-------|
-| B5-1 | Constituent auth: magic link (signInWithOtp) | planned | Anonymous → authenticated upgrade preserves data |
-| B5-2 | Custom handle selection after auth upgrade | planned | Unique constraint on user_profiles.handle |
-| B5-3 | candidate_claims table + claim flow | planned | Write-once ownership, verification ceremony (solves S-10, S-13) |
-| B5-4 | Candidate status transition on verified claim | planned | unclaimed → claimed state machine |
-| B5-5 | Separate candidate/constituent auth contexts | planned | Solves S-11 |
+| B5-1 | Constituent auth: magic link (signInWithOtp) | done | authService.ts sendMagicLink, onAuthStateChange listener upgrades anonymous → authenticated |
+| B5-2 | Custom handle selection after auth upgrade | done | authService.ts updateHandle with @pattern validation + unique constraint. Edit UI on YouPage. |
+| B5-3 | candidate_claims table + claim flow | done | Write-once ownership via claim-candidate Edge Function. Self-attestation verification method. Solves S-13. |
+| B5-4 | Candidate status transition on verified claim | done | Edge Function transitions unclaimed → claimed with guard clause |
+| B5-5 | Separate candidate/constituent auth contexts | done | Candidates must be non-anonymous (email verified) to claim. Anonymous users are constituents only. Solves S-11. |
 
 ---
 
