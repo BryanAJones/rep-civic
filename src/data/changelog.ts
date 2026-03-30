@@ -16,6 +16,16 @@ export interface ChangelogEntry {
  */
 export const changelog: ChangelogEntry[] = [
   {
+    version: '0.17',
+    date: '2026-03-30',
+    title: 'Anonymous identity and vote tracking',
+    items: [
+      'Automatic anonymous sign-in on first visit',
+      'Your votes are now tracked across sessions',
+      'Each user gets a unique handle (@voter_ prefix)',
+    ],
+  },
+  {
     version: '0.16',
     date: '2026-03-30',
     title: 'Server-side writes and API security',

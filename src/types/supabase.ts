@@ -309,6 +309,24 @@ export type Database = {
           },
         ]
       }
+      user_profiles: {
+        Row: {
+          id: string
+          handle: string
+          created_at: string
+        }
+        Insert: {
+          id: string
+          handle: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          handle?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       questions: {
         Row: {
           answer_video_id: string | null

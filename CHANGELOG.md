@@ -5,6 +5,20 @@
 
 ---
 
+## Backend Phase B4 — Anonymous Identity
+**Commit:** pending | **Status:** Shipped
+
+- Migration: user_profiles table with auto-create trigger (handle = @voter_<short_id>)
+- Enabled anonymous sign-ins in Supabase config
+- supabaseClient.ts: ensureAnonymousSession() — signs in anonymously if no session exists
+- UserContext: AUTH_READY action hydrates userId, handle, and votedQuestionIds from server
+- vote-question Edge Function now derives userId from auth JWT instead of client param
+- RLS: question_votes INSERT requires auth.uid() = user_id, SELECT limited to own votes
+- user_profiles readable by all, updatable only by owner
+- All 110 tests pass
+
+---
+
 ## Backend Phase B3 — Write API (Edge Functions)
 **Commit:** pending | **Status:** Shipped
 

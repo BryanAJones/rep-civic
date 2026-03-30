@@ -229,10 +229,10 @@
 
 | # | Feature | Status | Notes |
 |---|---------|--------|-------|
-| B4-1 | Enable Supabase anonymous auth | planned | signInAnonymously() on client init |
-| B4-2 | user_profiles table + auto-create trigger | planned | handle auto-generated as @voter_<short_id> |
-| B4-3 | RLS: question_votes INSERT requires auth.uid() match | planned | Server-side vote ownership enforcement |
-| B4-4 | Sync UserContext with Supabase auth state | planned | Migrate localStorage votedQuestionIds |
+| B4-1 | Enable Supabase anonymous auth | done | signInAnonymously() on app init, session persists via localStorage |
+| B4-2 | user_profiles table + auto-create trigger | done | handle auto-generated as @voter_<short_id> on auth.users insert |
+| B4-3 | RLS: question_votes INSERT requires auth.uid() match | done | INSERT WITH CHECK + SELECT USING on user_id = auth.uid() |
+| B4-4 | Sync UserContext with Supabase auth state | done | AUTH_READY action hydrates userId, handle, votedQuestionIds from server; merges with localStorage cache |
 
 ## Backend — Phase B5: Real Auth
 

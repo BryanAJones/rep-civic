@@ -311,7 +311,7 @@ interface DebateChain {
 
 **React Context + `useReducer`** for shared state, local `useState` for component-scoped state. No Redux/Zustand until complexity demands it.
 
-**UserContext** holds: `userProfile`, `districts`, `hasCompletedOnboarding`, `votedQuestionIds: Set<QuestionId>`. The voted set is cross-cutting — must be consistent whether a question appears in the feed drawer or the profile Q&A tab. Persisted to `localStorage`.
+**UserContext** holds: `districts`, `hasCompletedOnboarding`, `votedQuestionIds: Set<QuestionId>`, `authUserId`, `handle`, `authReady`. On mount, `ensureAnonymousSession()` signs in anonymously if needed, then `AUTH_READY` hydrates userId, handle (from `user_profiles`), and votedQuestionIds (from `question_votes`). Districts and onboarding state cached in localStorage; votes merged from server + localStorage.
 
 **FeedContext** holds: `activeVideoIndex`, `feedVideos`, `activeDrawerVideoId`.
 

@@ -37,7 +37,7 @@ Every code change that adds, removes, or modifies features, routes, components, 
 - **API:** Geocodio API for district resolution from address (free tier, 2500/day; will be proxied through Supabase Edge Function in B3)
 - **Backend:** Supabase (Postgres + Auth + Edge Functions). Supabase client for reads (with RLS), Edge Functions for all writes. See "Backend Architecture" section below.
 - **Database:** PostgreSQL via Supabase. Migrations in `supabase/migrations/`. Type generation via `supabase gen types typescript`.
-- **Auth (planned):** Supabase Auth — anonymous first (device-based), then magic link upgrade to real accounts.
+- **Auth:** Supabase Auth — anonymous sign-in on first visit (device-based), auto-generated handle (@voter_<short_id>). Magic link upgrade to real accounts planned (B5).
 - **State management:** React Context + `useReducer` (UserContext, FeedContext). No Redux/Zustand.
 - **Testing:** Vitest + React Testing Library (unit), Playwright + axe-core (e2e + a11y)
 
@@ -207,7 +207,7 @@ Per-level scroll positions are preserved when swiping between levels. Empty leve
 | B1 | Database schema, migrations, FEC + OpenStates data import, Geocodio swap | done |
 | B2 | Real read queries via `SupabaseDataService`, swap out mock | done |
 | B3 | Edge Functions for writes (questions, votes, feedback, Geocodio proxy) | done |
-| B4 | Anonymous auth (device-based identity, vote dedup) | planned |
+| B4 | Anonymous auth (device-based identity, vote dedup) | done |
 | B5 | Magic link auth (constituents), candidate claim flow | planned |
 
 **Service layer swap:** The `DataService` interface in `src/services/dataService.ts` is the contract. The swap happens in `src/services/index.ts` — change the export from `mockService` to `supabaseService`. No other files change.

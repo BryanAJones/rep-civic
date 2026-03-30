@@ -270,11 +270,9 @@ export const supabaseService: DataService = {
   },
 
   async voteQuestion(questionId: QuestionId): Promise<{ newCount: number }> {
-    // userId is a placeholder until anonymous auth (B4)
-    const userId = crypto.randomUUID();
-
+    // Auth header is automatically included by supabase.functions.invoke()
     const { data, error } = await supabase.functions.invoke('vote-question', {
-      body: { questionId, userId },
+      body: { questionId },
     });
 
     if (error) throw error;

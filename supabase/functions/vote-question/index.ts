@@ -7,7 +7,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { questionId, userId } = await req.json()
+    const { questionId } = await req.json()
 
     if (!questionId || typeof questionId !== 'string') {
       return new Response(
@@ -16,23 +16,40 @@ Deno.serve(async (req) => {
       )
     }
 
-    if (!userId || typeof userId !== 'string') {
+    // Create client with caller's auth context to get their user ID
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
       return new Response(
-        JSON.stringify({ error: 'userId is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        JSON.stringify({ error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       )
     }
 
+    const anonClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } },
+    )
+
+    // Get the authenticated user's ID
+    const { data: { user }, error: userErr } = await anonClient.auth.getUser()
+    if (userErr || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid authentication' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      )
+    }
+
+    // Use service_role for the write operations
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     )
 
-    // Atomic: insert vote record (ON CONFLICT = already voted) + increment count
-    // Step 1: Try to insert the vote record
+    // Step 1: Insert vote record (ON CONFLICT = already voted)
     const { error: voteErr } = await supabase
       .from('question_votes')
-      .insert({ user_id: userId, question_id: questionId })
+      .insert({ user_id: user.id, question_id: questionId })
 
     if (voteErr) {
       // 23505 = unique_violation (already voted)
@@ -45,37 +62,33 @@ Deno.serve(async (req) => {
       throw voteErr
     }
 
-    // Step 2: Atomic increment via RPC or raw SQL
-    // Use .rpc if available, otherwise update with subquery
-    const { data: updated, error: updateErr } = await supabase
+    // Step 2: Atomic increment via RPC
+    const { data: newCount, error: rpcErr } = await supabase
       .rpc('increment_plus_one', { qid: questionId })
 
-    if (updateErr) {
-      // If RPC doesn't exist yet, fall back to read-then-write
-      // (will be replaced by RPC after migration)
+    if (rpcErr) {
+      // Fallback if RPC not deployed yet
       const { data: current } = await supabase
         .from('questions')
         .select('plus_one_count')
         .eq('id', questionId)
         .single()
 
-      const newCount = (current?.plus_one_count ?? 0) + 1
+      const count = (current?.plus_one_count ?? 0) + 1
 
-      const { error: fallbackErr } = await supabase
+      await supabase
         .from('questions')
-        .update({ plus_one_count: newCount })
+        .update({ plus_one_count: count })
         .eq('id', questionId)
 
-      if (fallbackErr) throw fallbackErr
-
       return new Response(
-        JSON.stringify({ newCount }),
+        JSON.stringify({ newCount: count }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       )
     }
 
     return new Response(
-      JSON.stringify({ newCount: updated }),
+      JSON.stringify({ newCount }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
   } catch (err) {
