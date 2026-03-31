@@ -33,6 +33,29 @@ Deno.serve(async (req) => {
       )
     }
 
+    // Authenticate the caller
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      )
+    }
+
+    const anonClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } },
+    )
+
+    const { data: { user }, error: userErr } = await anonClient.auth.getUser()
+    if (userErr || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid authentication' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      )
+    }
+
     // Use service_role to bypass RLS for writes
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -53,8 +76,14 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Server-derived authorHandle — anonymous until auth (B4)
-    const authorHandle = '@anonymous'
+    // Derive handle from user_profiles
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('handle')
+      .eq('id', user.id)
+      .single()
+
+    const authorHandle = profile?.handle ?? '@anonymous'
 
     const { data, error } = await supabase
       .from('questions')

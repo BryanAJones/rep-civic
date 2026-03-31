@@ -5,6 +5,25 @@
 
 ---
 
+## Security Fixes + Backend Deployment
+**Commit:** pending | **Status:** Shipped
+
+- Migration: security_fixes.sql — 4 SQL-level fixes identified during pre-deploy review
+- Dropped blanket "Public read: question_votes" RLS policy (conflicted with per-user policy from B4, leaked all votes)
+- REVOKE EXECUTE on increment_plus_one from anon/authenticated (prevented direct RPC vote inflation)
+- Secured upgrade_user_profile: added auth.uid() check (prevented cross-user profile overwrite)
+- Added DB triggers: increment candidates.question_count on question insert, candidates.video_count on video insert
+- submit-question: now requires auth (JWT from Authorization header), derives authorHandle from user_profiles
+- vote-question: removed non-atomic fallback path (RPC is deployed, fallback had TOCTOU race)
+- civicApi.ts: removed client-side resolveDistricts (VITE_GEOCODIO_API_KEY no longer shipped in bundle)
+- useQuestions: submitQuestion now surfaces errors via setError instead of silently swallowing
+- UserContext: ensureAnonymousSession now throws on failure, AUTH_ERROR action + authError state field
+- Deployed 4 migrations to Supabase (increment_rpc, anonymous_auth, real_auth, security_fixes)
+- Deployed 5 Edge Functions (submit-question, vote-question, submit-feedback, proxy-geocodio, claim-candidate)
+- All 110 tests pass
+
+---
+
 ## Backend Phase B5 — Real Auth + Candidate Claims
 **Commit:** pending | **Status:** Shipped
 

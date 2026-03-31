@@ -1,34 +1,10 @@
 import type { District } from '../types/domain';
 
-const GEOCODIO_BASE = 'https://api.geocod.io/v1.7/geocode';
-
 /**
- * Resolve an address to districts using Geocodio.
- * Returns congressional districts + state legislative districts.
- * Free tier: 2,500 lookups/day.
+ * Client-side Geocodio calls are disabled — all district resolution
+ * goes through the proxy-geocodio Edge Function (keeps API key server-side).
+ * Only mapGeocodioResponse is exported from this module.
  */
-export async function resolveDistricts(address: string): Promise<District[]> {
-  const apiKey = import.meta.env.VITE_GEOCODIO_API_KEY;
-
-  if (!apiKey) {
-    console.warn('VITE_GEOCODIO_API_KEY not set — district resolution unavailable.');
-    return [];
-  }
-
-  const url = new URL(GEOCODIO_BASE);
-  url.searchParams.set('q', address);
-  url.searchParams.set('fields', 'cd,stateleg');
-  url.searchParams.set('api_key', apiKey);
-
-  const response = await fetch(url.toString());
-
-  if (!response.ok) {
-    throw new Error(`Geocodio API error: ${response.status} ${response.statusText}`);
-  }
-
-  const data: GeocodioResponse = await response.json();
-  return mapGeocodioResponse(data);
-}
 
 // ── Geocodio response types ──────────────────────────────────
 

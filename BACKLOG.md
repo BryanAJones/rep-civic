@@ -134,7 +134,7 @@
 
 | # | Item | Status | Gates |
 |---|------|--------|-------|
-| S-1 | Restrict Geocodio API key to production domain | planned | Any deploy |
+| S-1 | Restrict Geocodio API key to production domain | done | Client-side resolveDistricts removed; all calls go through proxy-geocodio Edge Function. VITE_GEOCODIO_API_KEY removed from .env. |
 | S-2 | maxLength on QuestionInput (280) and address input (200) | done | Any deploy |
 | S-3 | Guard localStorage against session tokens + validate districts shape | done | Constituent auth |
 | S-4 | Deprecate registeredAddress in UserProfile (do not persist server-side) | done | Real backend |
@@ -183,6 +183,16 @@
 | S-20 | Vote rollback: UNVOTE_QUESTION in UserContext on failed vote | done | usePlusOne catch block now dispatches rollback |
 | S-21 | candidateId hardcoded to '' in useQuestions.submitQuestion | planned | Thread candidateId from video through to hook |
 
+## Backend Deployment
+
+| # | Step | Status | Notes |
+|---|------|--------|-------|
+| D-1 | Push migrations to Supabase (4 files) | done | initial_schema, increment_rpc, anonymous_auth, real_auth + security_fixes |
+| D-2 | Deploy Edge Functions (5 functions) | done | submit-question, vote-question, submit-feedback, proxy-geocodio, claim-candidate |
+| D-3 | Set GEOCODIO_API_KEY secret | planned | `npx supabase secrets set GEOCODIO_API_KEY=<key>` |
+| D-4 | Enable anonymous sign-ins in Supabase Dashboard | planned | Dashboard > Auth > Providers > Anonymous Sign-Ins |
+| D-5 | Pre-deploy security fixes (migration) | done | RLS fix on question_votes, REVOKE on increment_plus_one, secure upgrade_user_profile, counter triggers |
+
 ---
 
 ## Backend — Phase B1: Database Schema + Data Import
@@ -219,8 +229,8 @@
 
 | # | Feature | Status | Notes |
 |---|---------|--------|-------|
-| B3-1 | Edge Function: submit-question | done | Server-side insert via service_role, text length validation (280 chars), candidate existence check. authorHandle = @anonymous until B4. Relevance validation (S-22, S-23) deferred. |
-| B3-2 | Edge Function: vote-question | done | Insert vote record with ON CONFLICT dedup (solves S-7), atomic increment via increment_plus_one RPC. Migration added. |
+| B3-1 | Edge Function: submit-question | done | Server-side insert via service_role, text length validation (280 chars), candidate existence check, auth required (derives handle from user_profiles). Relevance validation (S-22, S-23) deferred. |
+| B3-2 | Edge Function: vote-question | done | Insert vote record with ON CONFLICT dedup (solves S-7), atomic increment via increment_plus_one RPC. Fallback path removed; RPC required. |
 | B3-3 | Edge Function: submit-feedback | done | Validated insert with category check, text length (2000), email length (254) |
 | B3-4 | Edge Function: proxy-geocodio | done | Server-side Geocodio API key via GEOCODIO_API_KEY secret, address length validation (200). Solves S-17. |
 | B3-5 | CORS configuration for Edge Functions | done | Uses @supabase/supabase-js/cors built-in corsHeaders. No shared file needed. |

@@ -66,26 +66,7 @@ Deno.serve(async (req) => {
     const { data: newCount, error: rpcErr } = await supabase
       .rpc('increment_plus_one', { qid: questionId })
 
-    if (rpcErr) {
-      // Fallback if RPC not deployed yet
-      const { data: current } = await supabase
-        .from('questions')
-        .select('plus_one_count')
-        .eq('id', questionId)
-        .single()
-
-      const count = (current?.plus_one_count ?? 0) + 1
-
-      await supabase
-        .from('questions')
-        .update({ plus_one_count: count })
-        .eq('id', questionId)
-
-      return new Response(
-        JSON.stringify({ newCount: count }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-      )
-    }
+    if (rpcErr) throw rpcErr
 
     return new Response(
       JSON.stringify({ newCount }),

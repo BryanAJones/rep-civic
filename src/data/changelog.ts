@@ -16,6 +16,17 @@ export interface ChangelogEntry {
  */
 export const changelog: ChangelogEntry[] = [
   {
+    version: '0.19',
+    date: '2026-03-30',
+    title: 'Backend deployed and security hardened',
+    items: [
+      'Database and server functions deployed to production',
+      'Security review: vote privacy, auth enforcement, and API key protection',
+      'Questions now require sign-in and display your handle',
+      'Error messages surfaced when submissions fail',
+    ],
+  },
+  {
     version: '0.18',
     date: '2026-03-30',
     title: 'Email sign-in and candidate claims',

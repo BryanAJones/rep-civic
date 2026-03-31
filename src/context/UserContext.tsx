@@ -15,6 +15,7 @@ interface UserState {
   email: string | null;
   isAnonymous: boolean;
   authReady: boolean;
+  authError: string | null;
 }
 
 type UserAction =
@@ -31,6 +32,7 @@ type UserAction =
     }
   | { type: 'AUTH_UPGRADED'; email: string; handle: string }
   | { type: 'HANDLE_UPDATED'; handle: string }
+  | { type: 'AUTH_ERROR'; error: string }
   | { type: 'RESET' };
 
 const STORAGE_KEY = 'rep_user_state';
@@ -97,6 +99,7 @@ const initialState: UserState = {
   email: null,
   isAnonymous: true,
   authReady: false,
+  authError: null,
 };
 
 function userReducer(state: UserState, action: UserAction): UserState {
@@ -147,6 +150,13 @@ function userReducer(state: UserState, action: UserAction): UserState {
         handle: action.handle,
       };
       break;
+    case 'AUTH_ERROR':
+      next = {
+        ...state,
+        authError: action.error,
+        authReady: true,
+      };
+      break;
     case 'RESET':
       next = {
         hasCompletedOnboarding: false,
@@ -157,6 +167,7 @@ function userReducer(state: UserState, action: UserAction): UserState {
         email: null,
         isAnonymous: true,
         authReady: false,
+        authError: null,
       };
       break;
     default:
@@ -180,35 +191,44 @@ export function UserProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
 
     async function init() {
-      const userId = await ensureAnonymousSession();
-      if (cancelled || !userId) return;
+      try {
+        const userId = await ensureAnonymousSession();
+        if (cancelled) return;
 
-      // Fetch user profile
-      const { data: profile } = await supabase
-        .from('user_profiles')
-        .select('handle, email, is_anonymous')
-        .eq('id', userId)
-        .single();
+        // Fetch user profile
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('handle, email, is_anonymous')
+          .eq('id', userId)
+          .single();
 
-      // Fetch voted question IDs
-      const { data: votes } = await supabase
-        .from('question_votes')
-        .select('question_id')
-        .eq('user_id', userId);
+        // Fetch voted question IDs
+        const { data: votes } = await supabase
+          .from('question_votes')
+          .select('question_id')
+          .eq('user_id', userId);
 
-      const serverVotes = new Set<QuestionId>(
-        (votes ?? []).map((v) => v.question_id),
-      );
+        const serverVotes = new Set<QuestionId>(
+          (votes ?? []).map((v) => v.question_id),
+        );
 
-      if (!cancelled) {
-        dispatch({
-          type: 'AUTH_READY',
-          userId,
-          handle: profile?.handle ?? null,
-          email: profile?.email ?? null,
-          isAnonymous: profile?.is_anonymous ?? true,
-          votedQuestionIds: serverVotes,
-        });
+        if (!cancelled) {
+          dispatch({
+            type: 'AUTH_READY',
+            userId,
+            handle: profile?.handle ?? null,
+            email: profile?.email ?? null,
+            isAnonymous: profile?.is_anonymous ?? true,
+            votedQuestionIds: serverVotes,
+          });
+        }
+      } catch (err) {
+        if (!cancelled) {
+          dispatch({
+            type: 'AUTH_ERROR',
+            error: err instanceof Error ? err.message : 'Authentication failed',
+          });
+        }
       }
     }
 

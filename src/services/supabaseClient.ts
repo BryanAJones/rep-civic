@@ -16,8 +16,9 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
  * Ensure the user has an anonymous auth session.
  * If already signed in, returns the existing session.
  * Call once on app init — session persists via localStorage automatically.
+ * Throws on failure so the caller can surface the error to the user.
  */
-export async function ensureAnonymousSession(): Promise<string | null> {
+export async function ensureAnonymousSession(): Promise<string> {
   const { data: { session } } = await supabase.auth.getSession();
 
   if (session) {
@@ -26,9 +27,12 @@ export async function ensureAnonymousSession(): Promise<string | null> {
 
   const { data, error } = await supabase.auth.signInAnonymously();
   if (error) {
-    console.warn('Anonymous sign-in failed:', error.message);
-    return null;
+    throw new Error(`Anonymous sign-in failed: ${error.message}`);
   }
 
-  return data.user?.id ?? null;
+  if (!data.user) {
+    throw new Error('Anonymous sign-in returned no user');
+  }
+
+  return data.user.id;
 }

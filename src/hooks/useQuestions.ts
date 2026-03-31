@@ -35,10 +35,11 @@ export function useQuestions(videoId: VideoId | null) {
   const submitQuestion = useCallback(async (text: string) => {
     if (!videoId) return;
     try {
+      setError(null);
       const q = await service.submitQuestion('', videoId, text);
       setQuestions((prev) => [...prev, q].sort((a, b) => b.plusOneCount - a.plusOneCount));
-    } catch {
-      // Silently fail for now — surface errors when backend exists
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to submit question');
     }
   }, [videoId]);
 

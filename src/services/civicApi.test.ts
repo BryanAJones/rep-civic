@@ -1,28 +1,8 @@
-import { resolveDistricts } from './civicApi';
+import { mapGeocodioResponse } from './civicApi';
 
-describe('civicApi (Geocodio)', () => {
-  beforeEach(() => {
-    vi.restoreAllMocks();
-    vi.stubEnv('VITE_GEOCODIO_API_KEY', 'test-key');
-  });
-
-  afterEach(() => {
-    vi.unstubAllEnvs();
-  });
-
-  it('returns empty array when API key is not set', async () => {
-    vi.stubEnv('VITE_GEOCODIO_API_KEY', '');
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-
-    const result = await resolveDistricts('123 Main St');
-    expect(result).toEqual([]);
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining('VITE_GEOCODIO_API_KEY not set'),
-    );
-  });
-
-  it('maps a Geocodio response to District[]', async () => {
-    const mockResponse = {
+describe('civicApi — mapGeocodioResponse', () => {
+  it('maps a full Geocodio response to District[]', () => {
+    const response = {
       results: [
         {
           fields: {
@@ -54,12 +34,7 @@ describe('civicApi (Geocodio)', () => {
       ],
     };
 
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(mockResponse),
-    } as Response);
-
-    const districts = await resolveDistricts('123 Atlanta Ave');
+    const districts = mapGeocodioResponse(response);
 
     // CD + Senate + House + U.S. Senate at-large = 4
     expect(districts).toHaveLength(4);
@@ -83,48 +58,43 @@ describe('civicApi (Geocodio)', () => {
     expect(districts[3]!.officeTitle).toBe('U.S. Senator');
   });
 
-  it('returns empty array when results is empty', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ results: [] }),
-    } as Response);
-
-    const result = await resolveDistricts('No Results Addr');
-    expect(result).toEqual([]);
+  it('returns empty array when results is empty', () => {
+    expect(mapGeocodioResponse({ results: [] })).toEqual([]);
   });
 
-  it('returns empty array when fields is missing', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ results: [{}] }),
-    } as Response);
-
-    const result = await resolveDistricts('Missing Fields Addr');
-    expect(result).toEqual([]);
+  it('returns empty array when fields is missing', () => {
+    expect(mapGeocodioResponse({ results: [{}] })).toEqual([]);
   });
 
-  it('throws on non-ok response', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
-      ok: false,
-      status: 403,
-      statusText: 'Forbidden',
-    } as Response);
-
-    await expect(resolveDistricts('Bad address')).rejects.toThrow(
-      'Geocodio API error: 403 Forbidden',
-    );
+  it('returns empty array when results is undefined', () => {
+    expect(mapGeocodioResponse({})).toEqual([]);
   });
 
-  it('does not add U.S. Senate when no districts found', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue({
-      ok: true,
-      json: () =>
-        Promise.resolve({
-          results: [{ fields: {} }],
-        }),
-    } as Response);
+  it('does not add U.S. Senate when no districts found', () => {
+    expect(mapGeocodioResponse({ results: [{ fields: {} }] })).toEqual([]);
+  });
 
-    const districts = await resolveDistricts('Empty');
-    expect(districts).toEqual([]);
+  it('handles response with only congressional districts', () => {
+    const response = {
+      results: [
+        {
+          fields: {
+            congressional_districts: [
+              {
+                name: 'Congressional District 13',
+                district_number: 13,
+                ocd_id: 'ocd-division/country:us/state:ga/cd:13',
+              },
+            ],
+          },
+        },
+      ],
+    };
+
+    const districts = mapGeocodioResponse(response);
+    // CD + U.S. Senate at-large = 2
+    expect(districts).toHaveLength(2);
+    expect(districts[0]!.code).toBe('STATE:GA-CD:13');
+    expect(districts[1]!.code).toBe('STATE:GA');
   });
 });
