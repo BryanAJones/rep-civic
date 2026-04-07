@@ -120,7 +120,7 @@ These are identity-level decisions. Do not deviate.
 /app/*                      ProtectedApp (requires completed onboarding)
   /app/feed                 FeedPage (default tab, vertical snap-scroll + horizontal swipe)
   /app/feed/video/:videoId/answer/:answerId   AnswerVideoPage
-  /app/districts            DistrictBrowserPage (stub)
+  /app/districts            DistrictBrowserPage (hierarchical district + candidate view)
   /app/you                  YouPage (account, districts, feedback)
   /app/profile/:candidateId CandidateProfilePage
   /app/chain/:chainId       DebateChainPage
@@ -137,8 +137,8 @@ The prototype is functional with mock data. All phases through 11 are shipped or
 - Primitives: Logotype, GoldRule, MonoText, Tag, StatusPill, Avatar, ScanlineOverlay, PlusOneButton (3 states), EmDash
 - Layout: AppRouter with protected routes, UserContext (useReducer + localStorage), TopNav, BottomNav, AppShell
 - Landing page: Full port from wireframe HTML, collapsible changelog, candidate entry section, roadmap section
-- Video feed: Snap-scroll vertical feed, district-level horizontal swipe navigation (city/county/state/federal/all)
-- Questions: Drawer overlay, +1 voting with optimistic update + rollback, question input, question context banner
+- Video feed: Snap-scroll vertical feed, district-level horizontal swipe navigation (city/county/state/federal/all). When no videos exist at a level, shows CandidateCard list instead of empty state.
+- Questions: Drawer overlay, +1 voting with optimistic update + rollback, question input, question context banner. Profile-level question submission (without video context) works via GeneralQuestionBox and TopicCard.
 - Answer video: Full-screen answer view with back nav to questions
 - Candidate profiles: 3-state rendering (unclaimed/claimed/active), tabs (Videos/Q&A/Positions), empty states
 - Empty states + topics: TopicCard, GeneralQuestionBox, distributed empty-state prompts
@@ -148,6 +148,9 @@ The prototype is functional with mock data. All phases through 11 are shipped or
 - You page: Account placeholder, district listing, feedback link (replaced Reps tab)
 - Feedback system: Modal with category tagging (bug/feature/general)
 - Claim page: Basic claim flow scaffold at /claim
+
+- Candidate-first feed: CandidateCard component, useCandidateFeed hook, CandidatePanel — replaces empty video state with browsable candidate cards
+- District browser: Hierarchical accordion view of all user districts with candidate cards per district
 
 **Partially built (planned items remain):**
 - Onboarding: District reveal animation, multi-step flow
@@ -241,3 +244,23 @@ Per-level scroll positions are preserved when swiping between levels. Empty leve
 - Unclaimed profiles auto-generated from public filings — the core go-to-market mechanic.
 - No verification in v1 — soft trust signals only.
 - Launch market: Atlanta, GA.
+
+## Skill routing
+
+When the user's request matches an available skill, ALWAYS invoke it using the Skill
+tool as your FIRST action. Do NOT answer directly, do NOT use other tools first.
+The skill has specialized workflows that produce better results than ad-hoc answers.
+
+Key routing rules:
+- Product ideas, "is this worth building", brainstorming → invoke office-hours
+- Bugs, errors, "why is this broken", 500 errors → invoke investigate
+- Ship, deploy, push, create PR → invoke ship
+- QA, test the site, find bugs → invoke qa
+- Code review, check my diff → invoke review
+- Update docs after shipping → invoke document-release
+- Weekly retro → invoke retro
+- Design system, brand → invoke design-consultation
+- Visual audit, design polish → invoke design-review
+- Architecture review → invoke plan-eng-review
+- Save progress, checkpoint, resume → invoke checkpoint
+- Code quality, health check → invoke health
