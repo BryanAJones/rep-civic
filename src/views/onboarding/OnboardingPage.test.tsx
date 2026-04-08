@@ -120,6 +120,22 @@ describe('OnboardingPage', () => {
     });
   });
 
+  it('shows CTA for low candidate count (< 6)', async () => {
+    mockSuccessfulSubmit(3);
+    renderOnboarding();
+
+    await userEvent.type(screen.getByLabelText(/home address/i), '123 Main St');
+    await userEvent.click(screen.getByRole('button', { name: /find my representatives/i }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('cascade-reveal')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('3')).toBeInTheDocument();
+    const ctaButton = await screen.findByRole('button', { name: /see what they are saying/i });
+    expect(ctaButton).toBeInTheDocument();
+  });
+
   it('shows error state when resolveDistricts fails', async () => {
     mockService.resolveDistricts = vi.fn().mockRejectedValue(new Error('Invalid address'));
 
