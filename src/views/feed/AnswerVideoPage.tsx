@@ -65,6 +65,11 @@ export function AnswerVideoPage() {
 
   return (
     <div className="answer-page">
+      <div
+        className="answer-page__bg"
+        style={{ backgroundImage: 'url(/images/representatives.jpg)' }}
+        aria-hidden="true"
+      />
       <ScanlineOverlay />
 
       {/* Back button */}

@@ -1,6 +1,6 @@
 import './BottomNav.css';
 
-export type NavTab = 'feed' | 'districts' | 'reps';
+export type NavTab = 'feed' | 'districts' | 'you';
 
 interface BottomNavProps {
   activeTab: NavTab;
@@ -19,9 +19,9 @@ const tabs: { id: NavTab; label: string; icon: string }[] = [
     icon: 'M12 2C8.13 2 5 5.13 5 12c0 7 9 17 9 17s9-10 9-17c0-4.97-4.03-9-9-9z',
   },
   {
-    id: 'reps',
-    label: 'Reps',
-    icon: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z',
+    id: 'you',
+    label: 'You',
+    icon: 'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z',
   },
 ];
 

@@ -37,6 +37,8 @@ export interface DataService {
   // Candidates
   getCandidate(candidateId: CandidateId): Promise<Candidate>;
   getCandidatesForDistrict(districtCode: DistrictCode): Promise<Candidate[]>;
+  /** Fetch candidates across multiple districts in a single query. */
+  getCandidatesByDistricts(districtCodes: DistrictCode[]): Promise<Candidate[]>;
 
   // Topics (unclaimed profiles)
   getTopicsForCandidate(candidateId: CandidateId): Promise<Topic[]>;
@@ -47,4 +49,12 @@ export interface DataService {
   // Videos
   getVideo(videoId: VideoId): Promise<Video>;
   getVideosForCandidate(candidateId: CandidateId): Promise<Video[]>;
+
+  // Feedback
+  submitFeedback(feedback: {
+    text: string;
+    category: 'bug' | 'feature' | 'general';
+    email?: string;
+    page: string;
+  }): Promise<{ id: string }>;
 }

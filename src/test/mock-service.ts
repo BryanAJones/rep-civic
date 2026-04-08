@@ -22,10 +22,12 @@ export function createMockService(
     voteQuestion: vi.fn().mockResolvedValue({ newCount: 1 }),
     getCandidate: vi.fn().mockRejectedValue(new Error('Not found')),
     getCandidatesForDistrict: vi.fn().mockResolvedValue([]),
+    getCandidatesByDistricts: vi.fn().mockResolvedValue([]),
     getTopicsForCandidate: vi.fn().mockResolvedValue([]),
     getDebateChain: vi.fn().mockRejectedValue(new Error('Not found')),
     getVideo: vi.fn().mockRejectedValue(new Error('Not found')),
     getVideosForCandidate: vi.fn().mockResolvedValue([]),
+    submitFeedback: vi.fn().mockResolvedValue({ id: 'fb-test' }),
     ...overrides,
   };
 }

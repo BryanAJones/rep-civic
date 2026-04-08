@@ -1,12 +1,37 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { changelog } from '../../data/changelog';
+import { roadmap } from '../../data/roadmap';
+import { FeedbackModal } from '../../components/feedback';
 import './LandingPage.css';
 
 export function LandingPage() {
   const navigate = useNavigate();
   const [devlogExpanded, setDevlogExpanded] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [votes, setVotes] = useState<Record<string, number>>(() =>
+    Object.fromEntries(roadmap.map((r) => [r.id, 0]))
+  );
+  const [voted, setVoted] = useState<Record<string, 'up' | 'down' | null>>(() =>
+    Object.fromEntries(roadmap.map((r) => [r.id, null]))
+  );
   const visibleEntries = devlogExpanded ? changelog : changelog.slice(0, 1);
+
+  const handleVote = (id: string, direction: 'up' | 'down') => {
+    setVoted((prev) => {
+      const current = prev[id];
+      const next = current === direction ? null : direction;
+      setVotes((v) => {
+        let delta = 0;
+        if (current === 'up') delta -= 1;
+        if (current === 'down') delta += 1;
+        if (next === 'up') delta += 1;
+        if (next === 'down') delta -= 1;
+        return { ...v, [id]: (v[id] ?? 0) + delta };
+      });
+      return { ...prev, [id]: next };
+    });
+  };
 
   return (
     <div className="landing">
@@ -308,6 +333,52 @@ export function LandingPage() {
         </div>
       </section>
 
+      {/* Coming soon */}
+      <section className="landing__roadmap">
+        <div className="landing__container">
+          <div className="landing__eyebrow">Coming soon</div>
+          <h2 className="landing__section-headline">
+            What we are building next.
+          </h2>
+          <div className="landing__roadmap-list">
+            {roadmap.map((item) => {
+              const count = votes[item.id] ?? 0;
+              const dir = voted[item.id] ?? null;
+              return (
+              <div key={item.id} className="landing__roadmap-item">
+                <div className="landing__roadmap-votes">
+                  <button
+                    className={`landing__roadmap-vote-btn${dir === 'up' ? ' landing__roadmap-vote-btn--active' : ''}`}
+                    type="button"
+                    onClick={() => handleVote(item.id, 'up')}
+                    aria-label="Upvote"
+                  >
+                    {'\u25B2'}
+                  </button>
+                  <span className={`landing__roadmap-count${count > 0 ? ' landing__roadmap-count--positive' : ''}${count < 0 ? ' landing__roadmap-count--negative' : ''}`}>
+                    {count > 0 ? `+${count}` : count}
+                  </span>
+                  <button
+                    className={`landing__roadmap-vote-btn${dir === 'down' ? ' landing__roadmap-vote-btn--active' : ''}`}
+                    type="button"
+                    onClick={() => handleVote(item.id, 'down')}
+                    aria-label="Downvote"
+                  >
+                    {'\u25BC'}
+                  </button>
+                </div>
+                <div className="landing__roadmap-content">
+                  <div className="landing__roadmap-category">{item.category}</div>
+                  <h3 className="landing__roadmap-title">{item.title}</h3>
+                  <p className="landing__roadmap-desc">{item.description}</p>
+                </div>
+              </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="landing__cta-section">
         <div className="landing__container" style={{ textAlign: 'center' }}>
@@ -336,9 +407,25 @@ export function LandingPage() {
           <div className="landing__footer-logo">
             Rep<span className="landing__period">.</span>
           </div>
-          <div className="landing__footer-text">Built in Atlanta, GA · 2026</div>
+          <div className="landing__footer-right">
+            <button
+              className="landing__footer-feedback"
+              type="button"
+              onClick={() => setShowFeedback(true)}
+            >
+              Send feedback
+            </button>
+            <div className="landing__footer-text">Built in Atlanta, GA · 2026</div>
+          </div>
         </div>
       </footer>
+
+      {showFeedback && (
+        <FeedbackModal
+          page="/"
+          onClose={() => setShowFeedback(false)}
+        />
+      )}
     </div>
   );
 }

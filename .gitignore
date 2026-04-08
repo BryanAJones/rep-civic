@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Import data (downloaded CSVs, too large for git)
+scripts/import/data/
+
+# Environment files
+.env
+.env.local

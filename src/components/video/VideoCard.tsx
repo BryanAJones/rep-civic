@@ -1,9 +1,16 @@
-import type { Video } from '../../types/domain';
+import type { DistrictLevel, Video } from '../../types/domain';
 import { ScanlineOverlay } from '../primitives';
 import { VideoCaption } from './VideoCaption';
 import { VideoTag } from './VideoTag';
 import { VideoRightRail } from './VideoRightRail';
 import './VideoCard.css';
+
+const levelBackgrounds: Record<DistrictLevel, string> = {
+  city: '/images/meeting.jpg',
+  county: '/images/representatives.jpg',
+  state: '/images/hands.jpg',
+  federal: '/images/capitol.jpg',
+};
 
 interface VideoCardProps {
   video: Video;
@@ -11,8 +18,17 @@ interface VideoCardProps {
 }
 
 export function VideoCard({ video, onQuestionsPress }: VideoCardProps) {
+  const bgImage = video.districtLevel
+    ? levelBackgrounds[video.districtLevel]
+    : '/images/neighborhood.jpg';
+
   return (
     <div className="video-card">
+      <div
+        className="video-card__bg"
+        style={{ backgroundImage: `url(${bgImage})` }}
+        aria-hidden="true"
+      />
       <ScanlineOverlay />
 
       {/* Placeholder play button — replaced by real video player later */}

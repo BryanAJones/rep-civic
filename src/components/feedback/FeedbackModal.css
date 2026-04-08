@@ -1,0 +1,171 @@
+.feedback-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.feedback-modal {
+  background: var(--rep-white, #FAFBFC);
+  width: 100%;
+  max-width: 600px;
+  border-radius: var(--rep-radius, 2px) var(--rep-radius, 2px) 0 0;
+  padding: var(--rep-space-lg, 16px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--rep-space-md, 12px);
+  animation: slideUp 0.2s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.feedback-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.feedback-modal__title {
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  font-size: var(--rep-text-sm, 11px);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rep-navy, #0D1F3C);
+}
+
+.feedback-modal__close {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: var(--rep-steel, #4A5568);
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+
+.feedback-modal__categories {
+  display: flex;
+  gap: var(--rep-space-sm, 6px);
+}
+
+.feedback-modal__cat {
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  font-size: var(--rep-text-xs, 9px);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: var(--rep-space-xs, 4px) var(--rep-space-md, 10px);
+  border-radius: var(--rep-radius, 2px);
+  border: 1px solid var(--rep-rule, #D1D9E6);
+  background: var(--rep-white, #FAFBFC);
+  color: var(--rep-steel, #4A5568);
+  cursor: pointer;
+  transition: all var(--rep-transition, 0.15s ease);
+}
+
+.feedback-modal__cat--active {
+  background: var(--rep-navy, #0D1F3C);
+  border-color: var(--rep-navy, #0D1F3C);
+  color: #fff;
+}
+
+.feedback-modal__textarea {
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  font-size: var(--rep-text-md, 13px);
+  color: var(--rep-ink, #1A1C22);
+  background: var(--rep-mist, #EEF1F6);
+  border: 1px solid var(--rep-rule, #D1D9E6);
+  border-radius: var(--rep-radius, 2px);
+  padding: var(--rep-space-md, 10px);
+  resize: vertical;
+  min-height: 80px;
+}
+
+.feedback-modal__textarea::placeholder {
+  color: var(--rep-steel, #4A5568);
+  opacity: 0.6;
+}
+
+.feedback-modal__email {
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  font-size: var(--rep-text-sm, 11px);
+  color: var(--rep-ink, #1A1C22);
+  background: var(--rep-mist, #EEF1F6);
+  border: 1px solid var(--rep-rule, #D1D9E6);
+  border-radius: var(--rep-radius, 2px);
+  padding: var(--rep-space-sm, 8px) var(--rep-space-md, 10px);
+}
+
+.feedback-modal__email::placeholder {
+  color: var(--rep-steel, #4A5568);
+  opacity: 0.6;
+}
+
+.feedback-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.feedback-modal__page {
+  font-family: var(--rep-font-mono, 'IBM Plex Mono', monospace);
+  font-size: var(--rep-text-2xs, 8px);
+  color: var(--rep-steel, #4A5568);
+  opacity: 0.6;
+}
+
+.feedback-modal__btn {
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  font-size: var(--rep-text-xs, 10px);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: var(--rep-space-sm, 8px) var(--rep-space-xl, 20px);
+  background: var(--rep-navy, #0D1F3C);
+  color: #fff;
+  border: none;
+  border-radius: var(--rep-radius, 2px);
+  cursor: pointer;
+  transition: opacity var(--rep-transition, 0.15s ease);
+}
+
+.feedback-modal__btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* Confirmation state */
+.feedback-modal__done {
+  text-align: center;
+  padding: var(--rep-space-xl, 20px) 0;
+}
+
+.feedback-modal__done-label {
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  font-size: var(--rep-text-xs, 10px);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rep-gold, #B8922A);
+  margin-bottom: var(--rep-space-sm, 8px);
+}
+
+.feedback-modal__done-text {
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  font-size: var(--rep-text-md, 13px);
+  color: var(--rep-steel, #4A5568);
+  margin: 0 0 var(--rep-space-lg, 16px);
+}

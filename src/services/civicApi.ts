@@ -1,69 +1,110 @@
 import type { District } from '../types/domain';
 
-const CIVIC_API_BASE = 'https://civicinfo.googleapis.com/civicinfo/v2/representatives';
+/**
+ * Client-side Geocodio calls are disabled — all district resolution
+ * goes through the proxy-geocodio Edge Function (keeps API key server-side).
+ * Only mapGeocodioResponse is exported from this module.
+ */
 
-export async function resolveDistricts(address: string): Promise<District[]> {
-  const apiKey = import.meta.env.VITE_CIVIC_API_KEY;
+// ── Geocodio response types ──────────────────────────────────
 
-  if (!apiKey) {
-    console.warn('VITE_CIVIC_API_KEY not set — district resolution unavailable.');
-    return [];
-  }
-
-  const url = new URL(CIVIC_API_BASE);
-  url.searchParams.set('key', apiKey);
-  url.searchParams.set('address', address);
-
-  const response = await fetch(url.toString());
-
-  if (!response.ok) {
-    throw new Error(`Civic API error: ${response.status} ${response.statusText}`);
-  }
-
-  const data = await response.json();
-  return mapCivicResponse(data);
-}
-
-interface CivicOffice {
+interface GeocodioDistrict {
   name: string;
-  divisionId: string;
-  levels?: string[];
-  officialIndices: number[];
+  district_number: number;
+  ocd_id: string;
 }
 
-interface CivicApiResponse {
-  offices: CivicOffice[];
+interface GeocodioFields {
+  congressional_districts?: GeocodioDistrict[];
+  state_legislative_districts?: {
+    house?: GeocodioDistrict[];
+    senate?: GeocodioDistrict[];
+  };
 }
 
-function levelFromDivisionId(divisionId: string, officeName: string): District['level'] {
-  if (divisionId.includes('place') || divisionId.includes('city')) return 'city';
-  if (divisionId.includes('county')) return 'county';
-  if (divisionId.includes('state') && !divisionId.includes('cd:')) return 'state';
-  if (divisionId.includes('cd:') || officeName.toLowerCase().includes('u.s.')) return 'federal';
-  return 'state';
+interface GeocodioResult {
+  fields?: GeocodioFields;
 }
 
-function codeFromDivisionId(divisionId: string): string {
-  return divisionId
+interface GeocodioResponse {
+  results?: GeocodioResult[];
+}
+
+// ── Mapping ──────────────────────────────────────────────────
+
+function codeFromOcdId(ocdId: string): string {
+  return ocdId
     .replace('ocd-division/country:us/', '')
     .replace(/\//g, '-')
     .toUpperCase();
 }
 
-function mapCivicResponse(data: CivicApiResponse): District[] {
-  if (!data.offices) return [];
+export function mapGeocodioResponse(data: GeocodioResponse): District[] {
+  const topResult = data.results?.[0];
+  if (!topResult?.fields) return [];
 
-  return data.offices.map((office) => {
-    const code = codeFromDivisionId(office.divisionId);
-    const level = levelFromDivisionId(office.divisionId, office.name);
+  const districts: District[] = [];
+  const fields = topResult.fields;
 
-    return {
-      code,
-      level,
-      officeTitle: office.name,
-      districtName: code,
-      displayLabel: `${office.name} · ${code}`,
+  // Congressional districts (federal)
+  if (fields.congressional_districts) {
+    for (const cd of fields.congressional_districts) {
+      const code = codeFromOcdId(cd.ocd_id);
+      districts.push({
+        code,
+        level: 'federal',
+        officeTitle: `U.S. Representative, District ${cd.district_number}`,
+        districtName: cd.name,
+        displayLabel: `U.S. Representative · ${code}`,
+        candidateIds: [],
+      });
+    }
+  }
+
+  // State legislative districts
+  if (fields.state_legislative_districts) {
+    const sld = fields.state_legislative_districts;
+
+    if (sld.senate) {
+      for (const s of sld.senate) {
+        const code = codeFromOcdId(s.ocd_id);
+        districts.push({
+          code,
+          level: 'state',
+          officeTitle: `State Senator, District ${s.district_number}`,
+          districtName: s.name,
+          displayLabel: `State Senator · ${code}`,
+          candidateIds: [],
+        });
+      }
+    }
+
+    if (sld.house) {
+      for (const h of sld.house) {
+        const code = codeFromOcdId(h.ocd_id);
+        districts.push({
+          code,
+          level: 'state',
+          officeTitle: `State Representative, District ${h.district_number}`,
+          districtName: h.name,
+          displayLabel: `State Representative · ${code}`,
+          candidateIds: [],
+        });
+      }
+    }
+  }
+
+  // U.S. Senate — always add for Georgia addresses (both seats, shared district code)
+  if (districts.length > 0) {
+    districts.push({
+      code: 'STATE:GA',
+      level: 'federal',
+      officeTitle: 'U.S. Senator',
+      districtName: 'Georgia',
+      displayLabel: 'U.S. Senator · STATE:GA',
       candidateIds: [],
-    };
-  });
+    });
+  }
+
+  return districts;
 }

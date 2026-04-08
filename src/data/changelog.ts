@@ -16,6 +16,91 @@ export interface ChangelogEntry {
  */
 export const changelog: ChangelogEntry[] = [
   {
+    version: '0.12.0',
+    date: '2026-04-08',
+    title: 'Your ballot, revealed',
+    items: [
+      'Enter your address and see every candidate on your ballot cascade onto screen',
+      'Candidates grouped by office level: federal, state, county, city',
+      'Animated reveal with skeleton loading while your ballot loads',
+      'One tap to jump straight to the feed',
+    ],
+  },
+  {
+    version: '0.19',
+    date: '2026-03-30',
+    title: 'Backend deployed and security hardened',
+    items: [
+      'Database and server functions deployed to production',
+      'Security review: vote privacy, auth enforcement, and API key protection',
+      'Questions now require sign-in and display your handle',
+      'Error messages surfaced when submissions fail',
+    ],
+  },
+  {
+    version: '0.18',
+    date: '2026-03-30',
+    title: 'Email sign-in and candidate claims',
+    items: [
+      'Verify your email to keep your account across devices',
+      'Choose a custom handle after email verification',
+      'Candidates can claim their auto-generated profiles',
+    ],
+  },
+  {
+    version: '0.17',
+    date: '2026-03-30',
+    title: 'Anonymous identity and vote tracking',
+    items: [
+      'Automatic anonymous sign-in on first visit',
+      'Your votes are now tracked across sessions',
+      'Each user gets a unique handle (@voter_ prefix)',
+    ],
+  },
+  {
+    version: '0.16',
+    date: '2026-03-30',
+    title: 'Server-side writes and API security',
+    items: [
+      'Questions, votes, and feedback now processed through secure server functions',
+      'Vote deduplication prevents double-counting',
+      'District lookup API key moved server-side',
+    ],
+  },
+  {
+    version: '0.15',
+    date: '2026-03-30',
+    title: 'Live data from Supabase',
+    items: [
+      'App now reads candidates, videos, questions, and debates from Supabase',
+      'District resolution populates real candidate profiles for your address',
+      'Feedback submissions saved to the database',
+    ],
+  },
+  {
+    version: '0.14',
+    date: '2026-03-29',
+    title: 'Real candidate data and district resolution',
+    items: [
+      'Database schema deployed to Supabase with 11 tables and public-read policies',
+      '465 Georgia candidates imported from FEC and OpenStates public records',
+      'District resolution switched from Google Civic to Geocodio API',
+      'Data pipeline: download, transform, and seed scripts for repeatable imports',
+    ],
+  },
+  {
+    version: '0.13',
+    date: '2026-03-27',
+    title: 'Feedback, roadmap, and account tab',
+    items: [
+      'Feedback modal accessible from every screen with category tagging',
+      'Coming soon section on landing page with community upvote/downvote',
+      'You tab replacing Reps with district listing and account placeholder',
+      'Fluid responsive sizing using container query units',
+      'Candidate name and office restored on video feed cards',
+    ],
+  },
+  {
     version: '0.12',
     date: '2026-03-27',
     title: 'District level swipe navigation',

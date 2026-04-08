@@ -1,6 +1,6 @@
 import type { DataService } from './dataService';
-import { mockService } from './mockData';
+import { supabaseService } from './supabaseService';
 
-// Swap this to a real implementation when the backend is ready.
-// No component should import from mockData or civicApi directly.
-export const service: DataService = mockService;
+// Uses Supabase for reads, temporary client-side writes until Edge Functions (B3).
+// To revert to mock data: import { mockService } from './mockData' and swap below.
+export const service: DataService = supabaseService;

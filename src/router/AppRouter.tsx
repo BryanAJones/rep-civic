@@ -4,7 +4,7 @@ import { useUser } from '../context/UserContext';
 import { FeedPage } from '../views/feed/FeedPage';
 import { AnswerVideoPage } from '../views/feed/AnswerVideoPage';
 import { DistrictBrowserPage } from '../views/districts/DistrictBrowserPage';
-import { RepsPage } from '../views/reps/RepsPage';
+import { YouPage } from '../views/you/YouPage';
 import { CandidateProfilePage } from '../views/profile/CandidateProfilePage';
 import { DebateChainPage } from '../views/chain/DebateChainPage';
 import { OnboardingPage } from '../views/onboarding/OnboardingPage';
@@ -25,7 +25,7 @@ function ProtectedApp() {
         <Route path="feed" element={<FeedPage />} />
         <Route path="feed/video/:videoId/answer/:answerId" element={<AnswerVideoPage />} />
         <Route path="districts" element={<DistrictBrowserPage />} />
-        <Route path="reps" element={<RepsPage />} />
+        <Route path="you" element={<YouPage />} />
         <Route path="profile/:candidateId" element={<CandidateProfilePage />} />
         <Route path="chain/:chainId" element={<DebateChainPage />} />
         <Route path="*" element={<Navigate to="feed" replace />} />

@@ -565,6 +565,10 @@ const mockChains: Record<ChainId, DebateChain> = {
   },
 };
 
+// --- Mock Feedback Store ---
+
+const mockFeedback: { id: string; text: string; category: string; email?: string; page: string; createdAt: string }[] = [];
+
 // --- Mock DataService Implementation ---
 
 function delay<T>(value: T, ms = 150): Promise<T> {
@@ -572,6 +576,7 @@ function delay<T>(value: T, ms = 150): Promise<T> {
 }
 
 export const mockService: DataService = {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   resolveDistricts(_address: string) {
     return delay(mockDistricts);
   },
@@ -594,10 +599,14 @@ export const mockService: DataService = {
 
     const enriched = filtered.map((v) => {
       const candidate = mockCandidates[v.candidateId];
+      const district = candidate
+        ? mockDistricts.find((d) => d.code === candidate.districtCode)
+        : undefined;
       return {
         ...v,
         candidateName: candidate?.name,
         candidateOffice: candidate?.officeTitle,
+        districtLevel: district?.level,
       };
     });
 
@@ -659,6 +668,13 @@ export const mockService: DataService = {
     return delay(candidates);
   },
 
+  getCandidatesByDistricts(districtCodes: DistrictCode[]) {
+    const candidates = Object.values(mockCandidates).filter(
+      (c) => districtCodes.includes(c.districtCode),
+    );
+    return delay(candidates);
+  },
+
   getTopicsForCandidate(candidateId: CandidateId) {
     const filtered = mockTopics.filter((t) => t.candidateId === candidateId);
     return delay(filtered);
@@ -679,5 +695,12 @@ export const mockService: DataService = {
   getVideosForCandidate(candidateId: CandidateId) {
     const filtered = mockVideos.filter((v) => v.candidateId === candidateId);
     return delay(filtered);
+  },
+
+  submitFeedback(feedback) {
+    const entry = { ...feedback, id: `fb-${Date.now()}`, createdAt: new Date().toISOString() };
+    mockFeedback.push(entry);
+    console.info('[mock] Feedback submitted:', entry);
+    return delay({ id: entry.id });
   },
 };

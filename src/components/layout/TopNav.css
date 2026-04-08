@@ -29,3 +29,25 @@
   font-size: var(--rep-text-lg);
   color: rgba(255, 255, 255, 0.4);
 }
+
+.top-nav__feedback {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--rep-space-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.top-nav__feedback svg {
+  width: var(--rep-icon-sm);
+  height: var(--rep-icon-sm);
+  fill: rgba(255, 255, 255, 0.4);
+  transition: fill var(--rep-transition);
+}
+
+.top-nav__feedback:hover svg {
+  fill: rgba(255, 255, 255, 0.7);
+}

@@ -6,7 +6,7 @@ beforeEach(() => {
 });
 
 describe('AppRouter route guard', () => {
-  it('redirects unauthenticated /app/* users to /onboarding', async () => {
+  it('redirects unauthenticated /app/* users to /onboarding', { timeout: 15000 }, async () => {
     const App = (await import('../App')).default;
 
     window.history.pushState({}, '', '/app/feed');

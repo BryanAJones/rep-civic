@@ -20,15 +20,18 @@
     global.css      (body defaults, ::selection, focus ring)
   /types
     domain.ts       (all TypeScript interfaces — see Section 3)
-    api.ts          (API response shapes — Google Civic + future backend)
+    api.ts          (API response shapes — Geocodio + future backend)
+    supabase.ts     (auto-generated from Supabase schema via supabase gen types)
     ui.ts           (UI-only types: tab names, drawer states, toast variants)
   /services
-    civicApi.ts     (Google Civic Information API client)
+    civicApi.ts     (Geocodio API client — district resolution from address)
     dataService.ts  (abstract data layer — see Section 5)
     mockData.ts     (static mock data for all screens during dev)
   /hooks
     useUserDistricts.ts
     useVideoFeed.ts
+    useCandidateFeed.ts
+    useMyBallot.ts
     useQuestions.ts
     usePlusOne.ts
     useCandidateProfile.ts
@@ -76,6 +79,8 @@
       PositionsList.tsx
       VideoGrid.tsx
       EmptyVideoGrid.tsx
+    /candidate
+      BallotCard.tsx
     /topics
       TopicCard.tsx
       GeneralQuestionBox.tsx
@@ -111,6 +116,16 @@
 vite.config.ts
 tsconfig.json
 tsconfig.app.json
+/supabase
+  /migrations
+    20260328015705_initial_schema.sql  (11 tables, indexes, RLS, triggers)
+/scripts
+  /import
+    download.ts     (fetches FEC zip + OpenStates CSV to data/)
+    transform.ts    (maps raw data to Rep schema JSON)
+    seed.ts         (upserts districts + candidates into Supabase)
+    types.ts        (intermediate types for import pipeline)
+    /data           (gitignored — raw CSVs and transformed JSON)
 ```
 
 ---
@@ -300,7 +315,7 @@ interface DebateChain {
 
 **React Context + `useReducer`** for shared state, local `useState` for component-scoped state. No Redux/Zustand until complexity demands it.
 
-**UserContext** holds: `userProfile`, `districts`, `hasCompletedOnboarding`, `votedQuestionIds: Set<QuestionId>`. The voted set is cross-cutting — must be consistent whether a question appears in the feed drawer or the profile Q&A tab. Persisted to `localStorage`.
+**UserContext** holds: `districts`, `hasCompletedOnboarding`, `votedQuestionIds: Set<QuestionId>`, `authUserId`, `handle`, `authReady`. On mount, `ensureAnonymousSession()` signs in anonymously if needed, then `AUTH_READY` hydrates userId, handle (from `user_profiles`), and votedQuestionIds (from `question_votes`). Districts and onboarding state cached in localStorage; votes merged from server + localStorage.
 
 **FeedContext** holds: `activeVideoIndex`, `feedVideos`, `activeDrawerVideoId`.
 
@@ -328,6 +343,7 @@ interface DataService {
   voteQuestion(questionId: QuestionId): Promise<{ newCount: number }>;
   getCandidate(candidateId: CandidateId): Promise<Candidate>;
   getCandidatesForDistrict(districtCode: DistrictCode): Promise<Candidate[]>;
+  getCandidatesByDistricts(districtCodes: DistrictCode[]): Promise<Candidate[]>;
   getTopicsForCandidate(candidateId: CandidateId): Promise<Topic[]>;
   getDebateChain(chainId: ChainId): Promise<DebateChain>;
   getVideo(videoId: VideoId): Promise<Video>;
@@ -335,13 +351,146 @@ interface DataService {
 }
 ```
 
-**`mockData.ts`** — Complete static implementation matching wireframe content. Active during development.
+**Implementations:**
 
-**`civicApi.ts`** — Implements only `resolveDistricts`. Maps Google Civic API response to `District[]`. The only real external dependency in v1.
+**`mockData.ts`** — Complete static implementation matching wireframe content. Used during development and as the test double.
+
+**`supabaseService.ts`** — Real implementation backed by Supabase. Reads use the Supabase client with RLS. Writes are temporary client-side inserts until Edge Functions (B3).
+
+**`supabaseClient.ts`** — Initializes the Supabase client with anon key and project URL from `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` env vars.
+
+**`civicApi.ts`** — Implements `resolveDistricts` via Geocodio API. Maps response to `District[]`. Will be replaced by an Edge Function proxy in Phase B3.
 
 **`services/index.ts`** — Exports a single `service` instance. Swap implementation here without touching any component.
 
-**Enforcement:** No component should ever import from `civicApi.ts` directly. Enforce with ESLint `no-restricted-imports`.
+**Enforcement:** No component should ever import from `civicApi.ts` or `supabaseClient.ts` directly. All data access goes through the `service` singleton. Enforce with ESLint `no-restricted-imports`.
+
+**Edge Functions (Deno, in `supabase/functions/`):**
+- `submit-question` — validates candidateId existence, enforces 280-char limit, inserts with service_role. authorHandle = @anonymous until B4.
+- `vote-question` — INSERT vote record (ON CONFLICT = 409 already voted), atomic increment via `increment_plus_one` RPC. Solves S-7.
+- `submit-feedback` — validated insert (category check, text 2000 chars, email 254 chars)
+- `proxy-geocodio` — proxies Geocodio API with server-side GEOCODIO_API_KEY secret, address validation (200 chars). Solves S-17.
+- `claim-candidate` — write-once candidate claim. Requires non-anonymous auth (email verified). Checks candidate is unclaimed, inserts into candidate_claims, transitions status to claimed.
+
+---
+
+## 5b. Database Schema (Supabase / PostgreSQL)
+
+Migrations live in `supabase/migrations/`. Types auto-generated to `src/types/supabase.ts`.
+
+```
+districts
+  code          TEXT PRIMARY KEY        -- e.g., "GA-SEN-D40", "ATL-CC-D6"
+  level         TEXT NOT NULL           -- city | county | state | federal
+  office_title  TEXT NOT NULL
+  district_name TEXT NOT NULL
+  display_label TEXT NOT NULL
+
+candidates
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid()
+  name          TEXT NOT NULL
+  initials      TEXT NOT NULL
+  office_title  TEXT NOT NULL
+  district_code TEXT REFERENCES districts(code)
+  party         TEXT NOT NULL
+  status        TEXT CHECK (status IN ('unclaimed','claimed','active'))
+  filing_id     TEXT                    -- GA SOS filing ID (unclaimed)
+  filing_date   TEXT                    -- filing date string (unclaimed)
+  campaign_url  TEXT
+  video_count          INT DEFAULT 0
+  question_count       INT DEFAULT 0
+  answered_question_count INT DEFAULT 0
+  response_rate        REAL DEFAULT 0
+  opponent_count       INT DEFAULT 0
+  created_at    TIMESTAMPTZ DEFAULT now()
+  updated_at    TIMESTAMPTZ DEFAULT now()
+
+candidate_positions
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid()
+  candidate_id  UUID REFERENCES candidates(id)
+  position_text TEXT NOT NULL
+  sort_order    INT DEFAULT 0
+
+videos
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid()
+  candidate_id      UUID REFERENCES candidates(id)
+  post_type         TEXT CHECK (post_type IN ('statement','response-to-opponent','qa-reply'))
+  caption           TEXT
+  thumbnail_url     TEXT
+  video_url         TEXT
+  reaction_count    INT DEFAULT 0
+  question_count    INT DEFAULT 0
+  published_at      TIMESTAMPTZ DEFAULT now()
+  answers_question_id UUID
+  chain_id          UUID
+  chain_depth       INT
+
+questions
+  id                UUID PRIMARY KEY DEFAULT gen_random_uuid()
+  video_id          UUID REFERENCES videos(id)         -- nullable (profile-level questions)
+  topic_id          UUID                                -- nullable
+  candidate_id      UUID REFERENCES candidates(id) NOT NULL
+  text              TEXT NOT NULL
+  author_handle     TEXT NOT NULL
+  plus_one_count    INT DEFAULT 0
+  state             TEXT DEFAULT 'default'              -- default | voted | answered
+  answer_video_id   UUID
+  created_at        TIMESTAMPTZ DEFAULT now()
+
+topics
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid()
+  candidate_id  UUID REFERENCES candidates(id)
+  title         TEXT NOT NULL
+  source_badge  TEXT NOT NULL
+
+debate_chains
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid()
+  district_code TEXT REFERENCES districts(code)
+  topic_label   TEXT NOT NULL
+  opened_at     TIMESTAMPTZ DEFAULT now()
+  total_questions INT DEFAULT 0
+
+chain_participants
+  chain_id          UUID REFERENCES debate_chains(id)
+  candidate_id      UUID REFERENCES candidates(id)
+  responses_used    INT DEFAULT 0
+  responses_allowed INT DEFAULT 2
+  PRIMARY KEY (chain_id, candidate_id)
+
+chain_nodes
+  video_id        UUID PRIMARY KEY REFERENCES videos(id)
+  chain_id        UUID REFERENCES debate_chains(id)
+  candidate_id    UUID REFERENCES candidates(id)
+  parent_video_id UUID REFERENCES videos(id)    -- nullable (root node)
+  depth           INT NOT NULL
+
+question_votes
+  user_id       UUID NOT NULL
+  question_id   UUID REFERENCES questions(id) NOT NULL
+  created_at    TIMESTAMPTZ DEFAULT now()
+  PRIMARY KEY (user_id, question_id)            -- enforces one vote per user per question
+
+feedback
+  id        UUID PRIMARY KEY DEFAULT gen_random_uuid()
+  text      TEXT NOT NULL
+  category  TEXT CHECK (category IN ('bug','feature','general'))
+  email     TEXT
+  page      TEXT
+  created_at TIMESTAMPTZ DEFAULT now()
+
+user_profiles (Phase B4)
+  id        UUID PRIMARY KEY REFERENCES auth.users(id)
+  handle    TEXT UNIQUE NOT NULL        -- auto-generated @voter_<short_id>
+  created_at TIMESTAMPTZ DEFAULT now()
+
+candidate_claims (Phase B5)
+  candidate_id        UUID UNIQUE REFERENCES candidates(id)
+  user_id             UUID REFERENCES auth.users(id)
+  claimed_at          TIMESTAMPTZ DEFAULT now()
+  verification_status TEXT DEFAULT 'pending'  -- pending | verified | rejected
+```
+
+**RLS policies:** SELECT on all tables for `anon` role (public reads). Write policies added per phase.
 
 ---
 

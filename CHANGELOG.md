@@ -5,6 +5,115 @@
 
 ---
 
+## [0.12.0.0] - 2026-04-08 — Onboarding Cascade Reveal
+
+### Added
+- Onboarding cascade reveal: after address entry, candidates cascade onto screen with staggered animation grouped by office level (federal, state, county, city)
+- Candidate counter in hero typography (Playfair Display 700, 64px) showing total ballot count
+- BallotCard compact component: identity-only card (avatar, name, office, party)
+- useMyBallot hook: fetches and groups candidates by office level using shared fetcher
+- getCandidatesByDistricts service method: single .in() query replacing N+1 pattern
+- Fixed CTA bar ("See what they are saying") navigates to feed
+- Skeleton loading cards with CSS shimmer animation during ballot fetch
+- Global prefers-reduced-motion support for all animations
+- iOS safe-area-inset-bottom on fixed CTA bar
+- Error/empty fallback with retry for cascade phase
+
+### Changed
+- OnboardingPage CSS migrated from hardcoded pixels to fluid --rep-* tokens
+- useCandidateFeed refactored from Promise.all N+1 to single getCandidatesByDistricts call
+
+---
+
+## Security Fixes + Backend Deployment
+**Commit:** pending | **Status:** Shipped
+
+- Migration: security_fixes.sql — 4 SQL-level fixes identified during pre-deploy review
+- Dropped blanket "Public read: question_votes" RLS policy (conflicted with per-user policy from B4, leaked all votes)
+- REVOKE EXECUTE on increment_plus_one from anon/authenticated (prevented direct RPC vote inflation)
+- Secured upgrade_user_profile: added auth.uid() check (prevented cross-user profile overwrite)
+- Added DB triggers: increment candidates.question_count on question insert, candidates.video_count on video insert
+- submit-question: now requires auth (JWT from Authorization header), derives authorHandle from user_profiles
+- vote-question: removed non-atomic fallback path (RPC is deployed, fallback had TOCTOU race)
+- civicApi.ts: removed client-side resolveDistricts (VITE_GEOCODIO_API_KEY no longer shipped in bundle)
+- useQuestions: submitQuestion now surfaces errors via setError instead of silently swallowing
+- UserContext: ensureAnonymousSession now throws on failure, AUTH_ERROR action + authError state field
+- Deployed 4 migrations to Supabase (increment_rpc, anonymous_auth, real_auth, security_fixes)
+- Deployed 5 Edge Functions (submit-question, vote-question, submit-feedback, proxy-geocodio, claim-candidate)
+- All 110 tests pass
+
+---
+
+## Backend Phase B5 — Real Auth + Candidate Claims
+**Commit:** pending | **Status:** Shipped
+
+- Migration: candidate_claims table (write-once, UNIQUE on candidate_id), user_profiles gains email + is_anonymous columns
+- authService.ts: sendMagicLink (signInWithOtp), updateHandle (pattern validation + unique check), getAuthStatus
+- UserContext: AUTH_UPGRADED + HANDLE_UPDATED actions, onAuthStateChange listener for magic link callback
+- claim-candidate Edge Function: verifies non-anonymous auth, checks candidate is unclaimed, write-once insert, transitions status to claimed
+- YouPage wired to live auth state: shows handle/email/status, magic link upgrade CTA, inline handle editing
+- upgrade_user_profile SQL function for anonymous → authenticated transition
+- All 110 tests pass
+
+---
+
+## Backend Phase B4 — Anonymous Identity
+**Commit:** pending | **Status:** Shipped
+
+- Migration: user_profiles table with auto-create trigger (handle = @voter_<short_id>)
+- Enabled anonymous sign-ins in Supabase config
+- supabaseClient.ts: ensureAnonymousSession() — signs in anonymously if no session exists
+- UserContext: AUTH_READY action hydrates userId, handle, and votedQuestionIds from server
+- vote-question Edge Function now derives userId from auth JWT instead of client param
+- RLS: question_votes INSERT requires auth.uid() = user_id, SELECT limited to own votes
+- user_profiles readable by all, updatable only by owner
+- All 110 tests pass
+
+---
+
+## Backend Phase B3 — Write API (Edge Functions)
+**Commit:** pending | **Status:** Shipped
+
+- Created 4 Supabase Edge Functions (Deno): submit-question, vote-question, submit-feedback, proxy-geocodio
+- submit-question: server-side insert with text length validation (280), candidate existence check, service_role auth
+- vote-question: ON CONFLICT dedup (solves S-7) + atomic increment via `increment_plus_one` SQL RPC
+- submit-feedback: validated insert with category/text/email checks
+- proxy-geocodio: server-side Geocodio API key (solves S-17), address validation (200 chars)
+- Added migration for `increment_plus_one` RPC function
+- Updated supabaseService.ts to call Edge Functions via `supabase.functions.invoke()` for all writes + district resolution
+- CORS handled via `@supabase/supabase-js/cors` built-in (no shared file needed)
+- All 110 tests pass
+
+---
+
+## Backend Phase B2 — Real Read API
+**Commit:** pending | **Status:** Shipped
+
+- Created `supabaseClient.ts` — typed Supabase client init from env vars
+- Created `supabaseService.ts` — implements full DataService interface against Supabase
+- Swapped service export from mockService to supabaseService in `index.ts`
+- `getFeedVideos` queries candidates by district code, fetches videos, denormalizes candidate name/office/level
+- `getDebateChain` uses parallel fetch for chain_nodes + chain_participants
+- Write methods (submitQuestion, voteQuestion, submitFeedback) use temporary client-side inserts until Edge Functions (B3)
+- All 110 tests pass
+
+---
+
+## Backend Phase B1 — Schema, Data Import, Geocodio Swap
+**Commit:** pending | **Status:** Shipped
+
+- Supabase project created and linked (project ID: ocpcejomntxqsboswhrx)
+- Initial migration deployed: 11 tables (districts, candidates, videos, questions, topics, debate_chains, chain_participants, chain_nodes, question_votes, candidate_positions, feedback), indexes, RLS public-read policies, updated_at trigger
+- TypeScript types auto-generated at src/types/supabase.ts
+- Data import pipeline: FEC bulk CSV (243 GA federal candidates) + OpenStates CSV (233 GA state legislators) = 465 candidates across 250 districts
+- Three-step pipeline: `npm run import:download` → `import:transform` → `import:seed`
+- District codes use OCD-ID format (STATE:GA-CD:5, STATE:GA-SLDL:60, STATE:GA-SLDU:34) matching Geocodio output
+- Replaced Google Civic Information API (shut down April 2025) with Geocodio geocode API (fields=cd,stateleg)
+- U.S. Senate at-large district auto-added for Georgia addresses
+- All 110 tests pass (6 new Geocodio tests)
+
+---
+
 ## Horizontal Swipe — District Level Navigation
 **Commit:** pending | **Status:** Shipped
 
