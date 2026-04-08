@@ -112,7 +112,7 @@
 |---|---------|--------|-------|
 | 49 | OnboardingPage (basic address input) | done | Minimal version shipped in Phase 3 |
 | 50 | Real Google Civic API integration | done | Phase 10 — civicApi.ts wired up |
-| 51 | District reveal animation | planned | Phase 10 |
+| 51 | District reveal animation | done | Cascade reveal with staggered animation, grouped by office level |
 | 52 | Full onboarding flow (multi-step) | planned | Phase 10 |
 
 ## PWA + Production

@@ -1,4 +1,4 @@
-import type { Question, Video, District } from '../types/domain';
+import type { Candidate, Question, Video, District, UnclaimedCandidate } from '../types/domain';
 
 export function buildQuestion(overrides: Partial<Question> = {}): Question {
   return {
@@ -24,6 +24,23 @@ export function buildVideo(overrides: Partial<Video> = {}): Video {
     reactionCount: 10,
     questionCount: 3,
     publishedAt: '2026-01-01T00:00:00Z',
+    ...overrides,
+  };
+}
+
+export function buildCandidate(overrides: Partial<UnclaimedCandidate> = {}): Candidate {
+  return {
+    id: 'c-test-1',
+    name: 'Test Candidate',
+    initials: 'TC',
+    officeTitle: 'Test Office',
+    districtCode: 'TEST-D1',
+    party: 'Independent',
+    status: 'unclaimed',
+    filingId: 'TEST-001',
+    filingDate: '2026-01-01',
+    opponentCount: 0,
+    questionCount: 0,
     ...overrides,
   };
 }

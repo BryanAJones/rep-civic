@@ -151,9 +151,10 @@ The prototype is functional with mock data. All phases through 11 are shipped or
 
 - Candidate-first feed: CandidateCard component, useCandidateFeed hook, CandidatePanel — replaces empty video state with browsable candidate cards
 - District browser: Hierarchical accordion view of all user districts with candidate cards per district
+- Onboarding cascade reveal: After address entry, candidates cascade onto screen with staggered animation grouped by office level (federal, state, county, city). BallotCard compact component, useMyBallot hook, getCandidatesByDistricts single-query service method. Skeleton loading, prefers-reduced-motion support, iOS safe-area CTA bar.
 
 **Partially built (planned items remain):**
-- Onboarding: District reveal animation, multi-step flow
+- Onboarding: Multi-step flow (cascade reveal done, address autocomplete and remaining steps planned)
 - PWA: Custom Workbox caching strategies, offline fallback behavior
 - Security: Tier 1 partially done; Tiers 2-5 planned (see BACKLOG.md Security section)
 

@@ -5,6 +5,25 @@
 
 ---
 
+## [0.12.0.0] - 2026-04-08 — Onboarding Cascade Reveal
+
+### Added
+- Onboarding cascade reveal: after address entry, candidates cascade onto screen with staggered animation grouped by office level (federal, state, county, city)
+- Candidate counter in hero typography (Playfair Display 700, 64px) showing total ballot count
+- BallotCard compact component: identity-only card (avatar, name, office, party)
+- useMyBallot hook: fetches and groups candidates by office level using shared fetcher
+- getCandidatesByDistricts service method: single .in() query replacing N+1 pattern
+- Fixed CTA bar ("See what they are saying") navigates to feed
+- Skeleton loading cards with CSS shimmer animation during ballot fetch
+- Global prefers-reduced-motion support for all animations
+- iOS safe-area-inset-bottom on fixed CTA bar
+- Error/empty fallback with retry for cascade phase
+
+### Changed
+- OnboardingPage CSS migrated from hardcoded pixels to fluid --rep-* tokens
+- useCandidateFeed refactored from Promise.all N+1 to single getCandidatesByDistricts call
+
+---
 ## Security Fixes + Backend Deployment
 **Commit:** pending | **Status:** Shipped
 

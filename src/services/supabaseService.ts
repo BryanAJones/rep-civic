@@ -316,6 +316,20 @@ export const supabaseService: DataService = {
     return (data ?? []).map(mapCandidate);
   },
 
+  async getCandidatesByDistricts(
+    districtCodes: DistrictCode[],
+  ): Promise<Candidate[]> {
+    if (districtCodes.length === 0) return [];
+
+    const { data, error } = await supabase
+      .from('candidates')
+      .select('*')
+      .in('district_code', districtCodes);
+
+    if (error) throw error;
+    return (data ?? []).map(mapCandidate);
+  },
+
   async getTopicsForCandidate(candidateId: CandidateId): Promise<Topic[]> {
     const { data: topicRows, error } = await supabase
       .from('topics')
