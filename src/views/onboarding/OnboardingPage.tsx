@@ -148,20 +148,11 @@ export function OnboardingPage() {
             </div>
           ))}
 
-          {totalCandidates >= CTA_THRESHOLD && (
-            <div className="onboarding__cta-bar fade-in" style={{ animationDelay: `${CTA_THRESHOLD * CASCADE_DELAY_MS + 300}ms` }}>
-              <button
-                type="button"
-                className="onboarding__cta-button"
-                onClick={handleCta}
-              >
-                See what they are saying
-              </button>
-            </div>
-          )}
-
-          {totalCandidates > 0 && totalCandidates < CTA_THRESHOLD && (
-            <div className="onboarding__cta-bar fade-in" style={{ animationDelay: `${totalCandidates * CASCADE_DELAY_MS + 300}ms` }}>
+          {totalCandidates > 0 && (
+            <div
+              className="onboarding__cta-bar fade-in"
+              style={{ animationDelay: `${Math.min(totalCandidates, CTA_THRESHOLD) * CASCADE_DELAY_MS + 300}ms` }}
+            >
               <button
                 type="button"
                 className="onboarding__cta-button"
