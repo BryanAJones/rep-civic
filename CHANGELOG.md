@@ -5,6 +5,22 @@
 
 ---
 
+## [0.13.0] - 2026-04-08 — Ballot Page, Skeleton Loading, Feed Refactor
+
+### Added
+- Ballot page (/app/ballot): persistent view of all candidates grouped by office level
+- Share button on ballot page: Web Share API with clipboard fallback
+- "View your ballot" link on You page navigates to /app/ballot
+- Skeleton loading during Geocodio resolve phase (resolving → cascade transition)
+- Browser autocomplete="street-address" on onboarding input
+- CandidateCard component: tappable card with avatar, name, office, status pill, party
+- CandidatePanel: scrollable candidate list for feed levels with no videos
+- DistrictBrowserPage: hierarchical accordion view with candidates per district
+- useScrollCarousel hook: replaces 208-line useSwipeGesture with 37-line native scroll-snap
+
+### Removed
+- useSwipeGesture.ts (208 lines of raw pointer event handling)
+
 ## [0.12.0.0] - 2026-04-08 — Onboarding Cascade Reveal
 
 ### Added

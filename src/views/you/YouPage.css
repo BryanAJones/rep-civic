@@ -246,3 +246,33 @@
   height: var(--rep-icon-sm);
   fill: var(--rep-gold, #B8922A);
 }
+
+.you-page__ballot-link {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rep-space-sm);
+  padding: var(--rep-space-md) var(--rep-space-lg);
+  background: var(--rep-navy);
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  font-size: var(--rep-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rep-white);
+  transition: opacity 0.15s ease;
+}
+
+.you-page__ballot-link:active {
+  opacity: 0.85;
+}
+
+.you-page__ballot-link svg {
+  width: var(--rep-icon-sm);
+  height: var(--rep-icon-sm);
+  fill: var(--rep-white);
+}

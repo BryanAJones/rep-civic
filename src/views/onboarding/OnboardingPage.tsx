@@ -33,7 +33,7 @@ export function OnboardingPage() {
   const [resolving, setResolving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [districts, setDistricts] = useState<District[]>([]);
-  const [phase, setPhase] = useState<'input' | 'cascade'>('input');
+  const [phase, setPhase] = useState<'input' | 'resolving' | 'cascade'>('input');
   const { dispatch } = useUser();
   const navigate = useNavigate();
 
@@ -45,6 +45,7 @@ export function OnboardingPage() {
 
     setResolving(true);
     setError(null);
+    setPhase('resolving');
     try {
       const result = await service.resolveDistricts(address.trim());
       dispatch({ type: 'COMPLETE_ONBOARDING', districts: result });
@@ -52,6 +53,7 @@ export function OnboardingPage() {
       setPhase('cascade');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to resolve districts');
+      setPhase('input');
     } finally {
       setResolving(false);
     }
@@ -85,6 +87,7 @@ export function OnboardingPage() {
             id="address-input"
             className="onboarding__input"
             type="text"
+            autoComplete="street-address"
             placeholder="123 Main St, Atlanta, GA 30315"
             value={address}
             maxLength={200}
@@ -107,6 +110,17 @@ export function OnboardingPage() {
             It is not stored or shared.
           </p>
         </form>
+      )}
+
+      {phase === 'resolving' && (
+        <div className="onboarding__cascade" data-testid="resolving-skeleton">
+          <p className="onboarding__resolving-label">Finding your representatives…</p>
+          <div className="onboarding__card-list">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </div>
+        </div>
       )}
 
       {phase === 'cascade' && ballotLoading && (

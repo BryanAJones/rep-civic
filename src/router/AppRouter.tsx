@@ -7,6 +7,7 @@ import { DistrictBrowserPage } from '../views/districts/DistrictBrowserPage';
 import { YouPage } from '../views/you/YouPage';
 import { CandidateProfilePage } from '../views/profile/CandidateProfilePage';
 import { DebateChainPage } from '../views/chain/DebateChainPage';
+import { BallotPage } from '../views/ballot/BallotPage';
 import { OnboardingPage } from '../views/onboarding/OnboardingPage';
 import { LandingPage } from '../views/landing/LandingPage';
 import { ClaimPage } from '../views/claim/ClaimPage';
@@ -24,6 +25,7 @@ function ProtectedApp() {
         <Route index element={<Navigate to="feed" replace />} />
         <Route path="feed" element={<FeedPage />} />
         <Route path="feed/video/:videoId/answer/:answerId" element={<AnswerVideoPage />} />
+        <Route path="ballot" element={<BallotPage />} />
         <Route path="districts" element={<DistrictBrowserPage />} />
         <Route path="you" element={<YouPage />} />
         <Route path="profile/:candidateId" element={<CandidateProfilePage />} />

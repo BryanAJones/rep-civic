@@ -16,6 +16,17 @@ export interface ChangelogEntry {
  */
 export const changelog: ChangelogEntry[] = [
   {
+    version: '0.13.0',
+    date: '2026-04-08',
+    title: 'Your ballot, always',
+    items: [
+      'View your ballot anytime from the You page',
+      'Share your ballot with a single tap',
+      'Skeleton loading while your address resolves',
+      'Browse candidates by district in the new Districts tab',
+    ],
+  },
+  {
     version: '0.12.0',
     date: '2026-04-08',
     title: 'Your ballot, revealed',

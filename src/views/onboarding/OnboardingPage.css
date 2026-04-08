@@ -166,6 +166,17 @@
   gap: var(--rep-space-sm);
 }
 
+/* ── Resolving phase ───────────────────────────────── */
+
+.onboarding__resolving-label {
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  font-size: var(--rep-text-sm);
+  font-weight: 300;
+  color: var(--rep-steel);
+  text-align: center;
+  margin: 0 0 var(--rep-space-lg);
+}
+
 /* ── Skeleton cards ─────────────────────────────────── */
 
 .skeleton-card {

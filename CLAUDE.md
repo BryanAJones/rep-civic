@@ -120,6 +120,7 @@ These are identity-level decisions. Do not deviate.
 /app/*                      ProtectedApp (requires completed onboarding)
   /app/feed                 FeedPage (default tab, vertical snap-scroll + horizontal swipe)
   /app/feed/video/:videoId/answer/:answerId   AnswerVideoPage
+  /app/ballot               BallotPage (persistent ballot view with share)
   /app/districts            DistrictBrowserPage (hierarchical district + candidate view)
   /app/you                  YouPage (account, districts, feedback)
   /app/profile/:candidateId CandidateProfilePage
@@ -151,10 +152,11 @@ The prototype is functional with mock data. All phases through 11 are shipped or
 
 - Candidate-first feed: CandidateCard component, useCandidateFeed hook, CandidatePanel — replaces empty video state with browsable candidate cards
 - District browser: Hierarchical accordion view of all user districts with candidate cards per district
-- Onboarding cascade reveal: After address entry, candidates cascade onto screen with staggered animation grouped by office level (federal, state, county, city). BallotCard compact component, useMyBallot hook, getCandidatesByDistricts single-query service method. Skeleton loading, prefers-reduced-motion support, iOS safe-area CTA bar.
+- Onboarding cascade reveal: After address entry, candidates cascade onto screen with staggered animation grouped by office level (federal, state, county, city). BallotCard compact component, useMyBallot hook, getCandidatesByDistricts single-query service method. Skeleton loading during Geocodio resolve, prefers-reduced-motion support, iOS safe-area CTA bar.
+- Ballot page: Persistent /app/ballot route reuses useMyBallot, tappable cards link to profiles, share button (Web Share API with clipboard fallback). Accessible from You page.
 
 **Partially built (planned items remain):**
-- Onboarding: Multi-step flow (cascade reveal done, address autocomplete and remaining steps planned)
+- Onboarding: Multi-step flow (cascade reveal done, skeleton loading done, ballot page done, share done; district map thumbnails planned)
 - PWA: Custom Workbox caching strategies, offline fallback behavior
 - Security: Tier 1 partially done; Tiers 2-5 planned (see BACKLOG.md Security section)
 

@@ -113,7 +113,9 @@
 | 49 | OnboardingPage (basic address input) | done | Minimal version shipped in Phase 3 |
 | 50 | Real Google Civic API integration | done | Phase 10 — civicApi.ts wired up |
 | 51 | District reveal animation | done | Cascade reveal with staggered animation, grouped by office level |
-| 52 | Full onboarding flow (multi-step) | planned | Phase 10 |
+| 52 | Full onboarding flow (multi-step) | in-progress | Skeleton loading + ballot page + share done; map thumbnails planned |
+| 59 | Ballot page (/app/ballot) | done | Persistent ballot view, share button (Web Share + clipboard), linked from You page |
+| 60 | Skeleton loading during resolve | done | Resolving phase shows skeleton cards while Geocodio runs |
 
 ## PWA + Production
 

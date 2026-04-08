@@ -38,6 +38,7 @@
     useQuestionDrawer.ts
     useDebateChain.ts
     useOnboarding.ts
+    useScrollCarousel.ts
   /context
     UserContext.tsx         (current user, districts, auth state)
     FeedContext.tsx          (active video index, feed data)
@@ -81,6 +82,7 @@
       EmptyVideoGrid.tsx
     /candidate
       BallotCard.tsx
+      CandidateCard.tsx
     /topics
       TopicCard.tsx
       GeneralQuestionBox.tsx
@@ -95,8 +97,12 @@
       OnboardingPage.tsx
     /feed
       FeedPage.tsx
+      FeedPanelConnected.tsx
+      CandidatePanel.tsx
       QuestionsDrawerPage.tsx
       AnswerVideoPage.tsx
+    /ballot
+      BallotPage.tsx
     /profile
       CandidateProfilePage.tsx
     /districts

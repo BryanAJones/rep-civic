@@ -1,0 +1,101 @@
+.ballot-page {
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--rep-mist);
+}
+
+.ballot-page__status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-family: var(--rep-font-ui);
+  font-size: var(--rep-text-sm);
+  color: var(--rep-steel);
+  padding: var(--rep-space-lg);
+  text-align: center;
+}
+
+.ballot-page__header {
+  padding: var(--rep-space-lg) var(--rep-space-lg) var(--rep-space-md);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.ballot-page__title {
+  font-family: var(--rep-font-display);
+  font-size: var(--rep-text-lg);
+  font-weight: 700;
+  color: var(--rep-ink);
+  margin: 0;
+}
+
+.ballot-page__count {
+  font-family: var(--rep-font-mono);
+  font-size: var(--rep-text-xs);
+  color: var(--rep-steel);
+}
+
+.ballot-page__group {
+  margin-bottom: var(--rep-space-md);
+}
+
+.ballot-page__group-header {
+  font-family: var(--rep-font-ui);
+  font-size: var(--rep-text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--rep-steel);
+  padding: var(--rep-space-xs) var(--rep-space-lg);
+  border-bottom: 1px solid var(--rep-gold);
+}
+
+.ballot-page__card-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rep-space-sm);
+  padding: var(--rep-space-sm) var(--rep-space-lg) 0;
+}
+
+.ballot-page__card-btn {
+  all: unset;
+  cursor: pointer;
+  display: block;
+  width: 100%;
+}
+
+.ballot-page__card-btn:hover .ballot-card {
+  border-color: var(--rep-gold);
+}
+
+.ballot-page__share {
+  display: flex;
+  align-items: center;
+  gap: var(--rep-space-xs);
+  background: none;
+  border: 1px solid var(--rep-rule);
+  border-radius: 2px;
+  padding: var(--rep-space-xs) var(--rep-space-sm);
+  cursor: pointer;
+  font-family: var(--rep-font-ui);
+  font-size: var(--rep-text-2xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rep-steel);
+  white-space: nowrap;
+  transition: border-color 0.15s ease;
+}
+
+.ballot-page__share:hover {
+  border-color: var(--rep-gold);
+}
+
+.ballot-page__share svg {
+  width: 14px;
+  height: 14px;
+  fill: var(--rep-steel);
+}
