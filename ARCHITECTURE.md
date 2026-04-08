@@ -30,6 +30,8 @@
   /hooks
     useUserDistricts.ts
     useVideoFeed.ts
+    useCandidateFeed.ts
+    useMyBallot.ts
     useQuestions.ts
     usePlusOne.ts
     useCandidateProfile.ts
@@ -77,6 +79,8 @@
       PositionsList.tsx
       VideoGrid.tsx
       EmptyVideoGrid.tsx
+    /candidate
+      BallotCard.tsx
     /topics
       TopicCard.tsx
       GeneralQuestionBox.tsx
@@ -339,6 +343,7 @@ interface DataService {
   voteQuestion(questionId: QuestionId): Promise<{ newCount: number }>;
   getCandidate(candidateId: CandidateId): Promise<Candidate>;
   getCandidatesForDistrict(districtCode: DistrictCode): Promise<Candidate[]>;
+  getCandidatesByDistricts(districtCodes: DistrictCode[]): Promise<Candidate[]>;
   getTopicsForCandidate(candidateId: CandidateId): Promise<Topic[]>;
   getDebateChain(chainId: ChainId): Promise<DebateChain>;
   getVideo(videoId: VideoId): Promise<Video>;
