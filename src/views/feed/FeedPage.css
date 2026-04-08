@@ -7,25 +7,26 @@
   position: relative;
 }
 
-/* Carousel container — clips overflow, fills remaining height */
+/* Carousel container — native horizontal scroll with snap */
 .feed-carousel {
   flex: 1;
-  overflow: hidden;
-  position: relative;
-  touch-action: pan-y;
-}
-
-/* Horizontal track holding all panels side by side */
-.feed-carousel__track {
   display: flex;
-  height: 100%;
-  will-change: transform;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
 
-/* Each panel takes its computed width share */
+.feed-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+/* Each panel takes full width and snaps */
 .feed-carousel__panel {
+  flex: 0 0 100%;
   height: 100%;
-  flex-shrink: 0;
+  scroll-snap-align: start;
 }
 
 /* Drawer overlay — sits outside carousel so scroll position doesn't affect it */

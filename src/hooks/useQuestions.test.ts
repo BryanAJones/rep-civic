@@ -115,7 +115,7 @@ describe('useQuestions', () => {
       buildQuestion({ id: 'q-new', plusOneCount: 0, text: 'New question' }),
     );
 
-    const { result } = renderHook(() => useQuestions('v-1'));
+    const { result } = renderHook(() => useQuestions('v-1', 'c-1'));
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
     });
@@ -130,13 +130,27 @@ describe('useQuestions', () => {
     expect(result.current.questions[1]!.id).toBe('q-new');
   });
 
-  it('submitQuestion with null videoId does nothing', async () => {
-    const { result } = renderHook(() => useQuestions(null));
+  it('submitQuestion with null candidateId does nothing', async () => {
+    const { result } = renderHook(() => useQuestions('v-1', null));
 
     await act(async () => {
       await result.current.submitQuestion('Test');
     });
 
     expect(mockService.submitQuestion).not.toHaveBeenCalled();
+  });
+
+  it('submitQuestion works without videoId (profile-level questions)', async () => {
+    mockService.submitQuestion = vi.fn().mockResolvedValue(
+      buildQuestion({ id: 'q-profile', plusOneCount: 1, text: 'Profile question' }),
+    );
+
+    const { result } = renderHook(() => useQuestions(null, 'c-1'));
+
+    await act(async () => {
+      await result.current.submitQuestion('Profile question');
+    });
+
+    expect(mockService.submitQuestion).toHaveBeenCalledWith('c-1', null, 'Profile question');
   });
 });

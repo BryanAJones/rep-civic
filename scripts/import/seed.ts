@@ -38,6 +38,20 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
   auth: { persistSession: false },
 });
 
+async function cleanupBeforeSeed(): Promise<void> {
+  console.log('Cleaning up unclaimed candidates before re-seed...');
+  const { error, count } = await supabase
+    .from('candidates')
+    .delete()
+    .eq('status', 'unclaimed');
+
+  if (error) {
+    console.error('  Cleanup error:', error.message);
+    throw error;
+  }
+  console.log(`  Removed ${count ?? '?'} unclaimed candidates`);
+}
+
 async function seedDistricts(districts: DistrictRow[]): Promise<void> {
   console.log(`Seeding ${districts.length} districts...`);
 
@@ -96,7 +110,8 @@ async function main() {
 
   console.log(`Loaded ${districts.length} districts, ${candidates.length} candidates\n`);
 
-  // Districts must be seeded first (candidates reference district_code FK)
+  // Clean up stale data, then re-seed
+  await cleanupBeforeSeed();
   await seedDistricts(districts);
   await seedCandidates(candidates);
 

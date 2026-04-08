@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { Question, VideoId } from '../types/domain';
+import type { CandidateId, Question, VideoId } from '../types/domain';
 import { service } from '../services';
 
-export function useQuestions(videoId: VideoId | null) {
+export function useQuestions(videoId: VideoId | null, candidateId: CandidateId | null = null) {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,15 +33,15 @@ export function useQuestions(videoId: VideoId | null) {
   }, [videoId]);
 
   const submitQuestion = useCallback(async (text: string) => {
-    if (!videoId) return;
+    if (!candidateId) return;
     try {
       setError(null);
-      const q = await service.submitQuestion('', videoId, text);
+      const q = await service.submitQuestion(candidateId, videoId, text);
       setQuestions((prev) => [...prev, q].sort((a, b) => b.plusOneCount - a.plusOneCount));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to submit question');
     }
-  }, [videoId]);
+  }, [videoId, candidateId]);
 
   return { questions, setQuestions, loading, error, submitQuestion };
 }

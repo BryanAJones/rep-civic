@@ -12,13 +12,15 @@ import { QuestionRow } from '../../components/questions';
 import { GeneralQuestionBox, TopicCard } from '../../components/topics';
 import { useCandidateProfile } from '../../hooks/useCandidateProfile';
 import { usePlusOne } from '../../hooks/usePlusOne';
-import type { Candidate, Question, Topic, Video } from '../../types/domain';
+import { useQuestions } from '../../hooks/useQuestions';
+import type { Candidate, CandidateId, Question, Topic, Video } from '../../types/domain';
 import './CandidateProfilePage.css';
 
 export function CandidateProfilePage() {
   const { candidateId } = useParams<{ candidateId: string }>();
   const { candidate, videos, questions, topics, loading, error } =
     useCandidateProfile(candidateId);
+  const { submitQuestion } = useQuestions(null, candidateId as CandidateId ?? null);
   // usePlusOne needs a setter — profile questions are read-only for now,
   // so optimistic updates won't visually reflect until page reload.
   const { vote } = usePlusOne(() => {});
@@ -49,7 +51,7 @@ export function CandidateProfilePage() {
             case 'videos':
               return renderVideos(candidate, videos);
             case 'qa':
-              return renderQA(candidate, generalQuestions, topics, vote);
+              return renderQA(candidate, generalQuestions, topics, vote, submitQuestion);
           }
         }}
       </ProfileTabs>
@@ -88,6 +90,7 @@ function renderQA(
   generalQuestions: Question[],
   topics: Topic[],
   onVote: (questionId: string) => void,
+  onSubmitQuestion: (text: string) => void,
 ) {
   if (candidate.status === 'unclaimed') {
     return (
@@ -95,14 +98,14 @@ function renderQA(
         <GeneralQuestionBox
           candidateName={candidate.name}
           questionCount={generalQuestions.length}
-          onSubmit={() => {}}
+          onSubmit={onSubmitQuestion}
         />
         {topics.map((topic) => (
           <TopicCard
             key={topic.id}
             topic={topic}
             onVote={onVote}
-            onSubmit={() => {}}
+            onSubmit={onSubmitQuestion}
           />
         ))}
       </div>

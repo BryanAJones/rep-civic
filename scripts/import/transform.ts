@@ -23,6 +23,9 @@ import type { ImportCandidate, DistrictRow, CandidateRow } from './types.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = join(__dirname, 'data');
 
+const ELECTION_YEAR = '2026';       // Must match FEC_CYCLE in download.ts
+const GA_MAX_HOUSE_DISTRICT = 14;   // GA has 14 congressional districts (2022 redistricting)
+
 // ── FEC Parsing ──────────────────────────────────────────────
 
 // FEC candidate master file columns (pipe-delimited, no header row)
@@ -84,9 +87,16 @@ function parseFec(): ImportCandidate[] {
       record[col] = (fields[i] || '').trim();
     });
 
-    // Filter: Georgia only, House or Senate
+    // Filter: Georgia only, House or Senate, current election cycle
     if (record.CAND_OFFICE_ST !== 'GA') continue;
     if (record.CAND_OFFICE !== 'H' && record.CAND_OFFICE !== 'S') continue;
+    if (record.CAND_ELECTION_YR !== ELECTION_YEAR) continue;
+
+    // Filter: valid GA House districts only (1-14)
+    if (record.CAND_OFFICE === 'H') {
+      const dist = parseInt(record.CAND_OFFICE_DISTRICT, 10);
+      if (dist < 1 || dist > GA_MAX_HOUSE_DISTRICT) continue;
+    }
 
     const { name, initials } = parseFecName(record.CAND_NAME);
     const distNum = parseInt(record.CAND_OFFICE_DISTRICT, 10);

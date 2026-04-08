@@ -5,21 +5,19 @@ interface LevelTabStripProps {
   tabs: LevelTab[];
   /** Fractional progress (0 = first tab, 1 = second tab, etc.) */
   progress: number;
-  /** Whether a drag gesture is in progress */
-  isDragging: boolean;
   onTabPress: (index: number) => void;
 }
 
-export function LevelTabStrip({ tabs, progress, isDragging, onTabPress }: LevelTabStripProps) {
+export function LevelTabStrip({ tabs, progress, onTabPress }: LevelTabStripProps) {
   if (tabs.length <= 1) return null;
 
-  const settledClass = isDragging ? '' : ' level-tab-strip--settled';
+  const activeIndex = Math.round(progress);
 
   // The track holds all labels side by side and slides with the content
   const trackOffset = -(progress * 100);
 
   return (
-    <div className={`level-tab-strip${settledClass}`}>
+    <div className="level-tab-strip">
       <div
         className="level-tab-strip__track"
         style={{ transform: `translateX(${trackOffset}%)` }}
@@ -43,21 +41,43 @@ export function LevelTabStrip({ tabs, progress, isDragging, onTabPress }: LevelT
         })}
       </div>
 
-      {/* Dot indicators */}
-      <div className="level-tab-strip__dots">
-        {tabs.map((tab, i) => {
-          const distance = Math.abs(progress - i);
-          const isActive = distance < 0.5;
-          return (
-            <button
-              key={tab.level ?? 'all'}
-              className={`level-tab-strip__dot${isActive ? ' level-tab-strip__dot--active' : ''}`}
-              onClick={() => onTabPress(i)}
-              type="button"
-              aria-label={tab.label}
-            />
-          );
-        })}
+      {/* Navigation row: arrows (desktop only) + dot indicators */}
+      <div className="level-tab-strip__nav">
+        <button
+          className="level-tab-strip__arrow"
+          onClick={() => onTabPress(activeIndex - 1)}
+          type="button"
+          aria-label="Previous"
+          disabled={activeIndex === 0}
+        >
+          {'\u2039'}
+        </button>
+
+        <div className="level-tab-strip__dots">
+          {tabs.map((tab, i) => {
+            const distance = Math.abs(progress - i);
+            const isActive = distance < 0.5;
+            return (
+              <button
+                key={tab.level ?? 'all'}
+                className={`level-tab-strip__dot${isActive ? ' level-tab-strip__dot--active' : ''}`}
+                onClick={() => onTabPress(i)}
+                type="button"
+                aria-label={tab.label}
+              />
+            );
+          })}
+        </div>
+
+        <button
+          className="level-tab-strip__arrow"
+          onClick={() => onTabPress(activeIndex + 1)}
+          type="button"
+          aria-label="Next"
+          disabled={activeIndex === tabs.length - 1}
+        >
+          {'\u203A'}
+        </button>
       </div>
     </div>
   );

@@ -16,7 +16,8 @@
     "import:download": "tsx scripts/import/download.ts",
     "import:transform": "tsx scripts/import/transform.ts",
     "import:seed": "tsx scripts/import/seed.ts",
-    "import:all": "tsx scripts/import/download.ts && tsx scripts/import/transform.ts && tsx scripts/import/seed.ts"
+    "import:all": "tsx scripts/import/download.ts && tsx scripts/import/transform.ts && tsx scripts/import/seed.ts",
+    "deploy": "npm run validate && npm run build && npx wrangler pages deploy dist/ --project-name=rep --branch=main"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.100.1",

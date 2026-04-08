@@ -1,0 +1,106 @@
+.district-browser {
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--rep-mist);
+}
+
+.district-browser__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-family: var(--rep-font-ui);
+  font-size: var(--rep-text-sm);
+  color: var(--rep-steel);
+  padding: var(--rep-space-lg);
+  text-align: center;
+}
+
+.district-browser__header {
+  padding: var(--rep-space-lg) var(--rep-space-lg) var(--rep-space-md);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.district-browser__title {
+  font-family: var(--rep-font-display);
+  font-size: var(--rep-text-lg);
+  font-weight: 700;
+  color: var(--rep-ink);
+  margin: 0;
+}
+
+.district-browser__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rep-space-sm);
+  padding: 0 var(--rep-space-lg) var(--rep-space-lg);
+}
+
+.district-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--rep-space-md) var(--rep-space-lg);
+  background: var(--rep-white);
+  border: 1px solid var(--rep-rule);
+  border-radius: var(--rep-radius);
+  cursor: pointer;
+  font-family: var(--rep-font-ui);
+  text-align: left;
+}
+
+.district-section__header:hover {
+  border-color: var(--rep-gold);
+}
+
+.district-section__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.district-section__office {
+  font-size: var(--rep-text-sm);
+  font-weight: 600;
+  color: var(--rep-ink);
+}
+
+.district-section__name {
+  font-size: var(--rep-text-2xs);
+  color: var(--rep-steel);
+}
+
+.district-section__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--rep-space-sm);
+}
+
+.district-section__chevron {
+  font-size: 12px;
+  color: var(--rep-steel);
+  transition: transform var(--rep-transition);
+}
+
+.district-section__chevron--open {
+  transform: rotate(90deg);
+}
+
+.district-section__candidates {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rep-space-sm);
+  padding: var(--rep-space-sm) 0 0 var(--rep-space-lg);
+}
+
+.district-section__loading,
+.district-section__empty {
+  font-family: var(--rep-font-ui);
+  font-size: var(--rep-text-2xs);
+  color: var(--rep-steel);
+  padding: var(--rep-space-sm) 0;
+}
