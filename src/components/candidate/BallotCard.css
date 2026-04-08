@@ -1,0 +1,55 @@
+.ballot-card {
+  display: flex;
+  gap: var(--rep-space-md);
+  align-items: center;
+  width: 100%;
+  background: var(--rep-white);
+  border: 1px solid var(--rep-rule);
+  border-radius: var(--rep-radius);
+  padding: var(--rep-space-md) var(--rep-space-lg);
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  transition: box-shadow var(--rep-transition);
+}
+
+.ballot-card:hover {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.ballot-card:active {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+.ballot-card__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ballot-card__name {
+  font-family: var(--rep-font-display);
+  font-size: var(--rep-text-lg);
+  font-weight: 700;
+  color: var(--rep-navy);
+  line-height: 1.2;
+}
+
+.ballot-card__office {
+  font-family: var(--rep-font-ui);
+  font-size: var(--rep-text-sm);
+  font-weight: 300;
+  color: var(--rep-steel);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ballot-card__party {
+  font-family: var(--rep-font-ui);
+  font-size: var(--rep-text-xs);
+  font-weight: 400;
+  color: var(--rep-steel);
+  margin-top: 2px;
+}

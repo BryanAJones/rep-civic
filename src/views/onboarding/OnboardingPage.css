@@ -6,18 +6,18 @@
 .onboarding__hero {
   background: var(--rep-navy, #0D1F3C);
   border-bottom: 3px solid var(--rep-gold, #B8922A);
-  padding: 28px 20px 22px;
+  padding: var(--rep-space-xl) var(--rep-space-lg) var(--rep-space-lg);
   text-align: center;
 }
 
 .onboarding__logo {
   font-family: var(--rep-font-display, 'Playfair Display', serif);
-  font-size: 42px;
+  font-size: clamp(36px, 10cqi, 48px);
   font-weight: 700;
   color: white;
   letter-spacing: -0.01em;
   line-height: 1;
-  margin-bottom: 10px;
+  margin-bottom: var(--rep-space-sm);
 }
 
 .onboarding__period {
@@ -26,17 +26,17 @@
 
 .onboarding__tagline {
   font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
-  font-size: 9px;
+  font-size: var(--rep-text-2xs);
   font-weight: 300;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.58);
-  margin-bottom: 10px;
+  margin-bottom: var(--rep-space-sm);
 }
 
 .onboarding__desc {
   font-family: var(--rep-font-display, 'Playfair Display', serif);
-  font-size: 12px;
+  font-size: var(--rep-text-sm);
   font-style: italic;
   color: rgba(255, 255, 255, 0.6);
   line-height: 1.5;
@@ -44,29 +44,29 @@
 }
 
 .onboarding__body {
-  padding: 18px 16px;
+  padding: var(--rep-space-lg) var(--rep-space-lg);
 }
 
 .onboarding__label {
   display: block;
   font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
-  font-size: 9px;
+  font-size: var(--rep-text-2xs);
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--rep-steel, #4A5568);
-  margin-bottom: 5px;
+  margin-bottom: var(--rep-space-xs);
 }
 
 .onboarding__input {
   width: 100%;
   background: white;
   border: 1px solid var(--rep-rule, #D1D9E6);
-  border-radius: 2px;
-  padding: 9px 12px;
-  font-size: 11px;
+  border-radius: var(--rep-radius);
+  padding: var(--rep-space-sm) var(--rep-space-md);
+  font-size: var(--rep-text-sm);
   color: var(--rep-ink, #1A1C22);
-  margin-bottom: 12px;
+  margin-bottom: var(--rep-space-md);
   font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
   box-sizing: border-box;
 }
@@ -81,9 +81,9 @@
 
 .onboarding__error {
   font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
-  font-size: 11px;
+  font-size: var(--rep-text-sm);
   color: #c53030;
-  margin: 0 0 8px;
+  margin: 0 0 var(--rep-space-sm);
 }
 
 .onboarding__submit {
@@ -91,9 +91,9 @@
   background: var(--rep-navy, #0D1F3C);
   color: white;
   border: none;
-  border-radius: 2px;
-  padding: 11px;
-  font-size: 11px;
+  border-radius: var(--rep-radius);
+  padding: var(--rep-space-sm);
+  font-size: var(--rep-text-sm);
   font-weight: 600;
   letter-spacing: 0.04em;
   text-align: center;
@@ -108,9 +108,132 @@
 
 .onboarding__fine {
   font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
-  font-size: 9px;
+  font-size: var(--rep-text-2xs);
   color: var(--rep-steel, #4A5568);
   text-align: center;
-  margin-top: 10px;
+  margin-top: var(--rep-space-sm);
   line-height: 1.6;
+}
+
+/* ── Cascade reveal phase ─────────────────────────────── */
+
+.onboarding__cascade {
+  padding: var(--rep-space-lg);
+  padding-bottom: 120px; /* room for fixed CTA bar */
+}
+
+.onboarding__counter {
+  text-align: center;
+  margin-bottom: var(--rep-space-xl);
+}
+
+.onboarding__counter-number {
+  font-family: var(--rep-font-display, 'Playfair Display', serif);
+  font-size: clamp(48px, 16cqi, 72px);
+  font-weight: 700;
+  color: var(--rep-navy);
+  line-height: 1;
+}
+
+.onboarding__counter-label {
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  font-size: var(--rep-text-sm);
+  font-weight: 300;
+  color: var(--rep-steel);
+  margin-top: var(--rep-space-xs);
+}
+
+.onboarding__group-header {
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  font-size: var(--rep-text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--rep-steel);
+  padding-bottom: var(--rep-space-xs);
+  border-bottom: 1px solid var(--rep-gold);
+  margin-bottom: var(--rep-space-md);
+  margin-top: var(--rep-space-xl);
+}
+
+.onboarding__group-header:first-of-type {
+  margin-top: 0;
+}
+
+.onboarding__card-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rep-space-sm);
+}
+
+/* ── Skeleton cards ─────────────────────────────────── */
+
+.skeleton-card {
+  display: flex;
+  gap: var(--rep-space-md);
+  align-items: center;
+  padding: var(--rep-space-md) var(--rep-space-lg);
+  background: var(--rep-white);
+  border: 1px solid var(--rep-rule);
+  border-radius: var(--rep-radius);
+}
+
+.skeleton-card__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--rep-radius);
+  flex-shrink: 0;
+}
+
+.skeleton-card__lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.skeleton-card__line {
+  height: 10px;
+  border-radius: var(--rep-radius);
+}
+
+.skeleton-card__line--long {
+  width: 70%;
+}
+
+.skeleton-card__line--short {
+  width: 45%;
+}
+
+/* ── CTA bar ────────────────────────────────────────── */
+
+.onboarding__cta-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--rep-navy);
+  padding: var(--rep-space-lg);
+  z-index: 100;
+}
+
+.onboarding__cta-button {
+  display: block;
+  width: 100%;
+  background: var(--rep-gold);
+  color: var(--rep-navy);
+  border: none;
+  border-radius: var(--rep-radius);
+  padding: var(--rep-space-md);
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  font-size: var(--rep-text-md);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-align: center;
+  cursor: pointer;
+  transition: opacity var(--rep-transition);
+}
+
+.onboarding__cta-button:active {
+  opacity: 0.85;
 }

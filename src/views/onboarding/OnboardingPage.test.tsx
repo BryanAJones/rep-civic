@@ -2,7 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { createMockService } from '../../test/mock-service';
-import { buildDistrict } from '../../test/mock-data';
+import { buildDistrict, buildCandidate } from '../../test/mock-data';
 
 const mockNavigate = vi.fn();
 
@@ -33,6 +33,22 @@ function renderOnboarding() {
   );
 }
 
+/** Set up mocks for a successful address submission with candidates. */
+function mockSuccessfulSubmit(candidateCount = 6) {
+  const district = buildDistrict({ code: 'ATL-SB-D6' });
+  const candidates = Array.from({ length: candidateCount }, (_, i) =>
+    buildCandidate({
+      id: `c-test-${i}`,
+      name: `Candidate ${i}`,
+      initials: `C${i}`,
+      districtCode: district.code,
+    }),
+  );
+  mockService.resolveDistricts = vi.fn().mockResolvedValue([district]);
+  mockService.getCandidatesByDistricts = vi.fn().mockResolvedValue(candidates);
+  return { district, candidates };
+}
+
 describe('OnboardingPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -55,9 +71,7 @@ describe('OnboardingPage', () => {
   });
 
   it('calls resolveDistricts with the entered address', async () => {
-    const districts = [buildDistrict({ code: 'ATL-SB-D6' })];
-    mockService.resolveDistricts = vi.fn().mockResolvedValue(districts);
-
+    mockSuccessfulSubmit();
     renderOnboarding();
 
     await userEvent.type(screen.getByLabelText(/home address/i), '123 Main St, Atlanta, GA');
@@ -68,9 +82,33 @@ describe('OnboardingPage', () => {
     });
   });
 
-  it('navigates to /app/feed after successful onboarding', async () => {
-    const districts = [buildDistrict({ code: 'ATL-SB-D6' })];
-    mockService.resolveDistricts = vi.fn().mockResolvedValue(districts);
+  it('shows cascade reveal then navigates on CTA click', async () => {
+    mockSuccessfulSubmit(8);
+    renderOnboarding();
+
+    await userEvent.type(screen.getByLabelText(/home address/i), '123 Main St');
+    await userEvent.click(screen.getByRole('button', { name: /find my representatives/i }));
+
+    // Wait for cascade to appear
+    await waitFor(() => {
+      expect(screen.getByTestId('cascade-reveal')).toBeInTheDocument();
+    });
+
+    // Counter should show candidate count
+    expect(screen.getByText('8')).toBeInTheDocument();
+
+    // CTA should appear
+    const ctaButton = await screen.findByRole('button', { name: /see what they are saying/i });
+    await userEvent.click(ctaButton);
+
+    expect(mockNavigate).toHaveBeenCalledWith('/app/feed', { replace: true });
+  });
+
+  it('shows skeleton cards while ballot is loading', async () => {
+    const district = buildDistrict({ code: 'ATL-SB-D6' });
+    mockService.resolveDistricts = vi.fn().mockResolvedValue([district]);
+    // Make getCandidatesByDistricts hang so skeleton stays visible
+    mockService.getCandidatesByDistricts = vi.fn().mockReturnValue(new Promise(() => {}));
 
     renderOnboarding();
 
@@ -78,7 +116,7 @@ describe('OnboardingPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /find my representatives/i }));
 
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/app/feed', { replace: true });
+      expect(screen.getByTestId('cascade-skeleton')).toBeInTheDocument();
     });
   });
 

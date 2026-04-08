@@ -668,6 +668,13 @@ export const mockService: DataService = {
     return delay(candidates);
   },
 
+  getCandidatesByDistricts(districtCodes: DistrictCode[]) {
+    const candidates = Object.values(mockCandidates).filter(
+      (c) => districtCodes.includes(c.districtCode),
+    );
+    return delay(candidates);
+  },
+
   getTopicsForCandidate(candidateId: CandidateId) {
     const filtered = mockTopics.filter((t) => t.candidateId === candidateId);
     return delay(filtered);
