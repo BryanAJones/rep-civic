@@ -37,7 +37,7 @@ export function OnboardingPage() {
   const { dispatch } = useUser();
   const navigate = useNavigate();
 
-  const { groups, totalCandidates, loading: ballotLoading } = useMyBallot(districts);
+  const { groups, totalCandidates, loading: ballotLoading, error: ballotError } = useMyBallot(districts);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -119,7 +119,22 @@ export function OnboardingPage() {
         </div>
       )}
 
-      {phase === 'cascade' && !ballotLoading && groups.length > 0 && (
+      {phase === 'cascade' && !ballotLoading && (ballotError || groups.length === 0) && (
+        <div className="onboarding__cascade">
+          <p className="onboarding__error">
+            {ballotError ?? 'No candidates found for this address.'}
+          </p>
+          <button
+            type="button"
+            className="onboarding__submit"
+            onClick={() => { setPhase('input'); setDistricts([]); }}
+          >
+            Try a different address
+          </button>
+        </div>
+      )}
+
+      {phase === 'cascade' && !ballotLoading && !ballotError && groups.length > 0 && (
         <div className="onboarding__cascade" data-testid="cascade-reveal">
           <div className="onboarding__counter counter-reveal">
             <div className="onboarding__counter-number">{totalCandidates}</div>

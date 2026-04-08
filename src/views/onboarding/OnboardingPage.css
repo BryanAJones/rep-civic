@@ -214,6 +214,7 @@
   right: 0;
   background: var(--rep-navy);
   padding: var(--rep-space-lg);
+  padding-bottom: calc(var(--rep-space-lg) + env(safe-area-inset-bottom, 0px));
   z-index: 100;
 }
 
