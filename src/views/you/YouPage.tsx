@@ -65,6 +65,13 @@ export function YouPage() {
           ) : (
             <p className="you-page__placeholder">No districts loaded.</p>
           )}
+          <button
+            type="button"
+            className="you-page__update-address"
+            onClick={() => navigate('/onboarding')}
+          >
+            Update address
+          </button>
         </div>
       </div>
 

@@ -247,6 +247,23 @@
   fill: var(--rep-gold, #B8922A);
 }
 
+.you-page__update-address {
+  display: block;
+  width: 100%;
+  margin-top: var(--rep-space-sm);
+  padding: var(--rep-space-xs) 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  font-size: var(--rep-text-2xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rep-gold);
+  text-align: center;
+}
+
 .you-page__ballot-link {
   width: 100%;
   display: flex;

@@ -87,11 +87,11 @@ function parseFec(): ImportCandidate[] {
       record[col] = (fields[i] || '').trim();
     });
 
-    // Filter: Georgia only, House or Senate, current election cycle, incumbents only
+    // Filter: Georgia only, House or Senate, current election cycle, active candidates
     if (record.CAND_OFFICE_ST !== 'GA') continue;
     if (record.CAND_OFFICE !== 'H' && record.CAND_OFFICE !== 'S') continue;
     if (record.CAND_ELECTION_YR !== ELECTION_YEAR) continue;
-    if (record.CAND_ICI !== 'I') continue;
+    if (record.CAND_STATUS !== 'C') continue;
 
     // Filter: valid GA House districts only (1-14)
     if (record.CAND_OFFICE === 'H') {
