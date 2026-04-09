@@ -12,6 +12,7 @@ interface GeocodioDistrict {
   name: string;
   district_number: number;
   ocd_id: string;
+  proportion?: number;
 }
 
 interface GeocodioFields {
@@ -32,6 +33,15 @@ interface GeocodioResponse {
 
 // ── Mapping ──────────────────────────────────────────────────
 
+/** Pick the district with the highest proportion (address coverage). */
+function pickPrimary(districts: GeocodioDistrict[]): GeocodioDistrict | undefined {
+  if (districts.length === 0) return undefined;
+  if (districts.length === 1) return districts[0];
+  return districts.reduce((best, d) =>
+    (d.proportion ?? 0) > (best.proportion ?? 0) ? d : best,
+  );
+}
+
 function codeFromOcdId(ocdId: string): string {
   return ocdId
     .replace('ocd-division/country:us/', '')
@@ -46,9 +56,10 @@ export function mapGeocodioResponse(data: GeocodioResponse): District[] {
   const districts: District[] = [];
   const fields = topResult.fields;
 
-  // Congressional districts (federal)
+  // Congressional district (federal) — pick primary if multiple returned
   if (fields.congressional_districts) {
-    for (const cd of fields.congressional_districts) {
+    const cd = pickPrimary(fields.congressional_districts);
+    if (cd) {
       const code = codeFromOcdId(cd.ocd_id);
       districts.push({
         code,
@@ -61,12 +72,13 @@ export function mapGeocodioResponse(data: GeocodioResponse): District[] {
     }
   }
 
-  // State legislative districts
+  // State legislative districts — pick primary per chamber
   if (fields.state_legislative_districts) {
     const sld = fields.state_legislative_districts;
 
     if (sld.senate) {
-      for (const s of sld.senate) {
+      const s = pickPrimary(sld.senate);
+      if (s) {
         const code = codeFromOcdId(s.ocd_id);
         districts.push({
           code,
@@ -80,7 +92,8 @@ export function mapGeocodioResponse(data: GeocodioResponse): District[] {
     }
 
     if (sld.house) {
-      for (const h of sld.house) {
+      const h = pickPrimary(sld.house);
+      if (h) {
         const code = codeFromOcdId(h.ocd_id);
         districts.push({
           code,
