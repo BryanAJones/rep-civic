@@ -7,11 +7,16 @@
 #
 # Required repository secrets (Settings → Secrets and variables → Actions):
 #   CONGRESS_API_KEY      — free key from https://gpo.congress.gov/
-#   VITE_SUPABASE_URL     — Supabase project URL
 #   SUPABASE_SERVICE_KEY  — Supabase service_role key (NOT the anon key)
+#
+# The Supabase URL is not secret (it's baked into the public client bundle)
+# so it's inlined below rather than demanding a third repo secret.
 #
 # The job can also be triggered manually from the Actions tab via
 # workflow_dispatch for ad-hoc refreshes (e.g., after a known withdrawal).
+
+env:
+  VITE_SUPABASE_URL: https://ocpcejomntxqsboswhrx.supabase.co
 
 name: refresh-candidates
 
@@ -38,7 +43,7 @@ jobs:
       - name: Write .env for tsx --env-file
         run: |
           {
-            echo "VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}"
+            echo "VITE_SUPABASE_URL=${VITE_SUPABASE_URL}"
             echo "CONGRESS_API_KEY=${{ secrets.CONGRESS_API_KEY }}"
             echo "SUPABASE_SERVICE_KEY=${{ secrets.SUPABASE_SERVICE_KEY }}"
           } > .env
