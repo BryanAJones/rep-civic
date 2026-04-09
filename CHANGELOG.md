@@ -5,6 +5,26 @@
 
 ---
 
+## [0.13.1] - 2026-04-09 — Address Confirmation + Candidate Data Source Join
+
+### Added
+- Address confirmation phase in onboarding: after Geocodio resolves, user sees a confirm screen showing the district list before the cascade reveal. Three variants: GA (confirm/retry), non-GA (Georgia-only guard), undetermined state.
+- STATE_NAMES utility (src/utils/stateNames.ts) extracted from civicApi so non-service code can use it without tripping the architecture import guard.
+- Congress.gov API integration in data import pipeline (scripts/import/download.ts): fetches sitting GA House + Senate members via /member/GA?currentMember=true. Free tier, authoritative source.
+- Source-joining model in scripts/import/transform.ts: Congress.gov supplies sitting federal members, FEC supplies federal challengers (CAND_ICI != 'I'), OpenStates supplies sitting state legislators. Incumbents win dedup ties.
+- `isIncumbent` field on ImportCandidate for source tracking.
+- `parseCongress()` function in transform.ts handling Senate + House member parsing from congress.gov JSON output.
+
+### Changed
+- FEC transform now drops all records with CAND_ICI='I'. FEC retains candidates whose committees remain open even after they leave office (e.g., MTG after her 2025 resignation), so congress.gov is the sole source of truth for sitting federal incumbents.
+- scripts/import/seed.ts accepts VITE_SUPABASE_URL as fallback so only SUPABASE_SERVICE_KEY needs to be added for seed runs.
+- package.json import scripts use `tsx --env-file=.env` so CONGRESS_API_KEY and SUPABASE_SERVICE_KEY are loaded from .env without needing to inline them.
+
+### Fixed
+- Stale incumbent in CD:14 (MTG) no longer appears in candidate list. CD:14 is correctly represented as vacant-seat-with-challengers-only until a replacement is seated.
+
+---
+
 ## [0.13.0] - 2026-04-08 — Ballot Page, Skeleton Loading, Feed Refactor
 
 ### Added

@@ -226,13 +226,25 @@ Per-level scroll positions are preserved when swiping between levels. Empty leve
 - `src/types/supabase.ts` — auto-generated from schema
 - `scripts/import/` — FEC + OpenStates data download/transform/seed scripts
 
-**GA candidate data:** FEC bulk CSV (federal House + Senate candidates) and OpenStates bulk CSV (current state legislators). Downloaded via `npm run import:download`, transformed via `npm run import:transform`, seeded via `npm run import:seed`. District codes use OCD-ID format (`STATE:GA-CD:5`, `STATE:GA-SLDL:60`, `STATE:GA-SLDU:34`) matching Geocodio output. Scripts in `scripts/import/`, run manually by the developer.
+**GA candidate data (source-joining model):**
+
+Three sources are joined into a single candidate list by `scripts/import/transform.ts`:
+
+1. **Congress.gov `/member/GA?currentMember=true`** — authoritative source for sitting federal House + Senate members. Free tier (5000 req/hr), keyed on stable `bioguideId`. Pulled because FEC retains candidates whose committees stay open even after they leave office (e.g., MTG after her 2025 resignation), so trusting FEC `CAND_ICI='I'` records would resurface stale incumbents.
+2. **FEC candidate master bulk file** — declared federal challengers only. The transform drops all records where `CAND_ICI='I'` and lets Congress.gov supply incumbents instead. Challengers (`CAND_ICI != 'I'`) pass through unchanged.
+3. **OpenStates `current/ga.csv`** — sitting GA state House + Senate legislators. Challengers for state races are a known gap (see BACKLOG B1-20) because the GA Secretary of State qualified-candidates page is JS-rendered and blocks scraping.
+
+Pipeline commands: `npm run import:download` → `npm run import:transform` → `npm run import:seed` (or `npm run import:all` for the full chain). Scripts in `scripts/import/` read `.env` via `tsx --env-file=.env`. District codes use OCD-ID format (`STATE:GA-CD:5`, `STATE:GA-SLDL:60`, `STATE:GA-SLDU:34`) matching Geocodio output. A nightly GitHub Action refreshes candidate data automatically (planned, BACKLOG B1-18).
 
 **District resolution:** Geocodio geocode API with `fields=cd,stateleg`. Replaces Google Civic Information API (shut down April 2025). Same OCD-ID based district codes. Free tier: 2,500 lookups/day.
 
-**Environment variables (client, in `.env`):**
-- `VITE_SUPABASE_URL` — Supabase project URL
-- `VITE_SUPABASE_ANON_KEY` — Supabase anonymous/public key
+**Environment variables (client + server-side scripts, in `.env`):**
+- `VITE_SUPABASE_URL` — Supabase project URL (client + fallback for seed scripts)
+- `VITE_SUPABASE_ANON_KEY` — Supabase anonymous/public key (client)
+- `CONGRESS_API_KEY` — Congress.gov API key (server-side only; used by `scripts/import/download.ts`). Register free at https://gpo.congress.gov/.
+- `SUPABASE_SERVICE_KEY` — service_role key (server-side only; used by `scripts/import/seed.ts`). Never expose to the client.
+
+`.env` is gitignored. Scripts use `tsx --env-file=.env` to load these variables without polluting the client bundle.
 
 **Supabase Edge Function secrets (set via `supabase secrets set`):**
 - `GEOCODIO_API_KEY` — Geocodio API key (free tier, 2500/day). Used by proxy-geocodio function.

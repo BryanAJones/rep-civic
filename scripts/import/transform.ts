@@ -1,10 +1,21 @@
 /**
- * Transform raw FEC + OpenStates data into Rep schema rows.
+ * Transform raw FEC + OpenStates + Congress.gov data into Rep schema rows.
  *
  * Reads:  scripts/import/data/fec_candidates.txt (pipe-delimited)
  *         scripts/import/data/openstates_ga.csv
+ *         scripts/import/data/congress_ga.json
  * Writes: scripts/import/data/districts.json
  *         scripts/import/data/candidates.json
+ *
+ * Source-joining model (see CLAUDE.md "Backend Architecture"):
+ *   - Congress.gov is the authoritative source for sitting federal members.
+ *     FEC retains stale incumbents whose committees stay open after they
+ *     leave office (e.g., MTG remained in FEC after her 2025 resignation),
+ *     so we drop ALL FEC records with CAND_ICI='I' and let congress.gov
+ *     supply incumbents instead.
+ *   - FEC supplies declared challengers (CAND_ICI != 'I') — preserved to
+ *     keep the debate/response mechanic intact.
+ *   - OpenStates supplies sitting state legislators.
  *
  * District code format matches Geocodio OCD-IDs (processed through
  * codeFromDivisionId in civicApi.ts):
@@ -93,6 +104,12 @@ function parseFec(): ImportCandidate[] {
     if (record.CAND_ELECTION_YR !== ELECTION_YEAR) continue;
     if (record.CAND_STATUS !== 'C') continue;
 
+    // Drop FEC incumbents — congress.gov is the authoritative source for
+    // sitting members. FEC keeps candidates whose committees remain open
+    // after they leave office (e.g., MTG after her 2025 resignation), so
+    // trusting FEC 'I' records would resurface stale incumbents.
+    if (record.CAND_ICI === 'I') continue;
+
     // Filter: valid GA House districts only (1-14)
     if (record.CAND_OFFICE === 'H') {
       const dist = parseInt(record.CAND_OFFICE_DISTRICT, 10);
@@ -123,6 +140,86 @@ function parseFec(): ImportCandidate[] {
       officeTitle,
       districtCode,
       level: 'federal',
+      isIncumbent: false, // All FEC records here are challengers — incumbents filtered out above
+    });
+  }
+
+  return candidates;
+}
+
+// ── Congress.gov Parsing ─────────────────────────────────────
+
+// Matches the shape written by download.ts — only fields consumed downstream.
+interface CongressMemberRaw {
+  bioguideId: string;
+  name: string;          // "Last, First M."
+  partyName: string;     // "Democratic" | "Republican" | "Independent"
+  state: string;         // "Georgia"
+  district?: number;     // House only
+  terms: {
+    item: { chamber: 'House of Representatives' | 'Senate'; startYear: number; endYear?: number }[];
+  };
+}
+
+function parseCongressName(raw: string): { name: string; initials: string } {
+  // Congress.gov format matches FEC: "LAST, FIRST M." — reuse the FEC parser.
+  return parseFecName(raw);
+}
+
+function normalizeCongressParty(party: string): string {
+  // Congress.gov returns full names already ("Democratic", "Republican", "Independent")
+  const lower = party.toLowerCase();
+  if (lower.includes('democrat')) return 'Democratic';
+  if (lower.includes('republican')) return 'Republican';
+  if (lower.includes('independent')) return 'Independent';
+  if (lower.includes('libertarian')) return 'Libertarian';
+  if (lower.includes('green')) return 'Green';
+  return party;
+}
+
+function parseCongress(): ImportCandidate[] {
+  const path = join(DATA_DIR, 'congress_ga.json');
+  const raw = readFileSync(path, 'utf-8');
+  const members = JSON.parse(raw) as CongressMemberRaw[];
+
+  const candidates: ImportCandidate[] = [];
+
+  for (const m of members) {
+    // Determine current chamber from the most recent term.
+    // terms.item is ordered chronologically, so take the last entry.
+    const termItems = m.terms?.item ?? [];
+    const currentTerm = termItems[termItems.length - 1];
+    if (!currentTerm) continue;
+
+    const { name, initials } = parseCongressName(m.name);
+    const party = normalizeCongressParty(m.partyName);
+
+    let districtCode: string;
+    let officeTitle: string;
+
+    if (currentTerm.chamber === 'Senate') {
+      districtCode = 'STATE:GA';
+      officeTitle = 'U.S. Senator';
+    } else {
+      // House — district is required
+      if (m.district === undefined) {
+        console.warn(`  Skipping ${m.name}: House member with no district`);
+        continue;
+      }
+      districtCode = `STATE:GA-CD:${m.district}`;
+      officeTitle = `U.S. Representative, District ${m.district}`;
+    }
+
+    candidates.push({
+      sourceId: m.bioguideId,
+      source: 'congress',
+      name,
+      initials,
+      party,
+      officeTitle,
+      districtCode,
+      level: 'federal',
+      isIncumbent: true,
     });
   }
 
@@ -184,6 +281,7 @@ function parseOpenStates(): ImportCandidate[] {
       officeTitle,
       districtCode,
       level: 'state',
+      isIncumbent: true, // OpenStates supplies current sitting legislators
     });
   }
 
@@ -245,13 +343,18 @@ function countOpponents(candidates: ImportCandidate[]): Map<string, number> {
 function main() {
   console.log('=== Rep. Data Import — Transform ===\n');
 
+  const congressCandidates = parseCongress();
+  console.log(`Congress.gov: ${congressCandidates.length} sitting GA federal members`);
+
   const fecCandidates = parseFec();
-  console.log(`FEC: ${fecCandidates.length} GA federal candidates`);
+  console.log(`FEC: ${fecCandidates.length} GA federal challengers (incumbents dropped)`);
 
   const osCandidates = parseOpenStates();
   console.log(`OpenStates: ${osCandidates.length} GA state legislators`);
 
-  const allCandidates = [...fecCandidates, ...osCandidates];
+  // Order matters for dedup: incumbents first so they win ties against any
+  // challenger record that happens to share a name + district.
+  const allCandidates = [...congressCandidates, ...fecCandidates, ...osCandidates];
   console.log(`Total: ${allCandidates.length} candidates\n`);
 
   // Generate districts

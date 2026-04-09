@@ -30,14 +30,15 @@ export interface OpenStatesLegislator {
 
 // Unified intermediate record after both sources are parsed
 export interface ImportCandidate {
-  sourceId: string;          // Original ID from source
-  source: 'fec' | 'openstates';
+  sourceId: string;          // Original ID from source (FEC CAND_ID, OpenStates person ID, Congress bioguideId)
+  source: 'fec' | 'openstates' | 'congress';
   name: string;              // "First Last" format
   initials: string;          // Two-letter initials
   party: string;             // Normalized: "Democratic", "Republican", "Libertarian", etc.
   officeTitle: string;       // e.g., "U.S. Representative", "State Senator"
   districtCode: string;      // OCD-ID based code matching Geocodio format
   level: 'state' | 'federal';
+  isIncumbent: boolean;      // True for sitting members (congress.gov) — used for tie-breaks during dedup
 }
 
 // Ready-to-insert rows

@@ -35,7 +35,7 @@ function renderOnboarding() {
 
 /** Set up mocks for a successful address submission with candidates. */
 function mockSuccessfulSubmit(candidateCount = 6) {
-  const district = buildDistrict({ code: 'ATL-SB-D6' });
+  const district = buildDistrict({ code: 'STATE:GA-CD:5', level: 'federal' });
   const candidates = Array.from({ length: candidateCount }, (_, i) =>
     buildCandidate({
       id: `c-test-${i}`,
@@ -47,6 +47,15 @@ function mockSuccessfulSubmit(candidateCount = 6) {
   mockService.resolveDistricts = vi.fn().mockResolvedValue([district]);
   mockService.getCandidatesByDistricts = vi.fn().mockResolvedValue(candidates);
   return { district, candidates };
+}
+
+/** Helper: submit address and confirm state in the confirm phase. */
+async function submitAndConfirm(address = '123 Main St') {
+  await userEvent.type(screen.getByLabelText(/home address/i), address);
+  await userEvent.click(screen.getByRole('button', { name: /find my representatives/i }));
+  // Wait for confirm phase, then click through
+  const confirmBtn = await screen.findByRole('button', { name: /that is correct/i });
+  await userEvent.click(confirmBtn);
 }
 
 describe('OnboardingPage', () => {
@@ -86,8 +95,7 @@ describe('OnboardingPage', () => {
     mockSuccessfulSubmit(8);
     renderOnboarding();
 
-    await userEvent.type(screen.getByLabelText(/home address/i), '123 Main St');
-    await userEvent.click(screen.getByRole('button', { name: /find my representatives/i }));
+    await submitAndConfirm();
 
     // Wait for cascade to appear
     await waitFor(() => {
@@ -105,15 +113,14 @@ describe('OnboardingPage', () => {
   });
 
   it('shows skeleton cards while ballot is loading', async () => {
-    const district = buildDistrict({ code: 'ATL-SB-D6' });
+    const district = buildDistrict({ code: 'STATE:GA-CD:5', level: 'federal' });
     mockService.resolveDistricts = vi.fn().mockResolvedValue([district]);
     // Make getCandidatesByDistricts hang so skeleton stays visible
     mockService.getCandidatesByDistricts = vi.fn().mockReturnValue(new Promise(() => {}));
 
     renderOnboarding();
 
-    await userEvent.type(screen.getByLabelText(/home address/i), '123 Main St');
-    await userEvent.click(screen.getByRole('button', { name: /find my representatives/i }));
+    await submitAndConfirm();
 
     await waitFor(() => {
       expect(screen.getByTestId('cascade-skeleton')).toBeInTheDocument();
@@ -124,8 +131,7 @@ describe('OnboardingPage', () => {
     mockSuccessfulSubmit(3);
     renderOnboarding();
 
-    await userEvent.type(screen.getByLabelText(/home address/i), '123 Main St');
-    await userEvent.click(screen.getByRole('button', { name: /find my representatives/i }));
+    await submitAndConfirm();
 
     await waitFor(() => {
       expect(screen.getByTestId('cascade-reveal')).toBeInTheDocument();
@@ -134,6 +140,49 @@ describe('OnboardingPage', () => {
     expect(screen.getByText('3')).toBeInTheDocument();
     const ctaButton = await screen.findByRole('button', { name: /see what they are saying/i });
     expect(ctaButton).toBeInTheDocument();
+  });
+
+  it('shows confirm phase with state name for GA address', async () => {
+    mockSuccessfulSubmit();
+    renderOnboarding();
+
+    await userEvent.type(screen.getByLabelText(/home address/i), '123 Main St, Atlanta, GA');
+    await userEvent.click(screen.getByRole('button', { name: /find my representatives/i }));
+
+    const confirmBtn = await screen.findByRole('button', { name: /that is correct/i });
+    expect(confirmBtn).toBeInTheDocument();
+    expect(screen.getByText(/Georgia/)).toBeInTheDocument();
+  });
+
+  it('blocks non-GA addresses with state guard message', async () => {
+    const district = buildDistrict({ code: 'STATE:OR-CD:2', level: 'federal' });
+    mockService.resolveDistricts = vi.fn().mockResolvedValue([district]);
+
+    renderOnboarding();
+
+    await userEvent.type(screen.getByLabelText(/home address/i), '123 Main St, Portland, OR');
+    await userEvent.click(screen.getByRole('button', { name: /find my representatives/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Oregon/)).toBeInTheDocument();
+    });
+    expect(screen.getByText(/currently covers/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /try a different address/i })).toBeInTheDocument();
+  });
+
+  it('retry from confirm returns to input phase', async () => {
+    const district = buildDistrict({ code: 'STATE:OR-CD:2', level: 'federal' });
+    mockService.resolveDistricts = vi.fn().mockResolvedValue([district]);
+
+    renderOnboarding();
+
+    await userEvent.type(screen.getByLabelText(/home address/i), '123 Main St');
+    await userEvent.click(screen.getByRole('button', { name: /find my representatives/i }));
+
+    const retryBtn = await screen.findByRole('button', { name: /try a different address/i });
+    await userEvent.click(retryBtn);
+
+    expect(screen.getByLabelText(/home address/i)).toBeInTheDocument();
   });
 
   it('shows error state when resolveDistricts fails', async () => {

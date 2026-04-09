@@ -13,10 +13,10 @@
     "test:coverage": "vitest run --coverage",
     "validate": "tsc -b --noEmit && eslint . && vitest run",
     "test:e2e": "playwright test",
-    "import:download": "tsx scripts/import/download.ts",
-    "import:transform": "tsx scripts/import/transform.ts",
-    "import:seed": "tsx scripts/import/seed.ts",
-    "import:all": "tsx scripts/import/download.ts && tsx scripts/import/transform.ts && tsx scripts/import/seed.ts",
+    "import:download": "tsx --env-file=.env scripts/import/download.ts",
+    "import:transform": "tsx --env-file=.env scripts/import/transform.ts",
+    "import:seed": "tsx --env-file=.env scripts/import/seed.ts",
+    "import:all": "npm run import:download && npm run import:transform && npm run import:seed",
     "deploy": "npm run validate && npm run build && npx wrangler pages deploy dist/ --project-name=rep --branch=main"
   },
   "dependencies": {

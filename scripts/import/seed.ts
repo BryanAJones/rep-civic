@@ -23,14 +23,16 @@ import type { DistrictRow, CandidateRow } from './types.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = join(__dirname, 'data');
 
-const SUPABASE_URL = process.env.SUPABASE_URL;
+// Accept either SUPABASE_URL (server-style) or VITE_SUPABASE_URL (the one
+// already set in .env for the client). Same value, different prefix.
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
   console.error('Missing required environment variables:');
-  console.error('  SUPABASE_URL          — your Supabase project URL');
-  console.error('  SUPABASE_SERVICE_KEY  — service_role key (from Dashboard → Settings → API)');
-  console.error('\nUsage: SUPABASE_URL=https://xxx.supabase.co SUPABASE_SERVICE_KEY=eyJ... npm run import:seed');
+  console.error('  SUPABASE_URL or VITE_SUPABASE_URL — your Supabase project URL');
+  console.error('  SUPABASE_SERVICE_KEY              — service_role key (from Dashboard → Settings → API)');
+  console.error('\nAdd SUPABASE_SERVICE_KEY=eyJ... to .env (scripts use --env-file=.env).');
   process.exit(1);
 }
 

@@ -16,6 +16,17 @@ export interface ChangelogEntry {
  */
 export const changelog: ChangelogEntry[] = [
   {
+    version: '0.13.1',
+    date: '2026-04-09',
+    title: 'Confirmed address, cleaner roster',
+    items: [
+      'Confirm your district resolution before the ballot cascades onto screen',
+      'Clear Georgia-only guard when an address lands outside our launch market',
+      'Sitting federal members now sourced from Congress.gov for accuracy',
+      'Stale incumbents who have left office no longer appear in the feed',
+    ],
+  },
+  {
     version: '0.13.0',
     date: '2026-04-08',
     title: 'Your ballot, always',

@@ -127,8 +127,8 @@ tsconfig.app.json
     20260328015705_initial_schema.sql  (11 tables, indexes, RLS, triggers)
 /scripts
   /import
-    download.ts     (fetches FEC zip + OpenStates CSV to data/)
-    transform.ts    (maps raw data to Rep schema JSON)
+    download.ts     (fetches FEC zip + OpenStates CSV + Congress.gov JSON to data/)
+    transform.ts    (joins three sources into Rep schema JSON)
     seed.ts         (upserts districts + candidates into Supabase)
     types.ts        (intermediate types for import pipeline)
     /data           (gitignored — raw CSVs and transformed JSON)

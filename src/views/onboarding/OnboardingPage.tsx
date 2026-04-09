@@ -4,6 +4,7 @@ import { useUser } from '../../context/UserContext';
 import { useMyBallot } from '../../hooks/useMyBallot';
 import { BallotCard } from '../../components/candidate/BallotCard';
 import { service } from '../../services';
+import { STATE_NAMES } from '../../utils/stateNames';
 import type { District } from '../../types/domain';
 import './OnboardingPage.css';
 
@@ -33,7 +34,9 @@ export function OnboardingPage() {
   const [resolving, setResolving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [districts, setDistricts] = useState<District[]>([]);
-  const [phase, setPhase] = useState<'input' | 'resolving' | 'cascade'>('input');
+  const [pendingDistricts, setPendingDistricts] = useState<District[]>([]);
+  const [resolvedState, setResolvedState] = useState<string | null>(null);
+  const [phase, setPhase] = useState<'input' | 'resolving' | 'confirm' | 'cascade'>('input');
   const { dispatch } = useUser();
   const navigate = useNavigate();
 
@@ -48,15 +51,31 @@ export function OnboardingPage() {
     setPhase('resolving');
     try {
       const result = await service.resolveDistricts(address.trim());
-      dispatch({ type: 'COMPLETE_ONBOARDING', districts: result });
-      setDistricts(result);
-      setPhase('cascade');
+      // Extract state abbreviation from first district code (e.g. STATE:GA-CD:5 → GA)
+      const firstCode = result[0]?.code ?? '';
+      const stMatch = firstCode.match(/^STATE:([A-Z]{2})/);
+      const st = stMatch?.[1] ?? null;
+      setResolvedState(st);
+      setPendingDistricts(result);
+      setPhase('confirm');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to resolve districts');
       setPhase('input');
     } finally {
       setResolving(false);
     }
+  }
+
+  function handleConfirm() {
+    dispatch({ type: 'COMPLETE_ONBOARDING', districts: pendingDistricts });
+    setDistricts(pendingDistricts);
+    setPhase('cascade');
+  }
+
+  function handleRetry() {
+    setPendingDistricts([]);
+    setResolvedState(null);
+    setPhase('input');
   }
 
   function handleCta() {
@@ -119,6 +138,64 @@ export function OnboardingPage() {
             <SkeletonCard />
             <SkeletonCard />
             <SkeletonCard />
+          </div>
+        </div>
+      )}
+
+      {phase === 'confirm' && resolvedState && resolvedState !== 'GA' && (
+        <div className="onboarding__confirm">
+          <p className="onboarding__confirm-text">
+            Rep currently covers <strong>Georgia</strong> only.
+            Your address resolved to <strong>{STATE_NAMES[resolvedState] ?? resolvedState}</strong>.
+          </p>
+          <p className="onboarding__confirm-subtext">
+            More states are coming soon. For now, enter a Georgia address to explore the app.
+          </p>
+          <button
+            type="button"
+            className="onboarding__submit"
+            onClick={handleRetry}
+          >
+            Try a different address
+          </button>
+        </div>
+      )}
+
+      {phase === 'confirm' && !resolvedState && (
+        <div className="onboarding__confirm">
+          <p className="onboarding__confirm-text">
+            We could not determine districts for that address.
+          </p>
+          <button
+            type="button"
+            className="onboarding__submit"
+            onClick={handleRetry}
+          >
+            Try a different address
+          </button>
+        </div>
+      )}
+
+      {phase === 'confirm' && resolvedState === 'GA' && (
+        <div className="onboarding__confirm">
+          <p className="onboarding__confirm-text">
+            We found your districts in <strong>Georgia</strong>.
+          </p>
+          <div className="onboarding__confirm-actions">
+            <button
+              type="button"
+              className="onboarding__submit"
+              onClick={handleConfirm}
+            >
+              That is correct
+            </button>
+            <button
+              type="button"
+              className="onboarding__retry-btn"
+              onClick={handleRetry}
+            >
+              Not right, try again
+            </button>
           </div>
         </div>
       )}

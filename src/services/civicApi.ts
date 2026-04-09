@@ -1,4 +1,5 @@
 import type { District } from '../types/domain';
+import { STATE_NAMES } from '../utils/stateNames';
 
 /**
  * Client-side Geocodio calls are disabled — all district resolution
@@ -107,16 +108,23 @@ export function mapGeocodioResponse(data: GeocodioResponse): District[] {
     }
   }
 
-  // U.S. Senate — always add for Georgia addresses (both seats, shared district code)
-  if (districts.length > 0) {
-    districts.push({
-      code: 'STATE:GA',
-      level: 'federal',
-      officeTitle: 'U.S. Senator',
-      districtName: 'Georgia',
-      displayLabel: 'U.S. Senator · STATE:GA',
-      candidateIds: [],
-    });
+  // U.S. Senate — derive state from the first district's OCD-ID
+  const firstDistrict = districts[0];
+  if (firstDistrict) {
+    const stateMatch = firstDistrict.code.match(/^STATE:([A-Z]{2})/);
+    const st = stateMatch?.[1];
+    if (st) {
+      const stateCode = `STATE:${st}`;
+      const stateName = STATE_NAMES[st] ?? st;
+      districts.push({
+        code: stateCode,
+        level: 'federal',
+        officeTitle: 'U.S. Senator',
+        districtName: stateName,
+        displayLabel: `U.S. Senator · ${stateCode}`,
+        candidateIds: [],
+      });
+    }
   }
 
   return districts;

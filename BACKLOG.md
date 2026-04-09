@@ -209,13 +209,18 @@
 | B1-6 | Database migration: feedback table | done | Simple insert target |
 | B1-7 | RLS policies: public reads on all tables | done | SELECT for anon role |
 | B1-8 | Type generation setup (supabase gen types) | done | Auto-generated src/types/supabase.ts |
-| B1-9 | Candidate data sources decided | done | FEC bulk CSV (federal) + OpenStates bulk CSV (state legislature). ~465 candidates. Local (city/county) deferred. |
-| B1-10 | Download + parse FEC GA candidate CSV | done | 243 GA federal candidates from fec.gov 2026 cycle bulk file |
+| B1-9 | Candidate data sources decided | done | Congress.gov (federal incumbents) + FEC bulk CSV (federal challengers) + OpenStates bulk CSV (state legislature). Local (city/county) deferred. |
+| B1-10 | Download + parse FEC GA candidate CSV | done | GA federal challengers from fec.gov 2026 cycle bulk file. FEC incumbents dropped (stale — retained after resignations). |
 | B1-11 | Download + parse OpenStates GA legislator CSV | done | 233 GA state legislators from data.openstates.org |
-| B1-12 | Transform script (scripts/import/transform.ts) | done | Maps FEC + OpenStates to Rep schema; OCD-ID based district codes |
+| B1-12 | Transform script (scripts/import/transform.ts) | done | Joins Congress.gov + FEC + OpenStates into Rep schema; OCD-ID based district codes |
 | B1-13 | Seed script (scripts/import/seed.ts) | done | Upserts districts + candidates into Supabase via service_role key |
 | B1-14 | District code mapping table | done | Implicit via OCD-ID format — no separate lookup table needed |
 | B1-15 | Swap civicApi.ts to Geocodio | done | Geocodio geocode with fields=cd,stateleg. Same OCD-ID district codes. 6 tests pass. |
+| B1-16 | Congress.gov federal incumbent source | done | /member/GA?currentMember=true. Authoritative for sitting federal House + Senate. Replaces unreliable FEC CAND_ICI='I' records. Free tier 5000 req/hr. |
+| B1-17 | Source-joining model documented | done | Congress.gov = sitting federal incumbents; FEC = federal challengers (CAND_ICI != 'I'); OpenStates = sitting state legislators. See CLAUDE.md "Backend Architecture". |
+| B1-18 | Nightly candidate data refresh (GitHub Action) | planned | .github/workflows/refresh-candidates.yml running npm run import:all on schedule. Secrets: CONGRESS_API_KEY, SUPABASE_SERVICE_KEY. Replaces manual re-run. |
+| B1-19 | FEC challenger withdrawal detection | idea | FEC keeps challengers active even after they drop out (no status flip). Need a signal (FEC form 2 termination? manual override?) or periodic stale-record pruning. |
+| B1-20 | State-level challenger data source | idea | OpenStates only covers sitting legislators. Challengers for GA state House/Senate require a separate source (GA Secretary of State qualified candidates page, currently blocked — 403 on scraping, JS-rendered Salesforce Communities). |
 
 ## Backend — Phase B2: Read API
 
