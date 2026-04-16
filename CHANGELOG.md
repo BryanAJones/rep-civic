@@ -5,6 +5,15 @@
 
 ---
 
+## [0.13.2] - 2026-04-09 — Bot Identification Page
+
+### Added
+- BotPage at `/bot` — public route documenting Rep.'s data import bot. Lists the public sources read (Congress.gov, FEC, OpenStates, Ballotpedia), shows the User-Agent string outbound requests carry, and provides a contact email (getrep.org@gmail.com) for source operators with questions or concerns. Required prerequisite for B1-20 (Ballotpedia challenger scraping) so the scraper can identify itself politely and provide a real channel for the upstream to reach us.
+- New `src/views/bot/` directory with `BotPage.tsx` and `BotPage.css`.
+- Route registered in `AppRouter.tsx` as a public top-level route alongside `/`, `/onboarding`, `/claim`.
+
+---
+
 ## [0.13.1] - 2026-04-09 — Address Confirmation + Candidate Data Source Join
 
 ### Added

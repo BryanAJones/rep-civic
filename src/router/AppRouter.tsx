@@ -11,6 +11,7 @@ import { BallotPage } from '../views/ballot/BallotPage';
 import { OnboardingPage } from '../views/onboarding/OnboardingPage';
 import { LandingPage } from '../views/landing/LandingPage';
 import { ClaimPage } from '../views/claim/ClaimPage';
+import { BotPage } from '../views/bot/BotPage';
 
 function ProtectedApp() {
   const { state } = useUser();
@@ -43,6 +44,7 @@ export function AppRouter() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/claim" element={<ClaimPage />} />
+        <Route path="/bot" element={<BotPage />} />
         <Route path="/app/*" element={<ProtectedApp />} />
         <Route path="*" element={<LandingPage />} />
       </Routes>

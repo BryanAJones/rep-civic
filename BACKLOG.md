@@ -220,7 +220,8 @@
 | B1-17 | Source-joining model documented | done | Congress.gov = sitting federal incumbents; FEC = federal challengers (CAND_ICI != 'I'); OpenStates = sitting state legislators. See CLAUDE.md "Backend Architecture". |
 | B1-18 | Nightly candidate data refresh (GitHub Action) | planned | .github/workflows/refresh-candidates.yml running npm run import:all on schedule. Secrets: CONGRESS_API_KEY, SUPABASE_SERVICE_KEY. Replaces manual re-run. |
 | B1-19 | FEC challenger withdrawal detection | idea | FEC keeps challengers active even after they drop out (no status flip). Need a signal (FEC form 2 termination? manual override?) or periodic stale-record pruning. |
-| B1-20 | State-level challenger data source | idea | OpenStates only covers sitting legislators. Challengers for GA state House/Senate require a separate source (GA Secretary of State qualified candidates page, currently blocked — 403 on scraping, JS-rendered Salesforce Communities). |
+| B1-20 | State-level challenger data source | planned | OpenStates only covers sitting legislators. Challengers for GA state House/Senate require a separate source. Gap is large: per BallotReady 2024 analysis, 123 of 236 GA state legislative races (~52%) were uncontested, meaning ~113 contested races we'd be missing. Decision: scrape Ballotpedia per-race pages now, switch to licensed Ballotpedia data later if they reach out. Bulk paid CSV starts ~$500-600 one-time (data@ballotpedia.org). |
+| B1-21 | Bot identification page (`/bot`) | done | Public route documenting Rep.'s import bot, sources read, User-Agent string, and contact email (getrep.org@gmail.com). Prerequisite for B1-20 so scrapes carry a real contact channel back to us. |
 
 ## Backend — Phase B2: Read API
 

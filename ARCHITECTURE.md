@@ -95,6 +95,8 @@
       LandingPage.tsx
     /onboarding
       OnboardingPage.tsx
+    /bot
+      BotPage.tsx
     /feed
       FeedPage.tsx
       FeedPanelConnected.tsx
@@ -507,6 +509,7 @@ React Router v6.
 ```
 /                           LandingPage
 /onboarding                 OnboardingPage
+/bot                        BotPage (public — data bot identification + contact)
 /app                        AppShell (protected — requires completed onboarding)
   /app/feed                 FeedPage (default tab)
   /app/feed/video/:videoId/questions          QuestionsDrawerPage (overlay)

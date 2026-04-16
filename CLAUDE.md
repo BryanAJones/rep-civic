@@ -117,6 +117,7 @@ These are identity-level decisions. Do not deviate.
 /                           LandingPage (public)
 /onboarding                 OnboardingPage (public)
 /claim                      ClaimPage (public, scaffold only)
+/bot                        BotPage (public — data bot identification + contact)
 /app/*                      ProtectedApp (requires completed onboarding)
   /app/feed                 FeedPage (default tab, vertical snap-scroll + horizontal swipe)
   /app/feed/video/:videoId/answer/:answerId   AnswerVideoPage
