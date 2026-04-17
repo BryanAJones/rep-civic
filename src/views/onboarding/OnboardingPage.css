@@ -182,6 +182,19 @@
   padding-bottom: 120px; /* room for fixed CTA bar */
 }
 
+.onboarding__election-headline {
+  font-family: var(--rep-font-mono, 'IBM Plex Mono', monospace);
+  font-size: var(--rep-text-2xs);
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  color: var(--rep-gold, #B8922A);
+  text-align: center;
+  padding: var(--rep-space-sm) var(--rep-space-md);
+  border-top: 1px solid var(--rep-rule, #D1D9E6);
+  border-bottom: 1px solid var(--rep-rule, #D1D9E6);
+  margin-bottom: var(--rep-space-lg);
+}
+
 .onboarding__counter {
   text-align: center;
   margin-bottom: var(--rep-space-xl);

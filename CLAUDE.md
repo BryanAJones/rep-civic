@@ -155,6 +155,7 @@ The prototype is functional with mock data. All phases through 11 are shipped or
 - District browser: Hierarchical accordion view of all user districts with candidate cards per district
 - Onboarding cascade reveal: After address entry, candidates cascade onto screen with staggered animation grouped by office level (federal, state, county, city). BallotCard compact component, useMyBallot hook, getCandidatesByDistricts single-query service method. Skeleton loading during Geocodio resolve, prefers-reduced-motion support, iOS safe-area CTA bar.
 - Ballot page: Persistent /app/ballot route reuses useMyBallot, tappable cards link to profiles, share button (Web Share API with clipboard fallback). Accessible from You page.
+- Hybrid ballot source: Google Civic voterInfoQuery integration layered on top of the Congress/OpenStates baseline. `proxy-voterinfo` Edge Function returns the full active-election slate (federal through city council + judicial + school board) when Google has data; falls back to Geocodio + baseline between election windows. Onboarding switched to `getBallotForAddress`; gold election headline rendered when a live ballot is returned. Enrich-only upserts never overwrite baseline identity fields. Commits 1-3 of 5 landed.
 
 **Partially built (planned items remain):**
 - Onboarding: Multi-step flow (cascade reveal done, skeleton loading done, ballot page done, share done; district map thumbnails planned)

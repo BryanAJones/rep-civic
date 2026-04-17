@@ -34,7 +34,7 @@ function renderOnboarding() {
 }
 
 /** Set up mocks for a successful address submission with candidates. */
-function mockSuccessfulSubmit(candidateCount = 6) {
+function mockSuccessfulSubmit(candidateCount = 6, source: 'google' | 'fallback' = 'fallback') {
   const district = buildDistrict({ code: 'STATE:GA-CD:5', level: 'federal' });
   const candidates = Array.from({ length: candidateCount }, (_, i) =>
     buildCandidate({
@@ -44,7 +44,16 @@ function mockSuccessfulSubmit(candidateCount = 6) {
       districtCode: district.code,
     }),
   );
-  mockService.resolveDistricts = vi.fn().mockResolvedValue([district]);
+  mockService.getBallotForAddress = vi.fn().mockResolvedValue(
+    source === 'google'
+      ? {
+          source: 'google',
+          districts: [district],
+          electionName: 'Georgia Primary',
+          electionDate: '2026-05-19',
+        }
+      : { source: 'fallback', districts: [district] },
+  );
   mockService.getCandidatesByDistricts = vi.fn().mockResolvedValue(candidates);
   return { district, candidates };
 }
@@ -79,7 +88,7 @@ describe('OnboardingPage', () => {
     expect(screen.getByRole('button', { name: /find my representatives/i })).toBeDisabled();
   });
 
-  it('calls resolveDistricts with the entered address', async () => {
+  it('calls getBallotForAddress with the entered address', async () => {
     mockSuccessfulSubmit();
     renderOnboarding();
 
@@ -87,8 +96,34 @@ describe('OnboardingPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /find my representatives/i }));
 
     await waitFor(() => {
-      expect(mockService.resolveDistricts).toHaveBeenCalledWith('123 Main St, Atlanta, GA');
+      expect(mockService.getBallotForAddress).toHaveBeenCalledWith('123 Main St, Atlanta, GA');
     });
+  });
+
+  it('shows election headline when Google returns an active ballot', async () => {
+    mockSuccessfulSubmit(4, 'google');
+    renderOnboarding();
+
+    await submitAndConfirm();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('election-headline')).toBeInTheDocument();
+    });
+    const headline = screen.getByTestId('election-headline');
+    expect(headline.textContent).toMatch(/GEORGIA PRIMARY/);
+    expect(headline.textContent).toMatch(/MAY 19, 2026/);
+  });
+
+  it('omits election headline in fallback source', async () => {
+    mockSuccessfulSubmit(4, 'fallback');
+    renderOnboarding();
+
+    await submitAndConfirm();
+
+    await waitFor(() => {
+      expect(screen.getByTestId('cascade-reveal')).toBeInTheDocument();
+    });
+    expect(screen.queryByTestId('election-headline')).not.toBeInTheDocument();
   });
 
   it('shows cascade reveal then navigates on CTA click', async () => {
@@ -114,7 +149,9 @@ describe('OnboardingPage', () => {
 
   it('shows skeleton cards while ballot is loading', async () => {
     const district = buildDistrict({ code: 'STATE:GA-CD:5', level: 'federal' });
-    mockService.resolveDistricts = vi.fn().mockResolvedValue([district]);
+    mockService.getBallotForAddress = vi
+      .fn()
+      .mockResolvedValue({ source: 'fallback', districts: [district] });
     // Make getCandidatesByDistricts hang so skeleton stays visible
     mockService.getCandidatesByDistricts = vi.fn().mockReturnValue(new Promise(() => {}));
 
@@ -156,7 +193,9 @@ describe('OnboardingPage', () => {
 
   it('blocks non-GA addresses with state guard message', async () => {
     const district = buildDistrict({ code: 'STATE:OR-CD:2', level: 'federal' });
-    mockService.resolveDistricts = vi.fn().mockResolvedValue([district]);
+    mockService.getBallotForAddress = vi
+      .fn()
+      .mockResolvedValue({ source: 'fallback', districts: [district] });
 
     renderOnboarding();
 
@@ -172,7 +211,9 @@ describe('OnboardingPage', () => {
 
   it('retry from confirm returns to input phase', async () => {
     const district = buildDistrict({ code: 'STATE:OR-CD:2', level: 'federal' });
-    mockService.resolveDistricts = vi.fn().mockResolvedValue([district]);
+    mockService.getBallotForAddress = vi
+      .fn()
+      .mockResolvedValue({ source: 'fallback', districts: [district] });
 
     renderOnboarding();
 
@@ -185,8 +226,8 @@ describe('OnboardingPage', () => {
     expect(screen.getByLabelText(/home address/i)).toBeInTheDocument();
   });
 
-  it('shows error state when resolveDistricts fails', async () => {
-    mockService.resolveDistricts = vi.fn().mockRejectedValue(new Error('Invalid address'));
+  it('shows error state when getBallotForAddress fails', async () => {
+    mockService.getBallotForAddress = vi.fn().mockRejectedValue(new Error('Invalid address'));
 
     renderOnboarding();
 

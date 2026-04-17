@@ -16,6 +16,17 @@ export interface ChangelogEntry {
  */
 export const changelog: ChangelogEntry[] = [
   {
+    version: '0.14.0',
+    date: '2026-04-17',
+    title: 'Full ballot during election windows',
+    items: [
+      'Ballot now shows every race on your Georgia primary ballot — federal through city council',
+      'Local races (county commission, city council, school board) appear during election windows',
+      'Election headline calls out the specific ballot you are seeing',
+      'Between-election behavior unchanged: baseline incumbents still load for any GA address',
+    ],
+  },
+  {
     version: '0.13.1',
     date: '2026-04-09',
     title: 'Confirmed address, cleaner roster',

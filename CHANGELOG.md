@@ -5,6 +5,23 @@
 
 ---
 
+## [0.14.0] - 2026-04-17 — Google Civic voterInfoQuery Integration (commits 1-3)
+
+### Added
+- New Supabase Edge Function `proxy-voterinfo` that calls Google Civic `voterInfoQuery`, maps district scopes to OCD-style codes, upserts `districts` + `candidates` with an enrich-only merge (never overwrites baseline identity fields), and caches responses in `voterinfo_cache` keyed by sha256 address hash.
+- `districtCode.ts` helper module in the Edge Function: maps every `voterInfoQuery` scope (`national`, `statewide`, `congressional`, `stateUpper`, `stateLower`, `countywide`, `cityWide`, `cityCouncil`/`ward`, `countyCouncil`, `judicial`, `schoolBoard`) to canonical codes matching existing Geocodio output (`STATE:GA-CD:5`, `COUNTY:GA-FULTON-COMMISSION:4`, etc.). Full unit coverage.
+- `normalize.ts` Deno mirror of the shared `src/utils/normalizeName.ts` — canonical name normalizer now has three synced copies (Node, Deno, plpgsql) guarded by a parity test.
+- Schema migration `20260416000000_voterinfo_integration.sql` adds `phone`, `email`, `photo_url`, `sources[]`, `google_person_id`, `normalized_name`, `needs_manual_dedup` to `candidates`; `scope`, `external_id`, `source` to `districts`; and the `voterinfo_cache` table. Partial unique index `(normalized_name, district_code) WHERE needs_manual_dedup = false` enables dedup across Google + baseline sources. Reuses existing `campaign_url` column (does not add `candidate_url`).
+- `DataService.getBallotForAddress(address)` interface method returning `{ source: 'google' | 'fallback', districts, electionName?, electionDate? }`. `SupabaseDataService` invokes `proxy-voterinfo` and falls back to `resolveDistricts` when Google returns no active election.
+- `OnboardingPage` now calls `getBallotForAddress` instead of `resolveDistricts`. When `source === 'google'`, renders a gold monospace election headline (`YOUR MAY 19, 2026 · GEORGIA PRIMARY BALLOT`) above the counter. Counter label drops "state and federal" qualifier when the payload includes local races.
+- `src/services/googleCivic.types.ts` — typed Google Civic response shapes for the service layer.
+
+### Rollout
+- Commits 1-3 of a five-commit plan are shipped. Commit 4 (admin dedup UI + pg_cron cache cleanup + observability logs) and commit 5 (FEC retirement, gated on post-primary 2026-05-19) are follow-ups.
+- `GOOGLE_CIVIC_API_KEY` secret must be set via `supabase secrets set` before the Edge Function becomes functional in production.
+
+---
+
 ## [0.13.2] - 2026-04-09 — Bot Identification Page
 
 ### Added

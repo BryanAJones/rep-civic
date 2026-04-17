@@ -23,10 +23,32 @@ function SkeletonCard() {
   );
 }
 
-function buildCounterLabel(total: number): string {
-  return total === 1
-    ? 'state and federal candidate on your ballot'
-    : 'state and federal candidates on your ballot';
+function buildCounterLabel(total: number, source: 'google' | 'fallback'): string {
+  const plural = total === 1 ? 'candidate' : 'candidates';
+  return source === 'google'
+    ? `${plural} on your ballot`
+    : `state and federal ${plural} on your ballot`;
+}
+
+function formatElectionHeadline(
+  electionName: string | undefined,
+  electionDate: string | undefined,
+): string {
+  const parts: string[] = [];
+  if (electionDate) {
+    const [y, m, d] = electionDate.split('-');
+    const date = new Date(Number(y), Number(m) - 1, Number(d));
+    if (!Number.isNaN(date.getTime())) {
+      parts.push(
+        date
+          .toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+          .toUpperCase(),
+      );
+    }
+  }
+  if (electionName) parts.push(electionName.toUpperCase());
+  const suffix = parts.length ? parts.join(' · ') : 'UPCOMING ELECTION';
+  return `YOUR ${suffix} BALLOT`;
 }
 
 export function OnboardingPage() {
@@ -37,6 +59,9 @@ export function OnboardingPage() {
   const [pendingDistricts, setPendingDistricts] = useState<District[]>([]);
   const [resolvedState, setResolvedState] = useState<string | null>(null);
   const [phase, setPhase] = useState<'input' | 'resolving' | 'confirm' | 'cascade'>('input');
+  const [ballotSource, setBallotSource] = useState<'google' | 'fallback'>('fallback');
+  const [electionName, setElectionName] = useState<string | undefined>(undefined);
+  const [electionDate, setElectionDate] = useState<string | undefined>(undefined);
   const { dispatch } = useUser();
   const navigate = useNavigate();
 
@@ -50,13 +75,16 @@ export function OnboardingPage() {
     setError(null);
     setPhase('resolving');
     try {
-      const result = await service.resolveDistricts(address.trim());
+      const result = await service.getBallotForAddress(address.trim());
       // Extract state abbreviation from first district code (e.g. STATE:GA-CD:5 → GA)
-      const firstCode = result[0]?.code ?? '';
+      const firstCode = result.districts[0]?.code ?? '';
       const stMatch = firstCode.match(/^STATE:([A-Z]{2})/);
       const st = stMatch?.[1] ?? null;
       setResolvedState(st);
-      setPendingDistricts(result);
+      setPendingDistricts(result.districts);
+      setBallotSource(result.source);
+      setElectionName(result.electionName);
+      setElectionDate(result.electionDate);
       setPhase('confirm');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to resolve districts');
@@ -227,10 +255,15 @@ export function OnboardingPage() {
 
       {phase === 'cascade' && !ballotLoading && !ballotError && groups.length > 0 && (
         <div className="onboarding__cascade" data-testid="cascade-reveal">
+          {ballotSource === 'google' && (
+            <div className="onboarding__election-headline" data-testid="election-headline">
+              {formatElectionHeadline(electionName, electionDate)}
+            </div>
+          )}
           <div className="onboarding__counter counter-reveal">
             <div className="onboarding__counter-number">{totalCandidates}</div>
             <div className="onboarding__counter-label">
-              {buildCounterLabel(totalCandidates)}
+              {buildCounterLabel(totalCandidates, ballotSource)}
             </div>
           </div>
 
