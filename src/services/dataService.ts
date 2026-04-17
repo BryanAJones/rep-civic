@@ -13,9 +13,24 @@ import type {
   VideoId,
 } from '../types/domain';
 
+export interface BallotResult {
+  source: 'google' | 'fallback';
+  districts: District[];
+  electionName?: string;
+  electionDate?: string;
+}
+
 export interface DataService {
   // District resolution
   resolveDistricts(address: string): Promise<District[]>;
+
+  /**
+   * Resolve an address to a ballot slate. Prefers Google Civic's
+   * voterInfoQuery during active election windows (returns federal
+   * through local races with candidate enrichment). Falls back to
+   * Geocodio-based district resolution between elections.
+   */
+  getBallotForAddress(address: string): Promise<BallotResult>;
 
   // Feed
   getFeedVideos(districtCodes: DistrictCode[], filter?: DistrictLevel): Promise<Video[]>;

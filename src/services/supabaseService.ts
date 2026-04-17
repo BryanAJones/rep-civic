@@ -1,6 +1,6 @@
 import { supabase } from './supabaseClient';
 import { mapGeocodioResponse } from './civicApi';
-import type { DataService } from './dataService';
+import type { BallotResult, DataService } from './dataService';
 import type {
   Candidate,
   CandidateId,
@@ -150,6 +150,29 @@ export const supabaseService: DataService = {
 
     if (error) throw error;
     return mapGeocodioResponse(data);
+  },
+
+  async getBallotForAddress(address: string): Promise<BallotResult> {
+    const { data, error } = await supabase.functions.invoke('proxy-voterinfo', {
+      body: { address },
+    });
+
+    if (error) throw error;
+
+    // Fallback: Google returned nothing (no active election window, or
+    // upstream error). Delegate to Geocodio to at least resolve districts
+    // so onboarding never dead-ends.
+    if (!data || data.source === 'fallback') {
+      const districts = await this.resolveDistricts(address);
+      return { source: 'fallback', districts };
+    }
+
+    return {
+      source: 'google',
+      districts: data.districts ?? [],
+      electionName: data.electionName,
+      electionDate: data.electionDate,
+    };
   },
 
   async getFeedVideos(

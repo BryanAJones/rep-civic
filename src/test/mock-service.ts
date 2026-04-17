@@ -5,6 +5,9 @@ export function createMockService(
 ): DataService {
   return {
     resolveDistricts: vi.fn().mockResolvedValue([]),
+    getBallotForAddress: vi
+      .fn()
+      .mockResolvedValue({ source: 'fallback', districts: [] }),
     getFeedVideos: vi.fn().mockResolvedValue([]),
     getQuestionsForVideo: vi.fn().mockResolvedValue([]),
     getQuestionsForCandidate: vi.fn().mockResolvedValue([]),

@@ -1,0 +1,121 @@
+{
+  "_fixture_note": "Synthetic voterInfoQuery response shaped on Google's documented schema. Replace with a real captured response before commit 3 ships. Capture via: curl 'https://www.googleapis.com/civicinfo/v2/voterinfo?address=100+Auburn+Ave+NE+Atlanta+GA+30303&key=$GOOGLE_CIVIC_API_KEY' | jq .",
+  "kind": "civicinfo#voterInfoResponse",
+  "election": {
+    "id": "9000",
+    "name": "Georgia Primary",
+    "electionDay": "2026-05-19",
+    "ocdDivisionId": "ocd-division/country:us/state:ga"
+  },
+  "contests": [
+    {
+      "type": "General",
+      "office": "United States Senator",
+      "ballotTitle": "United States Senator",
+      "level": ["country"],
+      "roles": ["legislatorUpperBody"],
+      "district": {
+        "name": "Georgia",
+        "scope": "statewide",
+        "id": "ocd-division/country:us/state:ga"
+      },
+      "candidates": [
+        {
+          "name": "Jon Ossoff",
+          "party": "Democratic",
+          "candidateUrl": "https://ossoff.senate.gov",
+          "phone": "202-224-3521",
+          "email": "ossoff@example.gov",
+          "photoUrl": "https://example.com/photos/ossoff.jpg"
+        }
+      ]
+    },
+    {
+      "type": "General",
+      "office": "United States Representative",
+      "ballotTitle": "United States Representative",
+      "level": ["country"],
+      "roles": ["legislatorLowerBody"],
+      "district": {
+        "name": "Georgia's 5th congressional district",
+        "scope": "congressional",
+        "id": "ocd-division/country:us/state:ga/cd:5"
+      },
+      "candidates": [
+        {
+          "name": "Nikema Williams",
+          "party": "Democratic",
+          "candidateUrl": "https://nikemawilliams.com"
+        },
+        {
+          "name": "Jane Q. Challenger",
+          "party": "Republican",
+          "candidateUrl": "https://janechallenger.example.com",
+          "email": "campaign@janechallenger.example.com"
+        }
+      ]
+    },
+    {
+      "type": "General",
+      "office": "State Senator",
+      "ballotTitle": "State Senator - District 36",
+      "district": {
+        "name": "State Senate District 36",
+        "scope": "stateUpper",
+        "id": "ocd-division/country:us/state:ga/sldu:36"
+      },
+      "candidates": [
+        {
+          "name": "Nan Orrock",
+          "party": "Democratic"
+        }
+      ]
+    },
+    {
+      "type": "General",
+      "office": "State Representative",
+      "ballotTitle": "State Representative",
+      "district": {
+        "name": "State House District 58",
+        "scope": "stateLower",
+        "id": "ocd-division/country:us/state:ga/sldl:58"
+      },
+      "candidates": [
+        {
+          "name": "Park Cannon",
+          "party": "Democratic"
+        }
+      ]
+    },
+    {
+      "type": "General",
+      "office": "County Commissioner",
+      "ballotTitle": "Fulton County Commissioner",
+      "district": {
+        "name": "Fulton County Commission District 4",
+        "scope": "countyCouncil"
+      },
+      "candidates": [
+        {
+          "name": "Natalie Hall",
+          "party": "Nonpartisan"
+        }
+      ]
+    },
+    {
+      "type": "General",
+      "office": "City Council",
+      "ballotTitle": "Atlanta City Council",
+      "district": {
+        "name": "Atlanta City Council District 2",
+        "scope": "cityCouncil"
+      },
+      "candidates": [
+        {
+          "name": "Amir Farokhi",
+          "party": "Nonpartisan"
+        }
+      ]
+    }
+  ]
+}

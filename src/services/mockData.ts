@@ -581,6 +581,14 @@ export const mockService: DataService = {
     return delay(mockDistricts);
   },
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getBallotForAddress(_address: string) {
+    return delay({
+      source: 'fallback' as const,
+      districts: mockDistricts,
+    });
+  },
+
   getFeedVideos(districtCodes: DistrictCode[], filter?: DistrictLevel) {
     let filtered = mockVideos.filter((v) => {
       const candidate = mockCandidates[v.candidateId];
