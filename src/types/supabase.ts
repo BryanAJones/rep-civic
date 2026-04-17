@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      candidate_claims: {
+        Row: {
+          candidate_id: string
+          claimed_at: string
+          id: string
+          user_id: string
+          verification_method: string | null
+          verified_at: string | null
+        }
+        Insert: {
+          candidate_id: string
+          claimed_at?: string
+          id?: string
+          user_id: string
+          verification_method?: string | null
+          verified_at?: string | null
+        }
+        Update: {
+          candidate_id?: string
+          claimed_at?: string
+          id?: string
+          user_id?: string
+          verification_method?: string | null
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidate_claims_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: true
+            referencedRelation: "candidates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       candidate_positions: {
         Row: {
           candidate_id: string
@@ -49,16 +84,23 @@ export type Database = {
           campaign_url: string | null
           created_at: string
           district_code: string
+          email: string | null
           filing_date: string | null
           filing_id: string | null
+          google_person_id: string | null
           id: string
           initials: string
           name: string
+          needs_manual_dedup: boolean
+          normalized_name: string | null
           office_title: string
           opponent_count: number | null
           party: string
+          phone: string | null
+          photo_url: string | null
           question_count: number | null
           response_rate: number | null
+          sources: string[]
           status: string
           updated_at: string
           video_count: number | null
@@ -68,16 +110,23 @@ export type Database = {
           campaign_url?: string | null
           created_at?: string
           district_code: string
+          email?: string | null
           filing_date?: string | null
           filing_id?: string | null
+          google_person_id?: string | null
           id?: string
           initials: string
           name: string
+          needs_manual_dedup?: boolean
+          normalized_name?: string | null
           office_title: string
           opponent_count?: number | null
           party: string
+          phone?: string | null
+          photo_url?: string | null
           question_count?: number | null
           response_rate?: number | null
+          sources?: string[]
           status?: string
           updated_at?: string
           video_count?: number | null
@@ -87,16 +136,23 @@ export type Database = {
           campaign_url?: string | null
           created_at?: string
           district_code?: string
+          email?: string | null
           filing_date?: string | null
           filing_id?: string | null
+          google_person_id?: string | null
           id?: string
           initials?: string
           name?: string
+          needs_manual_dedup?: boolean
+          normalized_name?: string | null
           office_title?: string
           opponent_count?: number | null
           party?: string
+          phone?: string | null
+          photo_url?: string | null
           question_count?: number | null
           response_rate?: number | null
+          sources?: string[]
           status?: string
           updated_at?: string
           video_count?: number | null
@@ -237,22 +293,31 @@ export type Database = {
           code: string
           display_label: string
           district_name: string
+          external_id: string | null
           level: string
           office_title: string
+          scope: string | null
+          source: string
         }
         Insert: {
           code: string
           display_label: string
           district_name: string
+          external_id?: string | null
           level: string
           office_title: string
+          scope?: string | null
+          source?: string
         }
         Update: {
           code?: string
           display_label?: string
           district_name?: string
+          external_id?: string | null
           level?: string
           office_title?: string
+          scope?: string | null
+          source?: string
         }
         Relationships: []
       }
@@ -308,65 +373,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      candidate_claims: {
-        Row: {
-          id: string
-          candidate_id: string
-          user_id: string
-          claimed_at: string
-          verification_method: string | null
-          verified_at: string | null
-        }
-        Insert: {
-          id?: string
-          candidate_id: string
-          user_id: string
-          claimed_at?: string
-          verification_method?: string | null
-          verified_at?: string | null
-        }
-        Update: {
-          id?: string
-          candidate_id?: string
-          user_id?: string
-          claimed_at?: string
-          verification_method?: string | null
-          verified_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "candidate_claims_candidate_id_fkey"
-            columns: ["candidate_id"]
-            isOneToOne: true
-            referencedRelation: "candidates"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      user_profiles: {
-        Row: {
-          id: string
-          handle: string
-          email: string | null
-          is_anonymous: boolean
-          created_at: string
-        }
-        Insert: {
-          id: string
-          handle: string
-          email?: string | null
-          is_anonymous?: boolean
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          handle?: string
-          email?: string | null
-          is_anonymous?: boolean
-          created_at?: string
-        }
-        Relationships: []
       }
       questions: {
         Row: {
@@ -458,6 +464,30 @@ export type Database = {
           },
         ]
       }
+      user_profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          handle: string
+          id: string
+          is_anonymous: boolean
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          handle: string
+          id: string
+          is_anonymous?: boolean
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          handle?: string
+          id?: string
+          is_anonymous?: boolean
+        }
+        Relationships: []
+      }
       videos: {
         Row: {
           answers_question_id: string | null
@@ -518,12 +548,44 @@ export type Database = {
           },
         ]
       }
+      voterinfo_cache: {
+        Row: {
+          address_hash: string
+          district_codes: string[]
+          election_date: string | null
+          expires_at: string
+          fetched_at: string
+          payload: Json
+        }
+        Insert: {
+          address_hash: string
+          district_codes: string[]
+          election_date?: string | null
+          expires_at: string
+          fetched_at?: string
+          payload: Json
+        }
+        Update: {
+          address_hash?: string
+          district_codes?: string[]
+          election_date?: string | null
+          expires_at?: string
+          fetched_at?: string
+          payload?: Json
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_plus_one: { Args: { qid: string }; Returns: number }
+      normalize_candidate_name: { Args: { input: string }; Returns: string }
+      upgrade_user_profile: {
+        Args: { p_email: string; p_user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
