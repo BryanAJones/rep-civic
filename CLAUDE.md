@@ -228,13 +228,19 @@ Per-level scroll positions are preserved when swiping between levels. Empty leve
 - `src/types/supabase.ts` — auto-generated from schema
 - `scripts/import/` — FEC + OpenStates data download/transform/seed scripts
 
-**GA candidate data (source-joining model):**
+**GA candidate data (hybrid source model):**
 
-Three sources are joined into a single candidate list by `scripts/import/transform.ts`:
+Two layers, gated by election timing. This is the product posture — document it before editing.
+
+**Layer 1 — Year-round baseline.** Three sources joined by `scripts/import/transform.ts`, covering federal and state. No local coverage by design (see "Intentional off-cycle gaps" below):
 
 1. **Congress.gov `/member/GA?currentMember=true`** — authoritative source for sitting federal House + Senate members. Free tier (5000 req/hr), keyed on stable `bioguideId`. Pulled because FEC retains candidates whose committees stay open even after they leave office (e.g., MTG after her 2025 resignation), so trusting FEC `CAND_ICI='I'` records would resurface stale incumbents.
-2. **FEC candidate master bulk file** — declared federal challengers only. The transform drops all records where `CAND_ICI='I'` and lets Congress.gov supply incumbents instead. Challengers (`CAND_ICI != 'I'`) pass through unchanged.
-3. **OpenStates `current/ga.csv`** — sitting GA state House + Senate legislators. Challengers for state races are a known gap (see BACKLOG B1-20) because the GA Secretary of State qualified-candidates page is JS-rendered and blocks scraping.
+2. **FEC candidate master bulk file** — declared federal challengers only. The transform drops all records where `CAND_ICI='I'` and lets Congress.gov supply incumbents instead. Challengers (`CAND_ICI != 'I'`) pass through unchanged. **FEC is retained indefinitely** — earlier plans to retire it post-Google-Civic were withdrawn because Google is seasonal, not year-round, and no replacement year-round federal-challenger source is in place.
+3. **OpenStates `current/ga.csv`** — sitting GA state House + Senate legislators. State-race challengers are a known gap (B1-20, standby) — GA SOS qualified-candidates page is JS-rendered.
+
+**Layer 2 — Election-window ballot (~4-5 months/year).** `proxy-voterinfo` Edge Function calls Google Civic `voterInfoQuery` on demand from onboarding. When Google has an active election loaded (typically ~2-3 weeks before primary/general through election day), it returns the full slate including county commission, city council, judicial, and school board. Results are upserted into the same `candidates` table as Layer 1, with `sources` array tracking provenance; enrich-only semantics never overwrite Layer 1 identity fields. Between elections, Google returns `electionsNotFound` → function returns `{source:'fallback'}` → client falls back to Layer 1 via `resolveDistricts`.
+
+**Intentional off-cycle gaps.** Between election windows, the app knowingly answers "who represents me federally + at the state level" and "who's challenging federal incumbents," and does not surface local races (county/city/school/judicial). Off-cycle local coverage requires a paid source (Ballotpedia bulk CSV ~$500-600, or commercial API) or a statewide scraping project — deferred until product validation justifies the cost. See the Part 2 decision record in `~/.claude/plans/yes-let-s-plan-out-cuddly-moth.md` for the future-iteration options matrix.
 
 Pipeline commands: `npm run import:download` → `npm run import:transform` → `npm run import:seed` (or `npm run import:all` for the full chain). Scripts in `scripts/import/` read `.env` via `tsx --env-file=.env`. District codes use OCD-ID format (`STATE:GA-CD:5`, `STATE:GA-SLDL:60`, `STATE:GA-SLDU:34`) matching Geocodio output. A nightly GitHub Action refreshes candidate data automatically (planned, BACKLOG B1-18).
 
