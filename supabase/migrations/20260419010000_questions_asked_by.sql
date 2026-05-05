@@ -13,7 +13,11 @@
 -- auth user is later deleted.
 -- ============================================================
 
+-- IF NOT EXISTS guards: prod already received this column via a dashboard
+-- SQL run on 2026-04-19 (timestamp 20260419163957). The repair table marks
+-- this migration applied without re-running. The guards keep this file
+-- safe for any future fresh-prod replay.
 ALTER TABLE questions
-  ADD COLUMN asked_by UUID REFERENCES auth.users(id) ON DELETE SET NULL;
+  ADD COLUMN IF NOT EXISTS asked_by UUID REFERENCES auth.users(id) ON DELETE SET NULL;
 
-CREATE INDEX idx_questions_asked_by ON questions(asked_by) WHERE asked_by IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_questions_asked_by ON questions(asked_by) WHERE asked_by IS NOT NULL;
