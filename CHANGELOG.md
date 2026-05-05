@@ -5,6 +5,22 @@
 
 ---
 
+## [0.19.0] - 2026-05-05 — Calm-dossier empty states + Web Share + Edge Function consolidation
+
+### Added
+- **`ProfileShareButton`.** Web Share API on supported browsers (mobile, Safari), clipboard fallback elsewhere with a "Copied" confirmation. Status-aware copy: unclaimed leads with "Profile assembled from public filings"; claimed and active are neutral. Wired into `CandidateProfilePage` as a right-aligned row above `ProfileStats`.
+- **`_shared/rateLimit.ts`.** Extracts the `check_rate_limit` RPC call into one helper. Same `{ ok, response }` shape as `requireVerifiedUser` so callers short-circuit identically. Used by the four authed Edge Functions.
+
+### Changed
+- **Empty-state copy across `CandidateProfilePage`.** Calm-dossier rewording per the design doc: silence reported as fact, not failure. `EmptyVideoGrid` drops the placeholder `+` glyph and rewords to "{name} has not posted any videos. N constituent questions pending." (mono count). Profile-page stubs swap "No videos yet." / "No questions yet." for "{name} has not posted any videos." / "{name} has not received any constituent questions yet." Unclaimed positions read "Profile assembled from public filings — no stated positions on record."
+- **`submit-question`, `vote-question`, `submit-video-answer` migrated to `_shared/auth.ts` + `_shared/rateLimit.ts`** (B6-7). Drops ~25 lines of identical auth/rate-limit boilerplate from each function. `verify-candidate-claim` also drops its inline rate-limit block in favor of the helper. Net −301/+140 across the four functions. `proxy-geocodio` and `proxy-voterinfo` intentionally skipped — they don't gate on email-verified callers.
+
+### Notes
+- B6-2's third piece — Cloudflare Worker `/og?candidate=[id]` for 1200×630 dossier OG images — is intentionally deferred. It's a separate deploy target on the Pages project and warrants explicit user setup; not blocked, just paused.
+- B6-7 marked done in BACKLOG; B6-2 stays in-progress until OG worker ships.
+
+---
+
 ## [0.18.0] - 2026-05-05 — Verified candidate claim (B6-1)
 
 The pivot from "import every challenger" to "ship with incumbents only and let candidates self-claim against public filings" — phase 1.

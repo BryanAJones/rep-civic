@@ -16,6 +16,16 @@ export interface ChangelogEntry {
  */
 export const changelog: ChangelogEntry[] = [
   {
+    version: '0.19.0',
+    date: '2026-05-05',
+    title: 'Quieter empty states + share any candidate profile',
+    items: [
+      'Empty profiles now read like a calm dossier — declarative absence, no marketing prompts',
+      'Every candidate profile has a Share button (native share sheet on mobile, clipboard everywhere else)',
+      'Edge Function plumbing consolidated under shared auth + rate-limit helpers — same behavior, less to maintain',
+    ],
+  },
+  {
     version: '0.18.0',
     date: '2026-05-05',
     title: 'Verified candidate claim — public records, not self-attestation',
