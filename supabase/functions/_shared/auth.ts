@@ -9,10 +9,14 @@
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
 import { createClient, type SupabaseClient, type User } from 'npm:@supabase/supabase-js@2'
 
-const JSON_HEADERS = { ...corsHeaders, 'Content-Type': 'application/json' }
+export const JSON_HEADERS = { ...corsHeaders, 'Content-Type': 'application/json' }
 
-function jsonError(status: number, body: Record<string, unknown>): Response {
+export function jsonResponse(status: number, body: Record<string, unknown>): Response {
   return new Response(JSON.stringify(body), { status, headers: JSON_HEADERS })
+}
+
+export function jsonError(status: number, body: Record<string, unknown>): Response {
+  return jsonResponse(status, body)
 }
 
 export type AuthSuccess = {
