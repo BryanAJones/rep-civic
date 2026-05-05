@@ -18,6 +18,7 @@
     "import:transform": "tsx --env-file=.env scripts/import/transform.ts",
     "import:seed": "tsx --env-file=.env scripts/import/seed.ts",
     "import:all": "npm run import:download && npm run import:transform && npm run import:seed",
+    "seed:test-claim": "tsx --env-file=.env scripts/seed-test-claim.ts",
     "deploy": "npm run validate && npm run build && npx wrangler pages deploy dist/ --project-name=rep --branch=main"
   },
   "dependencies": {
