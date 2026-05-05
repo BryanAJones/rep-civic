@@ -227,6 +227,23 @@
 | B1-24 | Year-round source selection decision | superseded | Closed with B1-23. Future-iteration options matrix documented in `~/.claude/plans/yes-let-s-plan-out-cuddly-moth.md` Part 2 (Ballotpedia bulk CSV ~$500-600 is the cleanest paid unlock; metro-Atlanta PDF scraping is the free alternative if launch market narrows). |
 | B1-25 | Integrate chosen year-round source | superseded | Closed with B1-23/B1-24. Reopen only if a future iteration selects one of the options documented in the plan file. |
 
+## Backend — Phase B6: Self-Onboarding Candidate Claim
+
+Pivot away from exhaustive challenger import: ship with incumbents only and let candidates self-claim via filing-ID verification. Plan + reviews in `~/.gstack/projects/BryanAJones-rep-civic/bajon-master-design-20260504-210125.md`.
+
+| # | Feature | Status | Notes |
+|---|---------|--------|-------|
+| B6-0 | Phase 0: `_shared/auth.ts` helper + Edge Function test bootstrap | in-progress | Extracts the 30-line auth boilerplate duplicated across 5 Edge Functions. Helper at `supabase/functions/_shared/auth.ts`, Deno tests at `supabase/functions/_shared/auth.test.ts`, `npm run test:edge` script. No existing functions migrated yet; phase 1 is the first consumer. |
+| B6-1 | Phase 1: `verify-candidate-claim` Edge Function (federal path) | planned | New function with FEC API integration, `pending_claims` schema (UNIQUE partial index on candidate_id), 24h cache + per-user rate limit, multi-step claim modal UI, magic-link finalize hook, audit_log integration, sybil revocation in /admin/dedup. Retires the existing `claim-candidate` (currently a verification bypass). |
+| B6-2 | Phase 2: Empty-state copy + dynamic OG image | planned | "[Name] has not answered any constituent questions on Rep" treatment as calm dossier (mono counts, em-dash for absence). Cloudflare Worker `/og?candidate=[id]` rendering 1200×630 institutional dossier image. Profile-level Web Share button. Independent of phase 1; ships in parallel. |
+| B6-3 | Phase 3: Ballotpedia verification registry scraper | planned | Repurposed B1-20. New `candidate_registry` table (verification-only, separate from `candidates`). Polite UA `RepBot/0.1` already in place. Nightly via existing GitHub Action. |
+| B6-4 | Phase 4: State verification path + GA SOS Playwright fallback | planned | Wires `verifyState` two-tier (Ballotpedia first, GA SOS headless scrape on miss). 1h cache on SOS results. Adds Playwright as a runtime dep. |
+| B6-5 | Phase 5: Social-handle fallback for candidates without on-file email | planned | **PROMOTED FROM IDEA → PLANNED 2026-05-04 based on audit results.** Email-on-file coverage measured at 43% on a 30-candidate FEC sample (well under 50% threshold). 57% of GA federal active candidates would be unable to self-claim via magic-link alone. Spec: registry-confirmed candidate with no email falls back to social-handle proof — post a verification code from a publicly-associated handle (campaign Twitter, Instagram, campaign-domain website with WHOIS match). Build phase 1 with `social_proof_required` response branch from day one to avoid re-architecting. |
+| B6-6 | Email-on-file coverage audit (assignment) | done | Completed 2026-05-04. **Result: 43% coverage on 30-candidate FEC sample (13 with email, 17 without).** No-email skew toward newer filings. Findings + raw data in `~/.gstack/projects/BryanAJones-rep-civic/audit/`. Re-run with real FEC API key (DEMO_KEY hit rate limit) to confirm at larger sample. |
+| B6-7 | Migrate remaining 5 Edge Functions to `_shared/auth.ts` | idea | Cleanup; do when each function is next touched. submit-question, vote-question, submit-video-answer, proxy-geocodio, proxy-voterinfo. |
+| B6-8 | Local self-claim (county/city/school board) | planned | **Promoted from idea → planned 2026-05-04 by user direction.** Local races have no canonical filing registry and aren't ingested at all off-cycle. Self-claim therefore requires (a) bootstrap-claim mode where the candidate creates their own candidate row, plus (b) identity verification without a filing-ID lookup. Verification candidates: campaign-domain email magic link (possession of `sarah@sarahsmithforcouncil.com`), DNS TXT record verification on the campaign domain, or verified-social-handle proof reusing phase 5 infra. Needs its own design pass — open as B6-8a/b/c sub-tasks tomorrow. Sequence: ship phase 1-5 first (federal + state); local lands as a phase 6 follow-on once the bootstrap-claim UX is designed. |
+| B6-9 | Ballotpedia outreach about verification scraping | idea | One-line email to data@ballotpedia.org describing verification-only use case. UA + bot page already in place. |
+
 ## Backend — Phase B2: Read API
 
 | # | Feature | Status | Notes |
