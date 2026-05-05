@@ -37,7 +37,7 @@ Every code change that adds, removes, or modifies features, routes, components, 
 - **API:** Geocodio API for district resolution from address (free tier, 2500/day; will be proxied through Supabase Edge Function in B3)
 - **Backend:** Supabase (Postgres + Auth + Edge Functions). Supabase client for reads (with RLS), Edge Functions for all writes. See "Backend Architecture" section below.
 - **Database:** PostgreSQL via Supabase. Migrations in `supabase/migrations/`. Type generation via `supabase gen types typescript`.
-- **Auth:** Supabase Auth — anonymous sign-in on first visit (device-based), auto-generated handle (@voter_<short_id>). Magic link upgrade to real accounts planned (B5).
+- **Auth:** Supabase Auth — anonymous sign-in on first visit (device-based, read-only), auto-generated handle (@voter_<short_id>). Magic link upgrade (`signInWithOtp`) is required for any write: voting, asking, claiming. Edge Functions reject `is_anonymous` callers with `403 EMAIL_REQUIRED`; the client surfaces an `EmailGateModal` and persists the attempted action via `PendingIntent` (localStorage, 30-min TTL) so it auto-replays after the magic-link round-trip.
 - **State management:** React Context + `useReducer` (UserContext, FeedContext). No Redux/Zustand.
 - **Testing:** Vitest + React Testing Library (unit), Playwright + axe-core (e2e + a11y)
 
@@ -118,12 +118,14 @@ These are identity-level decisions. Do not deviate.
 /onboarding                 OnboardingPage (public)
 /claim                      ClaimPage (public, scaffold only)
 /bot                        BotPage (public — data bot identification + contact)
+/admin/dedup                AdminDedupPage (internal — gated by VITE_ADMIN_ENABLED=true)
 /app/*                      ProtectedApp (requires completed onboarding)
   /app/feed                 FeedPage (default tab, vertical snap-scroll + horizontal swipe)
   /app/feed/video/:videoId/answer/:answerId   AnswerVideoPage
   /app/ballot               BallotPage (persistent ballot view with share)
   /app/districts            DistrictBrowserPage (hierarchical district + candidate view)
   /app/you                  YouPage (account, districts, feedback)
+  /app/dashboard            DashboardPage (claimed-candidate inbox + video answer upload)
   /app/profile/:candidateId CandidateProfilePage
   /app/chain/:chainId       DebateChainPage
 ```
@@ -139,7 +141,7 @@ The prototype is functional with mock data. All phases through 11 are shipped or
 - Primitives: Logotype, GoldRule, MonoText, Tag, StatusPill, Avatar, ScanlineOverlay, PlusOneButton (3 states), EmDash
 - Layout: AppRouter with protected routes, UserContext (useReducer + localStorage), TopNav, BottomNav, AppShell
 - Landing page: Full port from wireframe HTML, collapsible changelog, candidate entry section, roadmap section
-- Video feed: Snap-scroll vertical feed, district-level horizontal swipe navigation (city/county/state/federal/all). When no videos exist at a level, shows CandidateCard list instead of empty state.
+- Video feed: Snap-scroll vertical feed, district-level horizontal swipe navigation (city/county/state/federal/all). Default is profile-first (`ProfileFeedPanel`); video feed only renders when a candidate at that level has actually posted videos.
 - Questions: Drawer overlay, +1 voting with optimistic update + rollback, question input, question context banner. Profile-level question submission (without video context) works via GeneralQuestionBox and TopicCard.
 - Answer video: Full-screen answer view with back nav to questions
 - Candidate profiles: 3-state rendering (unclaimed/claimed/active), tabs (Videos/Q&A/Positions), empty states
@@ -149,12 +151,15 @@ The prototype is functional with mock data. All phases through 11 are shipped or
 - PWA: dvh audit, iOS/Android meta tags, production icons (192 + 512), Lighthouse 95/100/100
 - You page: Account placeholder, district listing, feedback link (replaced Reps tab)
 - Feedback system: Modal with category tagging (bug/feature/general)
-- Claim page: Basic claim flow scaffold at /claim
+- Claim page: Basic claim flow scaffold at /claim. The primary claim entry point is now contextual — every unclaimed profile renders an "Is this you? Claim this profile" button on `UnclaimedBanner`, which gates on email verification and routes to `/app/dashboard` on success.
+- Email-gated writes: `submit-question`, `vote-question`, `claim-candidate` reject anonymous callers with `403 EMAIL_REQUIRED`. Client wraps writes in `EmailGateProvider`; failure opens `EmailGateModal` (magic link) and persists a `PendingIntent` to localStorage. `usePendingIntentRunner` (mounted at the `/app` shell) replays the intent after `AUTH_UPGRADED` and clears it. `questions.asked_by` FK ties authored content to the verified user (ON DELETE SET NULL).
 
-- Candidate-first feed: CandidateCard component, useCandidateFeed hook, CandidatePanel — replaces empty video state with browsable candidate cards
+- Profile-first feed: `ProfileFeedPanel` is the default per district level — vertical scroll of `ProfileFeedCard`s with avatar, name, top 2 questions (inline +1), and an "ask a question" input. Powered by `useProfileFeed` + batched `getTopQuestionsForCandidates(ids, limit)` (one round-trip per panel). Voting reuses the optimistic-update + rollback pattern; submission writes via `submit-question` Edge Function.
 - District browser: Hierarchical accordion view of all user districts with candidate cards per district
 - Onboarding cascade reveal: After address entry, candidates cascade onto screen with staggered animation grouped by office level (federal, state, county, city). BallotCard compact component, useMyBallot hook, getCandidatesByDistricts single-query service method. Skeleton loading during Geocodio resolve, prefers-reduced-motion support, iOS safe-area CTA bar.
 - Ballot page: Persistent /app/ballot route reuses useMyBallot, tappable cards link to profiles, share button (Web Share API with clipboard fallback). Accessible from You page.
+- Editorial seed questions: `seed_question_templates` table holds 3 starter questions per district level. AFTER INSERT trigger on `candidates` and a one-time backfill ensure every candidate has level-appropriate seed questions in their dashboard inbox. UI shows a gold "SUGGESTED BY REP." badge next to the `@rep_team` handle. Real constituent +1s sort above the zero-vote seeds.
+- Candidate dashboard: `/app/dashboard` route for claimed candidates. Inbox lists unanswered questions sorted by +1 count desc; inline video upload (mp4/quicktime/webm, 100MB cap, optional caption) hits Supabase Storage directly via user-auth/RLS, then `submit-video-answer` Edge Function inserts the video row, links it to the question, and flips state to `answered`. `useMyClaim` + `useDashboardInbox` hooks; You page surfaces a "Candidate dashboard" link when a claim exists.
 - Hybrid ballot source: Google Civic voterInfoQuery integration layered on top of the Congress/OpenStates baseline. `proxy-voterinfo` Edge Function returns the full active-election slate (federal through city council + judicial + school board) when Google has data; falls back to Geocodio + baseline between election windows. Onboarding switched to `getBallotForAddress`; gold election headline rendered when a live ballot is returned. Enrich-only upserts never overwrite baseline identity fields. Commits 1-3 of 5 landed.
 
 **Partially built (planned items remain):**
@@ -162,7 +167,7 @@ The prototype is functional with mock data. All phases through 11 are shipped or
 - PWA: Custom Workbox caching strategies, offline fallback behavior
 - Security: Tier 1 partially done; Tiers 2-5 planned (see BACKLOG.md Security section)
 
-**Not yet designed:** Candidate dashboard, full onboarding flow, notifications, settings, search/discovery
+**Not yet designed:** Full onboarding flow, notifications, settings, search/discovery
 
 ## Backlog and Changelog
 
@@ -195,8 +200,9 @@ Three files track what's built and what's next (see also "Keeping Definition Fil
 The video feed uses a horizontal swipe carousel to switch between district levels:
 
 - **FeedPage** — owns the `useSwipeGesture` hook and renders a `LevelTabStrip` + carousel of `FeedPanelConnected` panels.
-- **FeedPanelConnected** — wires a district level to `FeedPanel` via `useVideoFeed(level)`.
+- **FeedPanelConnected** — wires a district level to either `FeedPanel` (when videos exist) or `ProfileFeedPanel` (default). Reads `useVideoFeed(level)` to decide.
 - **FeedPanel** — stateless: receives videos array, renders vertical snap-scroll `VideoCard` list.
+- **ProfileFeedPanel** — default surface. Reads `useProfileFeed(districtCodes)` for combined candidates + top questions, threads vote/submit per card.
 - **LevelTabStrip** — animated label + dot indicators synced to swipe `progress` value.
 - **useSwipeGesture** — raw pointer event handler with axis locking, rubber-band edges, velocity snap. Returns `{ activeIndex, offset, progress, handlers }`.
 
@@ -249,6 +255,7 @@ Pipeline commands: `npm run import:download` → `npm run import:transform` → 
 **Environment variables (client + server-side scripts, in `.env`):**
 - `VITE_SUPABASE_URL` — Supabase project URL (client + fallback for seed scripts)
 - `VITE_SUPABASE_ANON_KEY` — Supabase anonymous/public key (client)
+- `VITE_ADMIN_ENABLED` — set to `"true"` in local/.env to unlock `/admin/dedup`. Unset (or any other value) redirects to `/`. Never set in production builds.
 - `CONGRESS_API_KEY` — Congress.gov API key (server-side only; used by `scripts/import/download.ts`). Register free at https://gpo.congress.gov/.
 - `SUPABASE_SERVICE_KEY` — service_role key (server-side only; used by `scripts/import/seed.ts`). Never expose to the client.
 

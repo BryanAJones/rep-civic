@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { CandidateId, Question, VideoId } from '../types/domain';
 import { service } from '../services';
+import { useEmailGate } from '../components/auth';
+import { EmailRequiredError } from '../utils/errors';
 
 export function useQuestions(videoId: VideoId | null, candidateId: CandidateId | null = null) {
+  const { requireEmail } = useEmailGate();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,9 +42,16 @@ export function useQuestions(videoId: VideoId | null, candidateId: CandidateId |
       const q = await service.submitQuestion(candidateId, videoId, text);
       setQuestions((prev) => [...prev, q].sort((a, b) => b.plusOneCount - a.plusOneCount));
     } catch (e) {
+      if (e instanceof EmailRequiredError) {
+        requireEmail({
+          intent: { type: 'submit-question', candidateId, videoId, topicId: null, text },
+          message: e.message,
+        });
+        return;
+      }
       setError(e instanceof Error ? e.message : 'Failed to submit question');
     }
-  }, [videoId, candidateId]);
+  }, [videoId, candidateId, requireEmail]);
 
   return { questions, setQuestions, loading, error, submitQuestion };
 }

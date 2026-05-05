@@ -16,6 +16,57 @@ export interface ChangelogEntry {
  */
 export const changelog: ChangelogEntry[] = [
   {
+    version: '0.17.0',
+    date: '2026-04-19',
+    title: 'Sign in to ask, vote, and claim — your activity follows you across devices',
+    items: [
+      'Asking a question or +1\'ing now prompts a one-time email verification — no password, just a magic link',
+      'Your saved action runs automatically the moment you click the link, even if it opens in a new tab',
+      'Unclaimed candidate profiles now have an "Is this you? Claim this profile" button right on the page',
+      'Authored questions are tied to your verified account, so they follow you when you switch devices',
+    ],
+  },
+  {
+    version: '0.16.0',
+    date: '2026-04-18',
+    title: 'Candidate dashboard: answer questions with video',
+    items: [
+      'Claimed candidates get a dashboard at /app/dashboard with an inbox of constituent questions sorted by +1 count',
+      'Record or upload a video answer (mp4/quicktime/webm, up to 100MB) right from the question — uses your phone\'s camera on mobile',
+      'Add an optional caption, then publish; the question flips to ANSWERED and the video appears in your profile',
+      'Dashboard link surfaces on the You page once you\'ve claimed a profile',
+    ],
+  },
+  {
+    version: '0.15.0',
+    date: '2026-04-18',
+    title: 'Your candidates, front and center',
+    items: [
+      'Feed now opens to your candidates with their top questions visible — no need to tap into a profile to read or vote',
+      '+1 a question right from the feed',
+      'Ask a candidate a question without leaving the feed',
+      'Video feed still appears when a candidate has posted videos',
+    ],
+  },
+  {
+    version: '0.14.4',
+    date: '2026-04-18',
+    title: 'Question submission rate-limit',
+    items: [
+      'Submitting questions is now capped at 10 per minute per account to keep candidate queues readable',
+    ],
+  },
+  {
+    version: '0.14.3',
+    date: '2026-04-18',
+    title: 'Update prompt for installed PWAs',
+    items: [
+      'When a new version ships, installed PWAs show a reload prompt instead of silently staying on the old build',
+      'Vote rate-limiting prevents brigading (30 votes per minute per account)',
+      'Candidate handle squatting is now blocked — names are reserved for the candidates themselves',
+    ],
+  },
+  {
     version: '0.14.0',
     date: '2026-04-17',
     title: 'Full ballot during election windows',

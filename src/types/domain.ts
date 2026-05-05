@@ -104,6 +104,8 @@ export interface Question {
   state: QuestionState;
   answerVideoId?: VideoId;
   createdAt: string;
+  /** True for editorially-curated starter questions seeded by Rep. team (item 84). */
+  isSeed?: boolean;
 }
 
 // Auto-generated topic cards (unclaimed profiles)

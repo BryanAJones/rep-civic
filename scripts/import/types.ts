@@ -60,4 +60,5 @@ export interface CandidateRow {
   filing_id: string | null;
   filing_date: string | null;
   opponent_count: number;
+  normalized_name: string;
 }

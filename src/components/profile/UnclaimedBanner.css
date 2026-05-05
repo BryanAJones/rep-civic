@@ -11,6 +11,9 @@
     var(--rep-gold-wash);
   border-top: 1px solid var(--rep-gold-border);
   border-bottom: 1px solid var(--rep-gold-border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .unclaimed-banner__text {
@@ -20,4 +23,30 @@
   color: var(--rep-steel);
   line-height: 1.5;
   margin: 0;
+}
+
+.unclaimed-banner__claim {
+  align-self: flex-start;
+  font-family: var(--rep-font-ui);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rep-navy);
+  background: var(--rep-white);
+  border: 1px solid var(--rep-gold);
+  border-radius: var(--rep-radius, 2px);
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: all var(--rep-transition, 0.15s ease);
+}
+
+.unclaimed-banner__claim:hover:not(:disabled) {
+  background: var(--rep-navy);
+  color: var(--rep-white);
+}
+
+.unclaimed-banner__claim:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

@@ -12,18 +12,21 @@ vi.mock('../../services', () => ({
 
 const { CandidateProfilePage } = await import('./CandidateProfilePage');
 const { UserProvider } = await import('../../context/UserContext');
+const { EmailGateProvider } = await import('../../components/auth');
 
 function renderProfile(candidateId: string) {
   return render(
     <UserProvider>
-      <MemoryRouter initialEntries={[`/app/profile/${candidateId}`]}>
-        <Routes>
-          <Route
-            path="/app/profile/:candidateId"
-            element={<CandidateProfilePage />}
-          />
-        </Routes>
-      </MemoryRouter>
+      <EmailGateProvider>
+        <MemoryRouter initialEntries={[`/app/profile/${candidateId}`]}>
+          <Routes>
+            <Route
+              path="/app/profile/:candidateId"
+              element={<CandidateProfilePage />}
+            />
+          </Routes>
+        </MemoryRouter>
+      </EmailGateProvider>
     </UserProvider>,
   );
 }

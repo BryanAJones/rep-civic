@@ -2,6 +2,8 @@ import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
 const MAX_QUESTION_LENGTH = 280
+const SUBMIT_LIMIT = 10
+const SUBMIT_WINDOW_SECONDS = 60
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -56,11 +58,50 @@ Deno.serve(async (req) => {
       )
     }
 
+    // Gate: anonymous sessions can browse/read but cannot submit. This is the
+    // durable-identity floor — if we accepted anonymous writes the question
+    // would be tied to a handle string only, with no way to recover ownership
+    // when the device session ends.
+    if (user.is_anonymous) {
+      return new Response(
+        JSON.stringify({ error: 'Verify your email to ask a question.', code: 'EMAIL_REQUIRED' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      )
+    }
+
     // Use service_role to bypass RLS for writes
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     )
+
+    // Rate limit per authenticated user. Submitting is heavier than voting —
+    // a burst from one account can flood a candidate's queue and cost the
+    // reviewer real attention, so the limit is tighter than vote-question's.
+    const { data: rateData, error: rateErr } = await supabase.rpc('check_rate_limit', {
+      p_user: user.id,
+      p_endpoint: 'submit-question',
+      p_limit: SUBMIT_LIMIT,
+      p_window_seconds: SUBMIT_WINDOW_SECONDS,
+    })
+    if (rateErr) throw rateErr
+    const verdict = Array.isArray(rateData) ? rateData[0] : rateData
+    if (verdict && verdict.allowed === false) {
+      return new Response(
+        JSON.stringify({
+          error: 'Rate limit exceeded',
+          retryAfterSeconds: verdict.retry_after_seconds,
+        }),
+        {
+          status: 429,
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json',
+            'Retry-After': String(verdict.retry_after_seconds ?? 1),
+          },
+        },
+      )
+    }
 
     // Verify candidate exists
     const { data: candidate, error: candErr } = await supabase
@@ -93,6 +134,7 @@ Deno.serve(async (req) => {
         text: text.trim(),
         topic_id: topicId ?? null,
         author_handle: authorHandle,
+        asked_by: user.id,
         plus_one_count: 1,
         state: 'default',
       })

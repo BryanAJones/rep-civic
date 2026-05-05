@@ -30,6 +30,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parse } from 'csv-parse/sync';
 import type { ImportCandidate, DistrictRow, CandidateRow } from './types.js';
+import { normalizeName } from '../../src/utils/normalizeName.ts';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = join(__dirname, 'data');
@@ -375,6 +376,7 @@ function main() {
     filing_id: c.sourceId || null,
     filing_date: null,
     opponent_count: (opponentCounts.get(c.districtCode) || 1) - 1,
+    normalized_name: normalizeName(c.name),
   }));
 
   // Deduplicate: same name + same district = keep one

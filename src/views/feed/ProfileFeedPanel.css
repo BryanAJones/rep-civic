@@ -1,11 +1,11 @@
-.candidate-panel {
+.profile-feed-panel {
   height: 100%;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   background: var(--rep-mist);
 }
 
-.candidate-panel__status {
+.profile-feed-panel__status {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -15,9 +15,9 @@
   color: var(--rep-steel);
 }
 
-.candidate-panel__list {
+.profile-feed-panel__list {
   display: flex;
   flex-direction: column;
-  gap: var(--rep-space-sm);
+  gap: var(--rep-space-md);
   padding: var(--rep-space-lg);
 }

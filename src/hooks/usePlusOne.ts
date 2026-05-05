@@ -2,11 +2,14 @@ import { useCallback } from 'react';
 import type { Question, QuestionId } from '../types/domain';
 import { useUser } from '../context/UserContext';
 import { service } from '../services';
+import { useEmailGate } from '../components/auth';
+import { EmailRequiredError } from '../utils/errors';
 
 export function usePlusOne(
   setQuestions: React.Dispatch<React.SetStateAction<Question[]>>,
 ) {
   const { state, dispatch } = useUser();
+  const { requireEmail } = useEmailGate();
 
   const vote = useCallback(async (questionId: QuestionId) => {
     // Already voted — no-op
@@ -24,10 +27,7 @@ export function usePlusOne(
         .sort((a, b) => b.plusOneCount - a.plusOneCount),
     );
 
-    try {
-      await service.voteQuestion(questionId);
-    } catch {
-      // Rollback on error — both local questions state and UserContext
+    function rollback() {
       dispatch({ type: 'UNVOTE_QUESTION', questionId });
       setQuestions((prev) =>
         prev
@@ -39,7 +39,19 @@ export function usePlusOne(
           .sort((a, b) => b.plusOneCount - a.plusOneCount),
       );
     }
-  }, [state.votedQuestionIds, dispatch, setQuestions]);
+
+    try {
+      await service.voteQuestion(questionId);
+    } catch (err) {
+      rollback();
+      if (err instanceof EmailRequiredError) {
+        requireEmail({
+          intent: { type: 'vote', questionId },
+          message: err.message,
+        });
+      }
+    }
+  }, [state.votedQuestionIds, dispatch, setQuestions, requireEmail]);
 
   return { vote };
 }

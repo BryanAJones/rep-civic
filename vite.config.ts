@@ -8,12 +8,13 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       manifest: false, // Using public/manifest.webmanifest directly
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        skipWaiting: true,
-        clientsClaim: true,
+        // Wait for user to accept the UpdatePrompt before activating the new SW.
+        skipWaiting: false,
+        clientsClaim: false,
       },
     }),
   ],

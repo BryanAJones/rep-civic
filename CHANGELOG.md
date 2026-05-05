@@ -5,6 +5,131 @@
 
 ---
 
+## [0.17.0] - 2026-04-19 — Email-gated writes + pending-intent persistence (B5-6/7/8, S-14)
+
+### Added
+- **`questions.asked_by` foreign key.** Migration `20260419010000_questions_asked_by.sql` adds a nullable `UUID REFERENCES auth.users(id) ON DELETE SET NULL` column + partial index. Authored questions now have a durable identity that survives device changes and outlives account deletion. No backfill of pre-existing anonymous-era rows; they keep `asked_by = NULL` by design.
+- **Email-gate write requirement.** `submit-question` and `vote-question` Edge Functions reject any caller with `user.is_anonymous === true`, returning HTTP 403 `{ code: 'EMAIL_REQUIRED' }`. Closes the loophole where any device-created anonymous user could vote and ask without identity (S-14).
+- **`PendingIntent` persistence (`src/utils/pendingIntent.ts`).** Discriminated union (`vote` | `submit-question` | `claim`) stored to localStorage with a 30-minute TTL and per-type validation. Survives the magic-link round-trip into a fresh tab where React state would be reset.
+- **`EmailGateProvider` + `EmailGateModal` (`src/components/auth/`).** Global provider exposes `requireEmail({ intent, message })`. Modal is a gold-top-bordered bottom-sheet with email input, sends magic link via `authService.sendMagicLink`, shows a confirmation state. Cancel clears the saved intent.
+- **`usePendingIntentRunner`.** Mounts inside the `/app` shell; once `state.authReady && !state.isAnonymous`, pulls the saved intent, replays the call (`voteQuestion` / `submitQuestion` / `claimCandidate`), navigates to `/app/dashboard` after a successful claim, and clears the intent. Single-fire via `useRef`.
+- **Wired claim CTA on `UnclaimedBanner`.** "Is this you? Claim this profile" button on every unclaimed candidate profile. On `EmailRequiredError` opens the email gate with a `claim` pending intent so the user lands back on the profile post-verification, claim runs, and they're routed to the dashboard.
+- **`EmailRequiredError` + `isEmailRequiredError` (`src/utils/errors.ts`).** Typed error and a helper that pattern-matches FunctionsHttpError → 403 → `{ code: 'EMAIL_REQUIRED' }` body. Used by all three writes.
+- **`claimCandidate` on `DataService`.** Real implementation hits `claim-candidate` Edge Function; mock satisfies `ClaimedCandidate` shape (`videoCount: 0`, `positions: []`).
+
+### Changed
+- **`usePlusOne`, `useQuestions.submitQuestion`, `ProfileFeedPanel.handleSubmit`** all now catch `EmailRequiredError` and call `requireEmail(...)` with the appropriate pending intent before re-throwing/aborting. Optimistic-update + rollback path on `usePlusOne` was lifted into a named `rollback()` so both error paths share it.
+- **`EmailGateProvider` is now mounted at `App.tsx`** above the router, so any view can require email without prop-drilling.
+
+### Notes
+- Replay is best-effort: if the replay throws (e.g., the candidate already claimed it from another tab), the intent is dropped silently rather than re-prompting. Surfacing replay errors is a follow-on iteration.
+- Tests: `pendingIntent.test.ts` (7), updated `usePlusOne.test.ts` with `EmailRequiredError → pendingIntent` case, all 153 tests green; tsc clean.
+
+---
+
+## [0.16.1] - 2026-04-18 — Editorial seed questions (item 84)
+
+### Added
+- **`is_seed` column on `questions` + `seed_question_templates` table.** Migration `20260418050000_seed_questions.sql` introduces an admin-curated catalog of starter questions keyed by district level (federal/state/county/city). 12 seeded entries (3 per level) cover legislative priorities, healthcare, school funding, infrastructure, and city services.
+- **`seed_questions_for_candidate(uuid)` SQL function.** Idempotent — re-running it never duplicates seeds. Increments the candidate's denormalized `question_count` for each insert.
+- **AFTER INSERT trigger on `candidates`.** Newly-imported candidates (nightly Congress.gov / FEC / OpenStates pipeline, Google Civic election-window upserts) automatically receive their level's seed questions on insert.
+- **Backfill of all existing candidates.** 963 seed questions inserted across every candidate currently in the table.
+- **`SUGGESTED BY REP.` badge on dashboard inbox rows.** Gold mono text next to the author handle (`@rep_team`) signals the question is editorially curated, not from a constituent.
+
+### Notes
+- Sort by `plus_one_count DESC` is unchanged. Seeds start at 0 votes, so any organic question with at least one +1 floats above them. This is intentional: the dashboard inbox is empty for nearly every candidate today, so seeds give claimed candidates something to film against until real questions arrive.
+- Editing seed copy is a one-line `UPDATE seed_question_templates SET text = ... WHERE id = ...` from the Supabase SQL console; the next `seed_questions_for_candidate` call will pick up the new wording for any candidate not yet seeded with that exact text.
+
+---
+
+## [0.16.0] - 2026-04-18 — Candidate dashboard with video upload (item 67)
+
+### Added
+- **`/app/dashboard` route + `DashboardPage`.** Claimed candidates land on an inbox of unanswered questions sorted by +1 count (desc), plus an "Answered" history section. Header shows avatar, name, office, party, and a CLAIMED status pill. Auth gate redirects to `/app/you` when no claim exists.
+- **`InboxQuestionRow` with inline video upload.** Per-question state machine (idle → selected → uploading → error). HTML5 file input with `accept="video/mp4,video/quicktime,video/webm"` + `capture="user"` for mobile camera. 100MB client-side validation, optional caption (280 chars).
+- **Supabase Storage `candidate-videos` bucket.** Migration `20260418040000_video_storage.sql` creates the public-read bucket (100MB, mp4/quicktime/webm) with 4 RLS policies: anyone can read, only the authenticated owner of the matching candidate claim can insert/update/delete. Path convention `<candidate_id>/<uuid>.<ext>`; ownership extracted via `split_part(name, '/', 1)`.
+- **`submit-video-answer` Edge Function.** Validates inputs, requires non-anonymous auth, rate-limits 30/min via `check_rate_limit`, verifies the caller owns the matching `candidate_claim`, and that the question's `candidate_id` matches. Inserts the video row (post_type='qa-reply', answers_question_id, video_url) and updates `questions.state='answered'` + `answer_video_id` in one round trip.
+- **Service contract:** `getMyClaim`, `getDashboardInbox(candidateId)`, `submitVideoAnswer({candidateId, questionId, file, caption?})` on `DataService`. Mock service returns `c-banks` as the demo claim for local dev.
+- **Hooks:** `useMyClaim` (single fetch on mount) and `useDashboardInbox(candidateId)` which exposes a `submitAnswer(questionId, file, caption?)` that updates local state on success.
+- **You page link.** "Candidate dashboard" button renders only when `useMyClaim()` returns a claim.
+
+### Notes
+- Direct client → Storage upload uses the user's auth session so RLS gates writes. Edge Function is the source of truth for the question state transition; if finalize fails the orphan blob is best-effort deleted.
+- Editorial seed questions and LLM-generated openers (items 84, 85) are tracked separately — the dashboard is functional with whatever organic constituent questions exist.
+
+---
+
+## [0.15.0] - 2026-04-18 — Profile-first feed (item 76)
+
+### Added
+- **Profile-first feed.** New `ProfileFeedPanel` is the default surface inside each district level. Each candidate appears as a card with their top 2 questions inline, a +1 button per question, and an "ask a question" input — no need to tap through to a profile to interact. Voting reuses the same optimistic-update + rollback path as the questions drawer.
+- **Batched top-questions query.** New `getTopQuestionsForCandidates(candidateIds, limit)` on `DataService` issues a single `IN`-query (Supabase) or one Map allocation (mock), then trims per-candidate. Powers `useProfileFeed` so a panel of N candidates is one round-trip, not N+1.
+- **`ProfileFeedCard` component.** Expanded card built from existing primitives (Avatar, StatusPill, MonoText, PlusOneButton, QuestionInput). Header is a tappable button to the full profile; questions list is read+vote; ask box submits inline.
+
+### Changed
+- **`FeedPanelConnected` flips its default.** Video feed now renders only when at least one video exists for the level; `ProfileFeedPanel` is the default for everything else. Previous behavior buried candidates behind a video-loading state that almost always resolved to empty.
+- **Removed `CandidatePanel`** (and its CSS) — superseded by `ProfileFeedPanel`. The thinner `CandidateCard` is still used by `DistrictBrowserPage`.
+
+### Notes
+- Inline submit failure on a feed card is silent today; the candidate profile view still shows error text. Surfacing inline error UI on the feed card is a follow-on iteration.
+
+---
+
+## [0.14.5] - 2026-04-18 — Security Tier 5 (S-19)
+
+### Added
+- **S-19 Audit log.** New migration `20260418030000_audit_log.sql` creates an append-only `audit_log(id, occurred_at, event_type, actor_id, target_table, target_id, old_value, new_value, metadata)` table plus three `SECURITY DEFINER` triggers: `candidates.status` transitions, `candidate_claims` insert/delete, and `user_profiles.handle` changes. Actor resolves via `auth.uid()` (or the row's `user_id` for claim inserts). RLS enabled with zero policies, so only service_role reads — queries run from the Supabase dashboard. Nightly `audit-log-cleanup` pg_cron job prunes entries older than a year.
+
+### Notes
+- Admin UI for browsing audit entries is deferred. At launch volume, direct SQL against the table from the dashboard is enough; a dedicated screen costs an Edge Function (RLS denies client reads by design) and isn't worth building before there's real traffic.
+
+---
+
+## [0.14.4] - 2026-04-18 — Security Tier 5 (S-18)
+
+### Added
+- **S-18 Rate-limit submit-question.** Mirrors S-15. `submit-question` Edge Function now calls `check_rate_limit` with a tighter budget than votes — 10 submissions/minute per authenticated user — before any candidate lookup or insert. On breach returns 429 with a `Retry-After` header derived from the current window boundary. Reuses the `rate_limit_buckets` table and nightly cleanup from S-15; keyed by endpoint so the two budgets don't interfere.
+
+### Notes
+- Limit calibrated on reviewer attention, not compute: a flood of questions costs a candidate's reviewer real time, so submission cadence is capped harder than voting.
+
+---
+
+## [0.14.3] - 2026-04-18 — Security Tier 4 partial (S-15, S-16)
+
+### Added
+- **S-16 PWA update prompt.** `vite.config.ts` now uses `registerType: 'prompt'` with `skipWaiting: false` — the new service worker waits in `installed` state until the user confirms. New `UpdatePrompt` component (navy banner, gold primary button) renders globally in `App.tsx`, consuming `virtual:pwa-register/react`'s `needRefresh` signal. `public/_headers` tightens `/sw.js` from `no-cache` to `no-store` so browsers never serve a cached service worker registration script.
+- **S-15 Vote rate-limit.** New migration `20260418020000_rate_limit_buckets.sql` adds `rate_limit_buckets(user_id, endpoint, window_start, count)` (composite PK) + `check_rate_limit()` plpgsql RPC returning `(allowed, current_count, retry_after_seconds)`. `vote-question` Edge Function calls the RPC with `limit=30, window_seconds=60`; 429 responses carry a `Retry-After` header. Nightly `rate-limit-buckets-cleanup` pg_cron job prunes windows older than one day.
+
+### Notes
+- S-14 (SSE over WebSocket) deferred — gates real-time voting (BACKLOG item 66) which is still an `idea`.
+
+---
+
+## [0.14.2] - 2026-04-18 — Security Tier 2 (S-8, S-9)
+
+### Added
+- **S-8 Handle reservation.** New migration `20260418010000_reserved_handles.sql` creates `reserved_handles(handle PK, candidate_id, reason, created_at)` and a `BEFORE UPDATE OF handle` trigger on `user_profiles` that raises `P0001` when the new handle is reserved and the updater isn't the matching `candidate_claims` holder. `scripts/import/seed.ts` now populates reservations — full normalized name (spaces → underscores) and last-name variants — after candidate upsert. `CandidateRow` + `transform.ts` write `normalized_name` so reservation derivation is deterministic from JSON output. `authService.updateHandle` maps `P0001` to a friendly "This handle is reserved for a candidate" message.
+- **S-9 Content-Security-Policy.** `public/_headers` now emits a CSP allowlisting self for script/style/connect, Supabase (`https://ocpcejomntxqsboswhrx.supabase.co` + `wss:`), Google Fonts (style + font), `data:` / `https:` for images, and `frame-ancestors 'none'`.
+
+### Notes
+- Reservation enforcement is DB-level; clients still update `user_profiles` directly.
+- Squatters cannot pre-register a candidate's normalized handle. A candidate claiming their profile (inserting `candidate_claims`) gains the right to their own reserved handles.
+
+---
+
+## [0.14.1] - 2026-04-18 — voterInfoQuery Commit 4 (admin + cache cleanup)
+
+### Added
+- `/admin/dedup` route (`src/views/admin/AdminDedupPage.tsx`) — internal read-only surface gated by `VITE_ADMIN_ENABLED=true`. Lists every candidate with `needs_manual_dedup = true`, grouped by district, showing name, normalized name, office, party, status, sources array, and filing/Google IDs. When the flag is absent the route redirects to `/` so production bundles never expose it.
+- Migration `20260418000000_voterinfo_cache_cleanup.sql` — enables `pg_cron` (idempotent), unschedules any prior job of the same name, and schedules `voterinfo-cache-cleanup` at `7 3 * * *` running `DELETE FROM public.voterinfo_cache WHERE expires_at < now()`. Complements the opportunistic in-request cleanup already in the Edge Function.
+
+### Notes
+- Structured observability logs (`cache_hit`, `google_status`, `contests_count`, `duration_ms`) were already shipping from `proxy-voterinfo` with commits 1-3, completing the commit-4 observability requirement without a code change.
+- Commit 5 (FEC retirement) remains indefinitely deferred per the Part 2 decision in `~/.claude/plans/yes-let-s-plan-out-cuddly-moth.md`.
+
+---
+
 ## [0.14.0] - 2026-04-17 — Google Civic voterInfoQuery Integration (commits 1-3)
 
 ### Added

@@ -31,6 +31,7 @@
     useUserDistricts.ts
     useVideoFeed.ts
     useCandidateFeed.ts
+    useProfileFeed.ts
     useMyBallot.ts
     useQuestions.ts
     usePlusOne.ts
@@ -39,6 +40,10 @@
     useDebateChain.ts
     useOnboarding.ts
     useScrollCarousel.ts
+    usePendingIntentRunner.ts  (replays a saved write after magic-link auth upgrade)
+  /utils
+    pendingIntent.ts           (localStorage-persisted intent: vote / submit-question / claim, 30-min TTL)
+    errors.ts                  (EmailRequiredError + isEmailRequiredError helper)
   /context
     UserContext.tsx         (current user, districts, auth state)
     FeedContext.tsx          (active video index, feed data)
@@ -83,6 +88,7 @@
     /candidate
       BallotCard.tsx
       CandidateCard.tsx
+      ProfileFeedCard.tsx
     /topics
       TopicCard.tsx
       GeneralQuestionBox.tsx
@@ -90,6 +96,11 @@
       DebateChain.tsx
       ChainNode.tsx
       ChainRespondChips.tsx
+    /auth
+      EmailGateContext.tsx     (provider + useEmailGate hook; calls setPendingIntent + opens modal)
+      EmailGateModal.tsx       (bottom-sheet: email input → magic link → confirmation)
+      EmailGateModal.css
+      index.ts
   /views
     /landing
       LandingPage.tsx
@@ -100,7 +111,7 @@
     /feed
       FeedPage.tsx
       FeedPanelConnected.tsx
-      CandidatePanel.tsx
+      ProfileFeedPanel.tsx
       QuestionsDrawerPage.tsx
       AnswerVideoPage.tsx
     /ballot
@@ -109,6 +120,9 @@
       CandidateProfilePage.tsx
     /districts
       DistrictBrowserPage.tsx
+    /dashboard
+      DashboardPage.tsx
+      InboxQuestionRow.tsx
     /reps
       RepsPage.tsx
   /router
@@ -347,6 +361,7 @@ interface DataService {
   getFeedVideos(districtCodes: DistrictCode[], filter?: DistrictLevel): Promise<Video[]>;
   getQuestionsForVideo(videoId: VideoId): Promise<Question[]>;
   getQuestionsForCandidate(candidateId: CandidateId): Promise<Question[]>;
+  getTopQuestionsForCandidates(candidateIds: CandidateId[], limitPerCandidate: number): Promise<Map<CandidateId, Question[]>>;
   submitQuestion(candidateId: CandidateId, videoId: VideoId | null, text: string, topicId?: string): Promise<Question>;
   voteQuestion(questionId: QuestionId): Promise<{ newCount: number }>;
   getCandidate(candidateId: CandidateId): Promise<Candidate>;
@@ -518,6 +533,7 @@ React Router v6.
   /app/ask                  (future — redirect to feed for now)
   /app/reps                 RepsPage
   /app/profile/:candidateId CandidateProfilePage
+  /app/dashboard            DashboardPage (claimed-candidate inbox + video upload)
   /app/chain/:chainId       DebateChainPage
 /claim/:candidateId         (future — separate from app shell from day one)
 ```

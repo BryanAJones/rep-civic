@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../context/UserContext';
 import { sendMagicLink, updateHandle } from '../../services/authService';
 import { FeedbackModal } from '../../components/feedback';
+import { useMyClaim } from '../../hooks/useMyClaim';
 import './YouPage.css';
 
 export function YouPage() {
   const { state, dispatch } = useUser();
   const navigate = useNavigate();
+  const { claim } = useMyClaim();
   const [showFeedback, setShowFeedback] = useState(false);
 
   // Magic link upgrade
@@ -87,6 +89,22 @@ export function YouPage() {
               <path d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM9 4h2v5l-1-.75L9 9V4zm9 16H6V4h1v9l3-2.25L13 13V4h5v16z" />
             </svg>
             View your ballot
+          </button>
+        </div>
+      )}
+
+      {/* Candidate dashboard link (only when user has claimed a profile) */}
+      {claim && (
+        <div className="you-page__section">
+          <button
+            className="you-page__ballot-link"
+            type="button"
+            onClick={() => navigate('/app/dashboard')}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M3 3h8v8H3V3zm10 0h8v5h-8V3zM3 13h8v8H3v-8zm10-3h8v11h-8V10z" />
+            </svg>
+            Candidate dashboard
           </button>
         </div>
       )}

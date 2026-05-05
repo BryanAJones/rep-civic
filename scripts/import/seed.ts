@@ -100,6 +100,63 @@ async function seedCandidates(candidates: CandidateRow[]): Promise<void> {
   console.log(`  Upserted ${inserted} candidates`);
 }
 
+async function seedReservedHandles(): Promise<void> {
+  console.log('Seeding handle reservations...');
+
+  const { data, error } = await supabase
+    .from('candidates')
+    .select('id, name, normalized_name')
+    .not('normalized_name', 'is', null);
+
+  if (error) {
+    console.error('  Fetch error:', error.message);
+    throw error;
+  }
+
+  const reservations = new Map<string, { candidate_id: string; reason: string }>();
+  for (const row of data ?? []) {
+    const normalized: string = row.normalized_name;
+    if (!normalized) continue;
+
+    const tokens = normalized.split(/\s+/).filter(Boolean);
+    if (tokens.length === 0) continue;
+
+    const fullHandle = `@${tokens.join('_')}`.toLowerCase();
+    if (!reservations.has(fullHandle)) {
+      reservations.set(fullHandle, { candidate_id: row.id, reason: 'candidate_auto_full' });
+    }
+
+    const lastToken = tokens[tokens.length - 1];
+    if (lastToken && lastToken.length >= 3) {
+      const lastHandle = `@${lastToken}`.toLowerCase();
+      if (!reservations.has(lastHandle)) {
+        reservations.set(lastHandle, { candidate_id: row.id, reason: 'candidate_auto_last' });
+      }
+    }
+  }
+
+  if (reservations.size === 0) {
+    console.log('  No reservations to insert.');
+    return;
+  }
+
+  const rows = Array.from(reservations.entries()).map(([handle, meta]) => ({ handle, ...meta }));
+  const batchSize = 500;
+  let inserted = 0;
+  for (let i = 0; i < rows.length; i += batchSize) {
+    const batch = rows.slice(i, i + batchSize);
+    const { error: upsertErr } = await supabase
+      .from('reserved_handles')
+      .upsert(batch, { onConflict: 'handle', ignoreDuplicates: true });
+    if (upsertErr) {
+      console.error(`  Reservation batch ${i} error:`, upsertErr.message);
+      throw upsertErr;
+    }
+    inserted += batch.length;
+  }
+  console.log(`  Upserted ${inserted} reservations (${reservations.size} unique handles)`);
+}
+
 async function main() {
   console.log('=== Rep. Data Import — Seed ===\n');
 
@@ -116,6 +173,7 @@ async function main() {
   await cleanupBeforeSeed();
   await seedDistricts(districts);
   await seedCandidates(candidates);
+  await seedReservedHandles();
 
   // Verify counts
   const { count: distCount } = await supabase

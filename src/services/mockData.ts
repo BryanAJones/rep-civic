@@ -638,6 +638,18 @@ export const mockService: DataService = {
     return delay(filtered);
   },
 
+  getTopQuestionsForCandidates(candidateIds: CandidateId[], limitPerCandidate: number) {
+    const result = new Map<CandidateId, Question[]>();
+    for (const id of candidateIds) {
+      const top = mockQuestions
+        .filter((q) => q.candidateId === id)
+        .sort((a, b) => b.plusOneCount - a.plusOneCount)
+        .slice(0, limitPerCandidate);
+      result.set(id, top);
+    }
+    return delay(result);
+  },
+
   submitQuestion(candidateId, videoId, text) {
     const question: Question = {
       id: `q-${Date.now()}`,
@@ -710,5 +722,54 @@ export const mockService: DataService = {
     mockFeedback.push(entry);
     console.info('[mock] Feedback submitted:', entry);
     return delay({ id: entry.id });
+  },
+
+  // Mock dashboard methods — `c-banks` stands in as the locally-claimed
+  // candidate so the dashboard route can be exercised with `npm run dev`.
+  getMyClaim() {
+    const c = mockCandidates['c-banks'];
+    return delay(c ?? null);
+  },
+
+  claimCandidate(candidateId: CandidateId) {
+    const c = mockCandidates[candidateId];
+    if (c && c.status === 'unclaimed') {
+      mockCandidates[candidateId] = {
+        ...c,
+        status: 'claimed',
+        videoCount: 0,
+        positions: [],
+      };
+    }
+    return delay({ candidateId });
+  },
+
+  getDashboardInbox(candidateId: CandidateId) {
+    const filtered = mockQuestions
+      .filter((q) => q.candidateId === candidateId)
+      .sort((a, b) => b.plusOneCount - a.plusOneCount);
+    return delay(filtered);
+  },
+
+  submitVideoAnswer({ candidateId, questionId, file, caption }) {
+    const video: Video = {
+      id: `v-${Date.now()}`,
+      candidateId,
+      postType: 'qa-reply',
+      caption: caption ?? `Reply to question`,
+      thumbnailUrl: '',
+      videoUrl: URL.createObjectURL(file),
+      reactionCount: 0,
+      questionCount: 0,
+      publishedAt: new Date().toISOString(),
+      answersQuestionId: questionId,
+    };
+    mockVideos.push(video);
+    const q = mockQuestions.find((q) => q.id === questionId);
+    if (q) {
+      q.state = 'answered';
+      q.answerVideoId = video.id;
+    }
+    return delay(video);
   },
 };

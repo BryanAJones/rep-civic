@@ -2,6 +2,7 @@ import { render, type RenderOptions } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { UserProvider } from '../context/UserContext';
 import { FeedProvider } from '../context/FeedContext';
+import { EmailGateProvider } from '../components/auth';
 import type { ReactElement, ReactNode } from 'react';
 
 interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
@@ -11,9 +12,11 @@ interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
 function AllProviders({ children }: { children: ReactNode }) {
   return (
     <UserProvider>
-      <FeedProvider>
-        <MemoryRouter>{children}</MemoryRouter>
-      </FeedProvider>
+      <EmailGateProvider>
+        <FeedProvider>
+          <MemoryRouter>{children}</MemoryRouter>
+        </FeedProvider>
+      </EmailGateProvider>
     </UserProvider>
   );
 }

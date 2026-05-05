@@ -1,4 +1,5 @@
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook as rawRenderHook, act, waitFor, type RenderHookOptions } from '@testing-library/react';
+import { createElement, type ReactNode } from 'react';
 import { createMockService } from '../test/mock-service';
 import { buildQuestion } from '../test/mock-data';
 import type { Question } from '../types/domain';
@@ -10,6 +11,15 @@ vi.mock('../services', () => ({
 }));
 
 const { useQuestions } = await import('./useQuestions');
+const { EmailGateProvider } = await import('../components/auth');
+
+function wrapper({ children }: { children: ReactNode }) {
+  return createElement(EmailGateProvider, null, children);
+}
+
+function renderHook<R, P>(callback: (props: P) => R, options?: Omit<RenderHookOptions<P>, 'wrapper'>) {
+  return rawRenderHook(callback, { wrapper, ...options });
+}
 
 describe('useQuestions', () => {
   beforeEach(() => {

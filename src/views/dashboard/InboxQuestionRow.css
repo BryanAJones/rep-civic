@@ -1,0 +1,103 @@
+.inbox-row {
+  background: var(--rep-white);
+  border: 1px solid var(--rep-rule);
+  border-radius: var(--rep-radius);
+  padding: var(--rep-space-md) var(--rep-space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--rep-space-md);
+}
+
+.inbox-row--answered {
+  background: var(--rep-cream);
+}
+
+.inbox-row__head {
+  display: flex;
+  gap: var(--rep-space-md);
+  align-items: flex-start;
+}
+
+.inbox-row__plus-one {
+  flex: 0 0 auto;
+  min-width: 36px;
+  text-align: right;
+}
+
+.inbox-row__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.inbox-row__text {
+  font-size: var(--rep-text-sm);
+  color: var(--rep-ink);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.inbox-row__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--rep-space-sm);
+  margin-top: var(--rep-space-xs);
+}
+
+.inbox-row__compose {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rep-space-sm);
+  border-top: 1px solid var(--rep-rule);
+  padding-top: var(--rep-space-md);
+}
+
+.inbox-row__file {
+  font-family: var(--rep-font-ui);
+  font-size: var(--rep-text-2xs);
+  color: var(--rep-steel);
+}
+
+.inbox-row__caption {
+  font-family: var(--rep-font-ui);
+  font-size: var(--rep-text-sm);
+  padding: var(--rep-space-sm) var(--rep-space-md);
+  border: 1px solid var(--rep-rule);
+  border-radius: var(--rep-radius);
+  background: var(--rep-white);
+  color: var(--rep-ink);
+}
+
+.inbox-row__caption:focus {
+  outline: 2px solid var(--rep-gold);
+  outline-offset: 2px;
+}
+
+.inbox-row__submit {
+  font-family: var(--rep-font-ui);
+  font-size: var(--rep-text-2xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: var(--rep-navy);
+  color: var(--rep-white);
+  border: 0;
+  padding: var(--rep-space-sm) var(--rep-space-md);
+  border-radius: var(--rep-radius);
+  cursor: pointer;
+  align-self: flex-start;
+  min-height: var(--rep-touch-md);
+  transition: background var(--rep-transition);
+}
+
+.inbox-row__submit:hover {
+  background: var(--rep-blue);
+}
+
+.inbox-row__status {
+  font-size: var(--rep-text-2xs);
+  color: var(--rep-steel);
+}
+
+.inbox-row__status--error {
+  color: var(--rep-gold);
+}

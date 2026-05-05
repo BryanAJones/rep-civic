@@ -1,0 +1,116 @@
+.email-gate-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 110;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: emailGateFade 0.15s ease;
+}
+
+@keyframes emailGateFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.email-gate-modal {
+  background: var(--rep-white, #FAFBFC);
+  width: 100%;
+  max-width: 600px;
+  border-radius: var(--rep-radius, 2px) var(--rep-radius, 2px) 0 0;
+  padding: var(--rep-space-lg, 16px);
+  display: flex;
+  flex-direction: column;
+  gap: var(--rep-space-md, 12px);
+  animation: emailGateSlide 0.2s ease-out;
+  border-top: 2px solid var(--rep-gold, #B8922A);
+}
+
+@keyframes emailGateSlide {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.email-gate-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.email-gate-modal__title {
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  font-size: var(--rep-text-sm, 11px);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rep-navy, #0D1F3C);
+}
+
+.email-gate-modal__close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: var(--rep-steel, #4A5568);
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+
+.email-gate-modal__text {
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  font-size: var(--rep-text-md, 14px);
+  color: var(--rep-ink, #1A1C22);
+  margin: 0;
+}
+
+.email-gate-modal__sub {
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  font-size: var(--rep-text-sm, 12px);
+  color: var(--rep-steel, #4A5568);
+  margin: 0;
+}
+
+.email-gate-modal__input {
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  font-size: var(--rep-text-md, 14px);
+  padding: var(--rep-space-sm, 10px) var(--rep-space-md, 12px);
+  border: 1px solid var(--rep-rule, #D1D9E6);
+  border-radius: var(--rep-radius, 2px);
+  background: var(--rep-white, #FAFBFC);
+  color: var(--rep-ink, #1A1C22);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.email-gate-modal__input:focus {
+  outline: 2px solid var(--rep-gold, #B8922A);
+  outline-offset: 1px;
+}
+
+.email-gate-modal__btn {
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  font-size: var(--rep-text-sm, 12px);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: var(--rep-space-md, 12px);
+  background: var(--rep-navy, #0D1F3C);
+  color: var(--rep-white, #FAFBFC);
+  border: none;
+  border-radius: var(--rep-radius, 2px);
+  cursor: pointer;
+  transition: opacity var(--rep-transition, 0.15s ease);
+}
+
+.email-gate-modal__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.email-gate-modal__error {
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  font-size: var(--rep-text-sm, 12px);
+  color: #B22222;
+  margin: 0;
+}

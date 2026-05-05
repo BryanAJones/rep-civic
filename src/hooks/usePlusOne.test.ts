@@ -14,9 +14,10 @@ vi.mock('../services', () => ({
 // Must import after vi.mock
 const { usePlusOne } = await import('./usePlusOne');
 const { UserProvider, useUser } = await import('../context/UserContext');
+const { EmailGateProvider } = await import('../components/auth');
 
 function wrapper({ children }: { children: ReactNode }) {
-  return createElement(UserProvider, null, children);
+  return createElement(UserProvider, null, createElement(EmailGateProvider, null, children));
 }
 
 describe('usePlusOne', () => {
@@ -132,6 +133,29 @@ describe('usePlusOne', () => {
     // Rollback
     expect(allUpdates[1]![0]!.plusOneCount).toBe(5);
     expect(allUpdates[1]![0]!.state).toBe('default');
+  });
+
+  it('saves pending intent when service throws EmailRequiredError', async () => {
+    const { EmailRequiredError } = await import('../utils/errors');
+    const { getPendingIntent, clearPendingIntent } = await import('../utils/pendingIntent');
+    clearPendingIntent();
+    mockService.voteQuestion = vi.fn().mockRejectedValue(new EmailRequiredError('Verify your email to +1 a question.'));
+
+    const questions: Question[] = [
+      buildQuestion({ id: 'q-1', plusOneCount: 5, state: 'default' }),
+    ];
+    const setQuestions = vi.fn((updater: React.SetStateAction<Question[]>) => {
+      if (typeof updater === 'function') updater(questions);
+    });
+
+    const { result } = renderHook(() => usePlusOne(setQuestions), { wrapper });
+    await act(async () => {
+      await result.current.vote('q-1');
+    });
+
+    const intent = getPendingIntent();
+    expect(intent).toMatchObject({ type: 'vote', questionId: 'q-1' });
+    clearPendingIntent();
   });
 
   it('re-sorts after rollback', async () => {

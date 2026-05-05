@@ -1,4 +1,15 @@
 import '@testing-library/jest-dom/vitest';
+import { vi } from 'vitest';
+
+// vite-plugin-pwa exposes `virtual:pwa-register/react` only during a Vite build.
+// Stub it so components that import the hook are testable under vitest.
+vi.mock('virtual:pwa-register/react', () => ({
+  useRegisterSW: () => ({
+    needRefresh: [false, () => {}],
+    offlineReady: [false, () => {}],
+    updateServiceWorker: () => Promise.resolve(),
+  }),
+}));
 
 // Polyfill ResizeObserver for test environment
 if (typeof globalThis.ResizeObserver === 'undefined') {

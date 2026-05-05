@@ -148,8 +148,8 @@
 |---|------|--------|-------|
 | S-6 | Choose and document session mechanism (magic link vs OAuth) | done | Magic link (signInWithOtp). Anonymous → authenticated upgrade preserves user data. |
 | S-7 | Server-side vote deduplication on (userId, questionId) | done | Real-time voting — implemented via ON CONFLICT in vote-question Edge Function (B3-2) |
-| S-8 | Handle reservation policy (block candidate-name squatting) | planned | Constituent auth |
-| S-9 | Content-Security-Policy headers on HTML responses | planned | Any auth feature |
+| S-8 | Handle reservation policy (block candidate-name squatting) | done | `reserved_handles` table + `BEFORE UPDATE` trigger on `user_profiles.handle`. Seed populates full-name + last-name variants per candidate. Claim holder can always take their own reserved handle. |
+| S-9 | Content-Security-Policy headers on HTML responses | done | Added to `public/_headers` alongside existing X-Content-Type-Options / X-Frame-Options. Allowlists self, Supabase (https + wss), Google Fonts, `data:`/`https:` images. |
 
 ### Tier 3 — Before Candidate Auth / Claim Flow
 
@@ -158,32 +158,32 @@
 | S-10 | Claim verification ceremony spec (highest-risk item) | done | v1: self-attestation with email verification required. verification_method + verified_at columns for future ceremony upgrade. |
 | S-11 | Separate candidate and constituent auth contexts | done | Anonymous = constituent only. Non-anonymous (email verified) = eligible to claim. |
 | S-12 | Server derives candidateId from session on candidate writes | planned | Candidate auth |
+| S-14 | Constituent writes require email-verified session | done | `submit-question` + `vote-question` reject `is_anonymous` callers with 403 / `EMAIL_REQUIRED`. Closes the loophole where any device-created anonymous user could vote and ask without identity. Coupled with `questions.asked_by` FK so authored content is now durably tied to a verified user. |
 | S-13 | Write-once ownership table on candidate claim | done | candidate_claims table with UNIQUE on candidate_id. One claim per user enforced in Edge Function. |
 
 ### Tier 4 — Before Real-Time Voting
 
 | # | Item | Status | Gates |
 |---|------|--------|-------|
-| S-14 | Use SSE over WebSocket for vote count broadcasting | planned | Real-time voting |
-| S-15 | Rate-limit voteQuestion endpoint | planned | Real-time voting |
-| S-16 | Change PWA to prompt update + no-store on sw.js | planned | Any real users |
+| S-15 | Rate-limit voteQuestion endpoint | done | `rate_limit_buckets` + `check_rate_limit(user, endpoint, limit, window_seconds)` RPC. vote-question enforces 30 votes/minute per user, returns 429 with `Retry-After`. Nightly cron prunes stale buckets. |
+| S-16 | Change PWA to prompt update + no-store on sw.js | done | `registerType: 'prompt'` + `skipWaiting: false` in vite.config. `UpdatePrompt` component surfaces a navy/gold bottom banner with Reload + Later. `/sw.js` Cache-Control tightened from `no-cache` to `no-store`. |
 
 ### Tier 5 — Ongoing / Platform-Level
 
 | # | Item | Status | Gates |
 |---|------|--------|-------|
 | S-17 | Backend proxy for Geocodio API (remove key from client) | done | Solved by proxy-geocodio Edge Function (B3-4). Key is now a Supabase secret. |
-| S-18 | Rate-limit question submission | planned | Real backend |
-| S-19 | Audit log for candidate state transitions | planned | Candidate auth |
-| S-22 | Question relevance validation in submit-question Edge Function | planned | Real backend (B3-1) |
-| S-23 | Office-level topic map for relevance scoring | planned | Real backend (B3-1) |
+| S-18 | Rate-limit question submission | done | submit-question calls `check_rate_limit` (10 submissions/minute per user) before writing. Returns 429 with `Retry-After` header on breach. Shares `rate_limit_buckets` infra from S-15. |
+| S-19 | Audit log for candidate state transitions | done | Append-only `audit_log` table with triggers on `candidates.status` changes, `candidate_claims` insert/delete, and `user_profiles.handle` changes. Service-role-only reads (RLS default-deny). 1-year nightly cleanup via pg_cron. Queryable from Supabase dashboard; admin UI is a future iteration. |
+| S-22 | Question relevance validation in submit-question Edge Function | deferred | Intentionally paused. Engineering is trivial (keyword/scope check in the Edge Function); the hard part is the content-moderation policy. Revisit when real users surface off-topic spam as feedback. |
+| S-23 | Office-level topic map for relevance scoring | deferred | Same reason as S-22. Curating "what counts as on-topic for a state senator" is a product-editorial call we'll make from real submissions, not guesses. |
 
 ### Bug Fixes (from security review)
 
 | # | Item | Status | Notes |
 |---|------|--------|-------|
 | S-20 | Vote rollback: UNVOTE_QUESTION in UserContext on failed vote | done | usePlusOne catch block now dispatches rollback |
-| S-21 | candidateId hardcoded to '' in useQuestions.submitQuestion | planned | Thread candidateId from video through to hook |
+| S-21 | candidateId hardcoded to '' in useQuestions.submitQuestion | done | Verified 2026-04-18: `useQuestions(videoId, candidateId)` threads candidateId at both call sites — `FeedPage.tsx:47` and `CandidateProfilePage.tsx:23`. Stale backlog entry from an earlier refactor. |
 
 ## Backend Deployment
 
@@ -222,7 +222,7 @@
 | B1-19 | FEC challenger withdrawal detection | idea | FEC keeps challengers active even after they drop out (no status flip). Need a signal (FEC form 2 termination? manual override?) or periodic stale-record pruning. |
 | B1-20 | State-level challenger data source (scraper) | standby | Demoted to standby 2026-04-17. Ballotpedia per-race scraping is the free-but-labor-intensive fallback if a future iteration decides statewide year-round local coverage is worth building. Bot identification page (B1-21) + User-Agent string are prerequisites already in place. See future-iteration options matrix in `~/.claude/plans/yes-let-s-plan-out-cuddly-moth.md` Part 2. Bulk paid Ballotpedia CSV ~$500-600 one-time (data@ballotpedia.org) is the cleanest paid alternative. |
 | B1-21 | Bot identification page (`/bot`) | done | Public route documenting Rep.'s import bot, sources read, User-Agent string, and contact email (getrep.org@gmail.com). Prerequisite for B1-20 so scrapes carry a real contact channel back to us. |
-| B1-22 | Google Civic voterInfoQuery integration | in-progress | Hybrid election-window layer on top of baseline. `proxy-voterinfo` Edge Function + `getBallotForAddress` service method + onboarding wire-up (commits 1-3) done and deployed. Remaining: admin dedup UI + pg_cron cache cleanup + observability (commit 4). **Commit 5 (FEC retirement) indefinitely deferred** — original plan assumed Google would cover federal challengers year-round, but voterInfoQuery is seasonal (~4-5 months/year). Without a replacement year-round federal-challenger source, retiring FEC would create an off-cycle federal-challenger gap. Keep FEC. |
+| B1-22 | Google Civic voterInfoQuery integration | in-progress | Hybrid election-window layer on top of baseline. Commits 1-3 (proxy-voterinfo + getBallotForAddress + onboarding wire-up) done and deployed. Commit 4 now landed: `/admin/dedup` stub gated by `VITE_ADMIN_ENABLED`, nightly pg_cron job `voterinfo-cache-cleanup` (03:07 UTC) purging expired rows, structured observability logs (`cache_hit`, `google_status`, `contests_count`, `duration_ms`) already emitting from the Edge Function. **Commit 5 (FEC retirement) indefinitely deferred** — original plan assumed Google would cover federal challengers year-round, but voterInfoQuery is seasonal (~4-5 months/year). Without a replacement year-round federal-challenger source, retiring FEC would create an off-cycle federal-challenger gap. Keep FEC. |
 | B1-23 | Year-round candidate source outreach | superseded | Closed 2026-04-17 without sending. Premise was "free or outreach-negotiable source closes the statewide local gap"; evaluation showed Wikidata is incumbents-only with no challenger or local value-add, and Civic Forge's public repo (github.com/civicfs/civicfs-publicdata) is 2024 precinct results only. Vote Smart paid tiers exceed project budget; user declined Democracy Works outreach. Decision: narrow the goal (accept off-cycle local gap) rather than widen the sources. Research artifacts retained in `scripts/research/` as reference for future iterations. |
 | B1-24 | Year-round source selection decision | superseded | Closed with B1-23. Future-iteration options matrix documented in `~/.claude/plans/yes-let-s-plan-out-cuddly-moth.md` Part 2 (Ballotpedia bulk CSV ~$500-600 is the cleanest paid unlock; metro-Atlanta PDF scraping is the free alternative if launch market narrows). |
 | B1-25 | Integrate chosen year-round source | superseded | Closed with B1-23/B1-24. Reopen only if a future iteration selects one of the options documented in the plan file. |
@@ -265,6 +265,9 @@
 | B5-3 | candidate_claims table + claim flow | done | Write-once ownership via claim-candidate Edge Function. Self-attestation verification method. Solves S-13. |
 | B5-4 | Candidate status transition on verified claim | done | Edge Function transitions unclaimed → claimed with guard clause |
 | B5-5 | Separate candidate/constituent auth contexts | done | Candidates must be non-anonymous (email verified) to claim. Anonymous users are constituents only. Solves S-11. |
+| B5-6 | `questions.asked_by` FK + write-gate on email-verified users | done | Migration `20260419010000_questions_asked_by.sql` adds nullable `asked_by UUID REFERENCES auth.users(id) ON DELETE SET NULL` + index. `submit-question` and `vote-question` Edge Functions reject `is_anonymous` callers with 403 + `code: 'EMAIL_REQUIRED'`. Authored questions now persist across devices and survive account deletion (set null, not cascade). No backfill of orphan rows from the anonymous era. |
+| B5-7 | Email-gate prompt + pending-intent persistence | done | `EmailGateProvider` + `EmailGateModal` (gold top-border bottom-sheet) render whenever a write throws `EmailRequiredError`. The attempted action persists to localStorage as a `PendingIntent` (vote / submit-question / claim) with 30-min TTL, surviving the magic-link round-trip into a fresh tab. `usePendingIntentRunner` runs once at the `/app` shell after `AUTH_UPGRADED`, replays the action, and clears the intent. Cancelling the modal also clears it. |
+| B5-8 | Wired claim CTA on unclaimed candidate profiles | done | `UnclaimedBanner` now renders an "Is this you? Claim this profile" button. Click calls `service.claimCandidate(candidateId)`; on `EmailRequiredError` opens the email gate with a `claim` pending intent. Replaces the abstract `/claim` marketing scaffold as the primary entry point — users claim where they already see who they're claiming. |
 
 ---
 
@@ -278,18 +281,17 @@
 | 62 | Search / discovery | idea | Not yet designed |
 | 63 | Notifications | idea | Not yet designed |
 | 64 | Settings page | idea | Not yet designed |
-| 66 | Real-time +1 via WebSocket/SSE | idea | Supabase Realtime subscriptions; hook-level change only |
-| 67 | Candidate dashboard | idea | Not yet designed |
+| 67 | Candidate dashboard | done | `/app/dashboard` route for claimed candidates: inbox of unanswered questions sorted by +1 count, inline video answer upload (mp4/quicktime/webm, 100MB cap, optional caption). Direct client → Supabase Storage upload (RLS-gated by claim ownership) finalized via `submit-video-answer` Edge Function. Linked from You page when a claim exists. |
 | 68 | Multi-market expansion (beyond Atlanta) | idea | District types will grow |
 | 69 | Candidate verification (official status) | idea | Verify candidates are who they claim; trust signals beyond soft v1 approach |
-| 70 | PWA hot refresh on updates | idea | Push new content to installed PWA without manual reload; critical for phone installs |
-| 73 | Functioning side rail buttons | idea | VideoRightRail buttons wired to real actions (not just counts) |
 | 74 | Horizontal swipe: local ↔ federal | done | Swipe gesture to shift feed between district levels (city → county → state → federal) |
-| 76 | Unclaimed candidate view as primary voter experience | planned | Pre-auth default: voters see unclaimed profiles with questions and +1 voting; video feed becomes post-auth/post-claim |
+| 76 | Unclaimed candidate view as primary voter experience | done | New `ProfileFeedPanel` is the default surface per district level: each candidate card shows top 2 questions with inline +1 vote and an "ask a question" input. Video feed only appears when a candidate has actually posted videos. Batched `getTopQuestionsForCandidates` keeps it to one round-trip per panel. |
 | 77 | PWA install instructions | idea | In-app guidance for installing the PWA on iOS and Android; prompt or banner with platform-specific steps |
 | 78 | Feedback system (modal + mock storage) | done | FeedbackModal with category tagging (bug/feature/general), available from TopNav, You page, and landing footer |
 | 79 | Coming soon / roadmap section on landing page | done | Voter-facing roadmap from backlog planned items with upvote/downvote buttons |
 | 80 | Fluid responsive sizing (container query units) | done | clamp() tokens with cqi units for text, spacing, icons, and touch targets |
 | 81 | Candidate identity on video cards | done | Denormalized candidateName + candidateOffice displayed on feed cards |
-| 82 | Question relevance checks (office-aware validation) | planned | Client hint + server enforcement; reject questions outside candidate's jurisdiction. See S-22, S-23 |
+| 82 | Question relevance checks (office-aware validation) | deferred | Paused with S-22/S-23. Revisit when off-topic spam shows up in real feedback. |
 | 83 | Office context hint in QuestionInput | idea | Show candidate's officeTitle + district level near input to nudge on-topic questions (client-side, pre-backend) |
+| 84 | Editorial seed questions per office level | done | Migration `20260418050000_seed_questions.sql` adds `is_seed` to `questions`, creates `seed_question_templates` keyed by district level (federal/state/county/city), seeds 3 starter questions per level, backfills every existing candidate (963 rows), and adds an AFTER INSERT trigger so newly-imported candidates auto-get seeds. UI shows a gold "SUGGESTED BY REP." badge in the dashboard inbox. Real +1s sort over seeded zeros. |
+| 85 | LLM-generated per-candidate question openers | idea | Follow-on to item 84. Use candidate metadata + recent news to generate tailored questions. Higher signal but introduces hallucination risk attached to a real candidate's name — only pursue once we have a tight prompt + verification loop. |

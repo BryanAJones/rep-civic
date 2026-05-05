@@ -11,6 +11,7 @@ export function createMockService(
     getFeedVideos: vi.fn().mockResolvedValue([]),
     getQuestionsForVideo: vi.fn().mockResolvedValue([]),
     getQuestionsForCandidate: vi.fn().mockResolvedValue([]),
+    getTopQuestionsForCandidates: vi.fn().mockResolvedValue(new Map()),
     submitQuestion: vi
       .fn()
       .mockResolvedValue({
@@ -31,6 +32,10 @@ export function createMockService(
     getVideo: vi.fn().mockRejectedValue(new Error('Not found')),
     getVideosForCandidate: vi.fn().mockResolvedValue([]),
     submitFeedback: vi.fn().mockResolvedValue({ id: 'fb-test' }),
+    getMyClaim: vi.fn().mockResolvedValue(null),
+    claimCandidate: vi.fn().mockImplementation((candidateId: string) => Promise.resolve({ candidateId })),
+    getDashboardInbox: vi.fn().mockResolvedValue([]),
+    submitVideoAnswer: vi.fn().mockRejectedValue(new Error('not configured')),
     ...overrides,
   };
 }

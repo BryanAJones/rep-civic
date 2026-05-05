@@ -46,6 +46,9 @@ export async function updateHandle(newHandle: string): Promise<{ error: string |
     if (error.code === '23505') {
       return { error: 'This handle is already taken' };
     }
+    if (error.code === 'P0001' && error.message.includes('reserved')) {
+      return { error: 'This handle is reserved for a candidate' };
+    }
     return { error: error.message };
   }
 

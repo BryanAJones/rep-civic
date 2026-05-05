@@ -1,10 +1,9 @@
 import { useCallback } from 'react';
 import { useVideoFeed } from '../../hooks/useVideoFeed';
-import { useCandidateFeed } from '../../hooks/useCandidateFeed';
 import type { LevelTab } from '../../hooks/useDistrictLevels';
 import type { CandidateId, VideoId } from '../../types/domain';
 import { FeedPanel } from './FeedPanel';
-import { CandidatePanel } from './CandidatePanel';
+import { ProfileFeedPanel } from './ProfileFeedPanel';
 
 interface FeedPanelConnectedProps {
   tab: LevelTab;
@@ -13,8 +12,10 @@ interface FeedPanelConnectedProps {
 }
 
 export function FeedPanelConnected({ tab, onQuestionsPress, scrollRef }: FeedPanelConnectedProps) {
+  // Default surface is the profile-first feed: candidates with their top
+  // questions and inline +1 / ask. Video feed only appears once a candidate
+  // has actually posted videos, which is rare today (most are unclaimed).
   const { videos, loading: videosLoading, error: videosError } = useVideoFeed(tab.districtCodes, tab.level);
-  const { candidates, loading: candidatesLoading, error: candidatesError } = useCandidateFeed(tab.districtCodes);
 
   const handleQuestionsPress = useCallback(
     (videoId: VideoId) => {
@@ -24,8 +25,7 @@ export function FeedPanelConnected({ tab, onQuestionsPress, scrollRef }: FeedPan
     [videos, onQuestionsPress],
   );
 
-  // Show video feed if videos exist
-  if (videosLoading || videos.length > 0 || videosError) {
+  if (!videosLoading && !videosError && videos.length > 0) {
     return (
       <FeedPanel
         videos={videos}
@@ -37,13 +37,5 @@ export function FeedPanelConnected({ tab, onQuestionsPress, scrollRef }: FeedPan
     );
   }
 
-  // Otherwise show candidate cards
-  return (
-    <CandidatePanel
-      candidates={candidates}
-      loading={candidatesLoading}
-      error={candidatesError}
-      scrollRef={scrollRef}
-    />
-  );
+  return <ProfileFeedPanel districtCodes={tab.districtCodes} />;
 }

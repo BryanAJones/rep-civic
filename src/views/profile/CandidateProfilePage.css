@@ -22,3 +22,11 @@
   line-height: 1.5;
   margin: 0;
 }
+
+.profile-page__claim-error {
+  font-family: var(--rep-font-ui);
+  font-size: 11px;
+  color: #B22222;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--rep-rule);
+}

@@ -1,6 +1,7 @@
 import { supabase } from './supabaseClient';
 import { mapGeocodioResponse } from './civicApi';
 import type { BallotResult, DataService } from './dataService';
+import { EmailRequiredError, isEmailRequiredError } from '../utils/errors';
 import type {
   Candidate,
   CandidateId,
@@ -125,6 +126,7 @@ function mapQuestion(row: {
   state: string;
   answer_video_id: string | null;
   created_at: string;
+  is_seed?: boolean | null;
 }): Question {
   return {
     id: row.id,
@@ -137,6 +139,7 @@ function mapQuestion(row: {
     state: row.state as QuestionState,
     answerVideoId: row.answer_video_id ?? undefined,
     createdAt: row.created_at,
+    isSeed: row.is_seed ?? false,
   };
 }
 
@@ -278,6 +281,33 @@ export const supabaseService: DataService = {
     return (data ?? []).map(mapQuestion);
   },
 
+  async getTopQuestionsForCandidates(
+    candidateIds: CandidateId[],
+    limitPerCandidate: number,
+  ): Promise<Map<CandidateId, Question[]>> {
+    const result = new Map<CandidateId, Question[]>();
+    if (candidateIds.length === 0) return result;
+
+    // One IN query, then trim to `limitPerCandidate` per candidate client-side.
+    // A SQL window-function variant would be tighter but adds an RPC; the row
+    // budget here (cards visible × ~5 candidates) keeps the over-fetch bounded.
+    const { data, error } = await supabase
+      .from('questions')
+      .select('*')
+      .in('candidate_id', candidateIds)
+      .order('plus_one_count', { ascending: false });
+
+    if (error) throw error;
+
+    for (const id of candidateIds) result.set(id, []);
+    for (const row of data ?? []) {
+      const q = mapQuestion(row);
+      const bucket = result.get(q.candidateId);
+      if (bucket && bucket.length < limitPerCandidate) bucket.push(q);
+    }
+    return result;
+  },
+
   async submitQuestion(
     candidateId: CandidateId,
     videoId: VideoId | null,
@@ -288,7 +318,10 @@ export const supabaseService: DataService = {
       body: { candidateId, videoId, text, topicId },
     });
 
-    if (error) throw error;
+    if (error) {
+      if (await isEmailRequiredError(error)) throw new EmailRequiredError('Verify your email to ask a question.');
+      throw error;
+    }
     return mapQuestion(data);
   },
 
@@ -298,8 +331,92 @@ export const supabaseService: DataService = {
       body: { questionId },
     });
 
-    if (error) throw error;
+    if (error) {
+      if (await isEmailRequiredError(error)) throw new EmailRequiredError('Verify your email to +1 a question.');
+      throw error;
+    }
     return { newCount: data.newCount };
+  },
+
+  async claimCandidate(candidateId: CandidateId): Promise<{ candidateId: CandidateId }> {
+    const { data, error } = await supabase.functions.invoke('claim-candidate', {
+      body: { candidateId },
+    });
+    if (error) {
+      if (await isEmailRequiredError(error)) throw new EmailRequiredError('Verify your email to claim a profile.');
+      throw error;
+    }
+    return { candidateId: data.candidateId };
+  },
+
+  async getMyClaim(): Promise<Candidate | null> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const { data: claim, error: claimErr } = await supabase
+      .from('candidate_claims')
+      .select('candidate_id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (claimErr) throw claimErr;
+    if (!claim) return null;
+
+    return supabaseService.getCandidate(claim.candidate_id);
+  },
+
+  async getDashboardInbox(candidateId: CandidateId): Promise<Question[]> {
+    // Same shape as getQuestionsForCandidate today, kept as a separate method
+    // so dashboard-specific concerns (filters, badges, pagination) can evolve
+    // without churning the voter-facing read path.
+    const { data, error } = await supabase
+      .from('questions')
+      .select('*')
+      .eq('candidate_id', candidateId)
+      .order('plus_one_count', { ascending: false });
+
+    if (error) throw error;
+    return (data ?? []).map(mapQuestion);
+  },
+
+  async submitVideoAnswer(args: {
+    candidateId: CandidateId;
+    questionId: QuestionId;
+    file: File;
+    caption?: string;
+  }): Promise<Video> {
+    const { candidateId, questionId, file, caption } = args;
+
+    // Path convention matches the storage RLS check in
+    // 20260418040000_video_storage.sql: <candidate_id>/<filename>.
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'mp4';
+    const path = `${candidateId}/${crypto.randomUUID()}.${ext}`;
+
+    const { error: uploadErr } = await supabase.storage
+      .from('candidate-videos')
+      .upload(path, file, {
+        contentType: file.type || 'video/mp4',
+        upsert: false,
+      });
+
+    if (uploadErr) throw uploadErr;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('candidate-videos')
+      .getPublicUrl(path);
+
+    const { data, error } = await supabase.functions.invoke('submit-video-answer', {
+      body: { candidateId, questionId, videoUrl: publicUrl, caption },
+    });
+
+    if (error) {
+      // Best-effort cleanup so a failed finalize doesn't leave orphan blobs
+      // counting against the storage quota. Storage delete RLS already
+      // restricts to the same claimed candidate, so this is safe.
+      await supabase.storage.from('candidate-videos').remove([path]).catch(() => {});
+      throw error;
+    }
+    return mapVideo(data);
   },
 
   async getCandidate(candidateId: CandidateId): Promise<Candidate> {
