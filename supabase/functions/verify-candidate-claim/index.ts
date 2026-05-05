@@ -23,7 +23,8 @@
 
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
 import { createClient } from 'npm:@supabase/supabase-js@2'
-import { JSON_HEADERS, jsonError, jsonResponse, requireVerifiedUser } from '../_shared/auth.ts'
+import { jsonError, jsonResponse, requireVerifiedUser } from '../_shared/auth.ts'
+import { checkRateLimit } from '../_shared/rateLimit.ts'
 import { lookupFederalCandidate } from '../_shared/fec.ts'
 
 const RATE_LIMIT = 10
@@ -81,26 +82,14 @@ async function initiate(
   }
 
   // Rate limit before any external work
-  const { data: rateData, error: rateErr } = await supabase.rpc('check_rate_limit', {
-    p_user: userId,
-    p_endpoint: 'verify-candidate-claim',
-    p_limit: RATE_LIMIT,
-    p_window_seconds: RATE_WINDOW_SECONDS,
+  const rate = await checkRateLimit({
+    supabase,
+    userId,
+    endpoint: 'verify-candidate-claim',
+    limit: RATE_LIMIT,
+    windowSeconds: RATE_WINDOW_SECONDS,
   })
-  if (rateErr) throw rateErr
-  const verdict = Array.isArray(rateData) ? rateData[0] : rateData
-  if (verdict && verdict.allowed === false) {
-    return new Response(
-      JSON.stringify({
-        error: 'Rate limit exceeded',
-        retryAfterSeconds: verdict.retry_after_seconds,
-      }),
-      {
-        status: 429,
-        headers: { ...JSON_HEADERS, 'Retry-After': String(verdict.retry_after_seconds ?? 1) },
-      },
-    )
-  }
+  if (!rate.ok) return rate.response
 
   // Verify the candidate exists, is unclaimed, and the filing_id matches
   const { data: candidate } = await supabase
