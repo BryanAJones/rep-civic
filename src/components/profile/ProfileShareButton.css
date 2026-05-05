@@ -1,0 +1,27 @@
+.profile-share {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rep-navy, #0D1F3C);
+  background: transparent;
+  border: 1px solid var(--rep-rule, #D1D9E6);
+  border-radius: var(--rep-radius, 2px);
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: background var(--rep-transition, 0.15s ease);
+}
+
+.profile-share:hover {
+  background: var(--rep-cream, #F7F5EF);
+}
+
+.profile-share svg {
+  width: 12px;
+  height: 12px;
+  fill: currentColor;
+}

@@ -5,4 +5,5 @@ export { ProfileStats } from './ProfileStats';
 export { ProfileTabs } from './ProfileTabs';
 export { UnclaimedBanner } from './UnclaimedBanner';
 export { ClaimModal } from './ClaimModal';
+export { ProfileShareButton } from './ProfileShareButton';
 export { VideoGrid } from './VideoGrid';

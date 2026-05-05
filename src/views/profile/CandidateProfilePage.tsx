@@ -3,6 +3,7 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import {
   ClaimModal,
   ProfileHeader,
+  ProfileShareButton,
   ProfileStats,
   ProfileTabs,
   UnclaimedBanner,
@@ -73,6 +74,9 @@ export function CandidateProfilePage() {
       )}
 
       <ProfileHeader candidate={candidate} />
+      <div className="profile-page__share-row">
+        <ProfileShareButton candidate={candidate} />
+      </div>
       <ProfileStats candidate={candidate} />
 
       <ProfileTabs candidateStatus={candidate.status}>
@@ -95,9 +99,16 @@ function renderPositions(candidate: Candidate) {
   if (candidate.status !== 'unclaimed' && candidate.positions.length > 0) {
     return <PositionsList positions={candidate.positions} />;
   }
+  if (candidate.status === 'unclaimed') {
+    return (
+      <p className="profile-page__stub">
+        Profile assembled from public filings — no stated positions on record.
+      </p>
+    );
+  }
   return (
     <p className="profile-page__stub">
-      No stated positions. This profile is built from public filings.
+      {candidate.name} has not stated any positions.
     </p>
   );
 }
@@ -112,7 +123,11 @@ function renderVideos(candidate: Candidate, videos: Video[]) {
     );
   }
   if (videos.length === 0) {
-    return <p className="profile-page__stub">No videos yet.</p>;
+    return (
+      <p className="profile-page__stub">
+        {candidate.name} has not posted any videos.
+      </p>
+    );
   }
   return <VideoGrid videos={videos} />;
 }
@@ -150,7 +165,11 @@ function renderQA(
   );
 
   if (allQuestions.length === 0) {
-    return <p className="profile-page__stub">No questions yet.</p>;
+    return (
+      <p className="profile-page__stub">
+        {candidate.name} has not received any constituent questions yet.
+      </p>
+    );
   }
 
   return (

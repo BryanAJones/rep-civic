@@ -30,3 +30,9 @@
   padding: 8px 12px;
   border-bottom: 1px solid var(--rep-rule);
 }
+
+.profile-page__share-row {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 16px 0;
+}
