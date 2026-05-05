@@ -1,6 +1,6 @@
 import { supabase } from './supabaseClient';
 import { mapGeocodioResponse } from './civicApi';
-import type { BallotResult, DataService } from './dataService';
+import type { BallotResult, DataService, VerifyClaimResult } from './dataService';
 import { EmailRequiredError, isEmailRequiredError } from '../utils/errors';
 import type {
   Candidate,
@@ -338,15 +338,48 @@ export const supabaseService: DataService = {
     return { newCount: data.newCount };
   },
 
-  async claimCandidate(candidateId: CandidateId): Promise<{ candidateId: CandidateId }> {
-    const { data, error } = await supabase.functions.invoke('claim-candidate', {
-      body: { candidateId },
+  async verifyCandidateClaim(args: {
+    candidateId: CandidateId;
+    level: 'federal' | 'state' | 'local';
+    filingId: string;
+  }): Promise<VerifyClaimResult> {
+    const { data, error } = await supabase.functions.invoke('verify-candidate-claim', {
+      body: { action: 'initiate', ...args },
     });
     if (error) {
-      if (await isEmailRequiredError(error)) throw new EmailRequiredError('Verify your email to claim a profile.');
+      if (await isEmailRequiredError(error)) {
+        throw new EmailRequiredError('Verify your email to claim a profile.');
+      }
       throw error;
     }
-    return { candidateId: data.candidateId };
+    return data as VerifyClaimResult;
+  },
+
+  async finalizeCandidateClaim(): Promise<
+    { candidateId: CandidateId; candidateName: string } | null
+  > {
+    const { data, error } = await supabase.functions.invoke('verify-candidate-claim', {
+      body: { action: 'finalize' },
+    });
+    if (error) {
+      // 404 = no pending claim for this email (link expired or never sent).
+      // Surface as null so the finalize page can render a neutral
+      // "this link is no longer valid" instead of a hard error.
+      const status = (error as { status?: number; context?: { status?: number } })?.status
+        ?? (error as { context?: { status?: number } })?.context?.status;
+      if (status === 404) return null;
+      throw error;
+    }
+    if (!data?.candidateId) return null;
+    return { candidateId: data.candidateId, candidateName: data.candidateName };
+  },
+
+  async revokeCandidateClaim(candidateId: CandidateId, reason: string): Promise<void> {
+    const { error } = await supabase.rpc('revoke_candidate_claim', {
+      p_candidate_id: candidateId,
+      p_reason: reason,
+    });
+    if (error) throw error;
   },
 
   async getMyClaim(): Promise<Candidate | null> {

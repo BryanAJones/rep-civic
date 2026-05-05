@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import {
+  ClaimModal,
   ProfileHeader,
   ProfileStats,
   ProfileTabs,
@@ -14,43 +15,40 @@ import { GeneralQuestionBox, TopicCard } from '../../components/topics';
 import { useCandidateProfile } from '../../hooks/useCandidateProfile';
 import { usePlusOne } from '../../hooks/usePlusOne';
 import { useQuestions } from '../../hooks/useQuestions';
-import { useEmailGate } from '../../components/auth';
-import { service } from '../../services';
-import { EmailRequiredError } from '../../utils/errors';
 import type { Candidate, CandidateId, Question, Topic, Video } from '../../types/domain';
 import './CandidateProfilePage.css';
 
 export function CandidateProfilePage() {
   const { candidateId } = useParams<{ candidateId: string }>();
-  const navigate = useNavigate();
-  const { requireEmail } = useEmailGate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { candidate, videos, questions, topics, loading, error } =
     useCandidateProfile(candidateId);
   const { submitQuestion } = useQuestions(null, candidateId as CandidateId ?? null);
   // usePlusOne needs a setter — profile questions are read-only for now,
   // so optimistic updates won't visually reflect until page reload.
   const { vote } = usePlusOne(() => {});
-  const [claiming, setClaiming] = useState(false);
-  const [claimError, setClaimError] = useState<string | null>(null);
+  // The modal opens either via the manual button or the ?claim=1 query param
+  // (set by usePendingIntentRunner after the email-gate round-trip). We
+  // derive `showClaim` from those two sources rather than mirroring URL
+  // state into a useEffect+setState pair.
+  const wantsClaimFromUrl = searchParams.get('claim') === '1';
+  const [openedManually, setOpenedManually] = useState(false);
+  const [closedManually, setClosedManually] = useState(false);
+  const showClaim =
+    !closedManually && (openedManually || wantsClaimFromUrl);
 
-  async function handleClaim() {
-    if (!candidateId) return;
-    setClaiming(true);
-    setClaimError(null);
-    try {
-      await service.claimCandidate(candidateId);
-      navigate('/app/dashboard');
-    } catch (err) {
-      if (err instanceof EmailRequiredError) {
-        requireEmail({
-          intent: { type: 'claim', candidateId },
-          message: err.message,
-        });
-      } else {
-        setClaimError(err instanceof Error ? err.message : 'Could not claim profile');
-      }
-    } finally {
-      setClaiming(false);
+  function handleOpenClaim() {
+    setOpenedManually(true);
+    setClosedManually(false);
+  }
+
+  function handleCloseClaim() {
+    setClosedManually(true);
+    setOpenedManually(false);
+    if (wantsClaimFromUrl) {
+      const next = new URLSearchParams(searchParams);
+      next.delete('claim');
+      setSearchParams(next, { replace: true });
     }
   }
 
@@ -68,10 +66,10 @@ export function CandidateProfilePage() {
   return (
     <div className="profile-page">
       {candidate.status === 'unclaimed' && (
-        <>
-          <UnclaimedBanner onClaim={handleClaim} claiming={claiming} />
-          {claimError && <div className="profile-page__claim-error">{claimError}</div>}
-        </>
+        <UnclaimedBanner onClaim={handleOpenClaim} />
+      )}
+      {showClaim && candidate.status === 'unclaimed' && (
+        <ClaimModal candidate={candidate} onClose={handleCloseClaim} />
       )}
 
       <ProfileHeader candidate={candidate} />

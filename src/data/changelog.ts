@@ -16,6 +16,17 @@ export interface ChangelogEntry {
  */
 export const changelog: ChangelogEntry[] = [
   {
+    version: '0.18.0',
+    date: '2026-05-05',
+    title: 'Verified candidate claim — public records, not self-attestation',
+    items: [
+      'Claiming a profile now verifies identity against public filings: enter your filing ID, we send a magic link to the contact email on file',
+      'When the FEC has no email on file, you get a verification code to post from a campaign social account (rolling out next phase)',
+      'New /app/claim/finalize lands you on a tidy "you\'ve claimed [Name]" handoff before routing to your dashboard',
+      'Sybil revoke action lives in /admin/dedup with audit-logged reasons',
+    ],
+  },
+  {
     version: '0.17.0',
     date: '2026-04-19',
     title: 'Sign in to ask, vote, and claim — your activity follows you across devices',

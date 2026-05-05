@@ -33,7 +33,11 @@ export function createMockService(
     getVideosForCandidate: vi.fn().mockResolvedValue([]),
     submitFeedback: vi.fn().mockResolvedValue({ id: 'fb-test' }),
     getMyClaim: vi.fn().mockResolvedValue(null),
-    claimCandidate: vi.fn().mockImplementation((candidateId: string) => Promise.resolve({ candidateId })),
+    verifyCandidateClaim: vi
+      .fn()
+      .mockResolvedValue({ status: 'email_sent', emailHint: 'tre***@example.com' }),
+    finalizeCandidateClaim: vi.fn().mockResolvedValue(null),
+    revokeCandidateClaim: vi.fn().mockResolvedValue(undefined),
     getDashboardInbox: vi.fn().mockResolvedValue([]),
     submitVideoAnswer: vi.fn().mockRejectedValue(new Error('not configured')),
     ...overrides,

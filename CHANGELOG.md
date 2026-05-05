@@ -5,6 +5,40 @@
 
 ---
 
+## [0.18.0] - 2026-05-05 — Verified candidate claim (B6-1)
+
+The pivot from "import every challenger" to "ship with incumbents only and let candidates self-claim against public filings" — phase 1.
+
+### Added
+- **`pending_claims` table.** Short-TTL row tying an in-flight claim attempt to a candidate, filing_id, and verification_method (`fec_email` / `registry_email` / `social_proof`). UNIQUE partial index on `(candidate_id) WHERE status='pending'` prevents two users racing into the same magic-link window. Partial index on `contact_email` lets the finalize step look up the right pending claim by the newly-authenticated user's email. Migration `20260505000000_phase1_self_claim.sql`.
+- **`candidate_registry` table.** Verification-only registry (separate from `candidates`), populated on-demand by the FEC API path and nightly by the Ballotpedia scraper (B6-3, planned). UNIQUE `(source, filing_id)`.
+- **`audit_pending_claim` trigger.** Writes `claim.verification_attempted` on insert and `claim.verification_{succeeded,expired,revoked,failed}` on status transition. SECURITY DEFINER for the same reasons as the S-19 candidate-status trigger.
+- **`expire_stale_pending_claims()` + 5-min pg_cron.** Flips pending → expired after the 30-minute TTL. The partial index keeps the scan tiny.
+- **`revoke_candidate_claim(uuid, text)` RPC.** Sybil safety valve. Wraps `candidate_claims` DELETE + `candidates.status='unclaimed'` + audit row in one function. Service-role only.
+- **`verify-candidate-claim` Edge Function.** Two-action dispatcher (`initiate` + `finalize`).
+  - **`initiate`**: requires non-anonymous auth; `check_rate_limit('verify-candidate-claim', 10, 3600)`; resolves candidate by `candidateId`; rejects if not unclaimed, filing_id mismatch, or user already holds a claim. Federal path: cache-first `candidate_registry` (24h TTL) → live `api.open.fec.gov` → committee email. With email: insert `pending_claims` (`fec_email`) + `signInWithOtp` to the FEC-on-file address → `{ status: 'email_sent', emailHint }`. Without email: generate a 9-char proof code, insert `pending_claims` (`social_proof`) → `{ status: 'social_proof_required', code, instructions }`. State and local return 501.
+  - **`finalize`**: caller is now authenticated AS the FEC-on-file email (post magic-link). Look up `pending_claims WHERE contact_email = user.email AND status='pending'`. UPDATE → verified (audit trigger fires). INSERT `candidate_claims`. UPDATE `candidates.status='claimed'` guarded on `unclaimed`.
+  - First consumer of `_shared/auth.ts` (B6-0). FEC client extracted to `_shared/fec.ts`.
+- **Multi-step `ClaimModal`.** Replaces the prior one-tap claim button. Steps: intro → level + filing-ID input → email-sent / social-proof / error. Locked to brand tokens (gold top border, 2px radius, mono filing-ID input).
+- **`/app/claim/finalize` route.** Magic-link landing page. Waits for `AUTH_UPGRADED`, calls `service.finalizeCandidateClaim()`, routes to `/app/dashboard` on success. Renders `expired` / `error` states for stale or invalid links.
+- **Sybil revoke in `/admin/dedup`.** New "Recent claims · revoke" table lists the 100 most recent `candidate_claims`. Revoke prompts for a reason and calls the new RPC. Audit-logged.
+- **`DataService` additions.** `verifyCandidateClaim`, `finalizeCandidateClaim`, `revokeCandidateClaim`. The legacy `claimCandidate` is removed.
+
+### Changed
+- **`UnclaimedBanner`** — button now opens the multi-step modal instead of calling the retired `claimCandidate` Edge Function.
+- **`usePendingIntentRunner`** — `claim` intent now navigates to `/app/profile/{candidateId}?claim=1` instead of calling `claimCandidate`. The Profile page derives modal-open state from the URL + manual button presses (no setState-in-useEffect).
+- **`_shared/auth.ts`** — exports `jsonResponse`, `jsonError`, `JSON_HEADERS` for reuse across Edge Functions.
+
+### Removed
+- **`claim-candidate` Edge Function.** Deleted. Was a verification bypass (`verification_method: 'self_attestation'` allowed any authenticated user to claim any candidate). Replaced by `verify-candidate-claim`.
+
+### Notes
+- Required Edge Function secret: `FEC_API_KEY` (free, 1000/hr at api.data.gov). Set with `supabase secrets set FEC_API_KEY=<key>`. `PUBLIC_APP_URL` defaults to `https://getrep.org`.
+- The magic link in step `initiate` is sent to the FEC-on-file email, not the user's session email. Clicking the link reauthenticates the browser AS that committee address — the verification ceremony IS the email-possession proof. The user's prior Rep session is replaced; this is intentional.
+- Phase 5 (social-handle fallback) was promoted to MVP based on the 43% email-on-file audit. The `social_proof_required` branch ships in this commit so phase 5 only fills in the verification UI, not the architecture.
+
+---
+
 ## [0.17.0] - 2026-04-19 — Email-gated writes + pending-intent persistence (B5-6/7/8, S-14)
 
 ### Added

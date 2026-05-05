@@ -731,17 +731,38 @@ export const mockService: DataService = {
     return delay(c ?? null);
   },
 
-  claimCandidate(candidateId: CandidateId) {
-    const c = mockCandidates[candidateId];
+  verifyCandidateClaim(args: { candidateId: CandidateId; level: string; filingId: string }) {
+    // Mock: half the candidates have email-on-file, half route to social proof.
+    // Deterministic via candidateId hash so tests can target specific paths.
+    const hasEmail = (args.candidateId.charCodeAt(0) ?? 0) % 2 === 0;
+    if (hasEmail) {
+      return delay({ status: 'email_sent', emailHint: 'tre***@example-committee.com' } as const);
+    }
+    return delay({
+      status: 'social_proof_required',
+      code: 'XYZ-AB1-23C',
+      instructions: 'Mock: post this code from your campaign social account.',
+    } as const);
+  },
+
+  finalizeCandidateClaim() {
+    // Mock: pretend Sarah Banks's claim just finalized.
+    const c = mockCandidates['c-banks'];
     if (c && c.status === 'unclaimed') {
-      mockCandidates[candidateId] = {
+      mockCandidates['c-banks'] = {
         ...c,
         status: 'claimed',
         videoCount: 0,
         positions: [],
       };
     }
-    return delay({ candidateId });
+    return delay(c ? { candidateId: c.id, candidateName: c.name } : null);
+  },
+
+  revokeCandidateClaim() {
+    // Admin-only path; not exercised against mockData in practice.
+    // The /admin/dedup page calls supabaseService directly.
+    return delay(undefined);
   },
 
   getDashboardInbox(candidateId: CandidateId) {

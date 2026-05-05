@@ -135,3 +135,22 @@
 .admin-dedup__back:hover {
   opacity: 0.9;
 }
+
+.admin-dedup__revoke {
+  font-family: var(--rep-font-ui, 'IBM Plex Sans', sans-serif);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: #8A1A1A;
+  color: white;
+  border: none;
+  border-radius: 2px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.admin-dedup__revoke:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

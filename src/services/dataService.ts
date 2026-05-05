@@ -20,6 +20,10 @@ export interface BallotResult {
   electionDate?: string;
 }
 
+export type VerifyClaimResult =
+  | { status: 'email_sent'; emailHint: string }
+  | { status: 'social_proof_required'; code: string; instructions: string };
+
 export interface DataService {
   // District resolution
   resolveDistricts(address: string): Promise<District[]>;
@@ -89,11 +93,37 @@ export interface DataService {
    */
   getMyClaim(): Promise<Candidate | null>;
   /**
-   * Claim an unclaimed candidate profile for the current (email-verified) user.
-   * Throws EmailRequiredError if the caller is anonymous. Resolves to the
-   * candidateId on success so the caller can route to /app/dashboard.
+   * Initiate a verified candidate claim (B6-1). Resolves to one of three
+   * branches based on what the FEC has on file for the candidate:
+   *  - email_sent: a magic link was sent to the candidate's filing-on-file
+   *                inbox; clicking it from that inbox routes to
+   *                /app/claim/finalize where finalizeCandidateClaim runs
+   *  - social_proof_required: no email on file; phase 5 will fill the
+   *                           verification UI for the returned code
+   *  - error responses surface as thrown errors with .code on the result
+   *
+   * Throws EmailRequiredError if the caller is anonymous.
    */
-  claimCandidate(candidateId: CandidateId): Promise<{ candidateId: CandidateId }>;
+  verifyCandidateClaim(args: {
+    candidateId: CandidateId;
+    level: 'federal' | 'state' | 'local';
+    filingId: string;
+  }): Promise<VerifyClaimResult>;
+  /**
+   * Finalize a claim after the candidate has clicked the magic link in
+   * their filing-on-file inbox. Looks up the user's pending claim by
+   * their newly-verified email, promotes it, and inserts the
+   * candidate_claims row. Returns null if no pending claim exists for
+   * this email (link expired or never sent).
+   */
+  finalizeCandidateClaim(): Promise<{ candidateId: CandidateId; candidateName: string } | null>;
+  /**
+   * Admin-only sybil revocation (B6-1). Calls the
+   * revoke_candidate_claim RPC, which deletes the candidate_claims row,
+   * flips candidates.status back to 'unclaimed', and writes
+   * claim.revoked to audit_log atomically.
+   */
+  revokeCandidateClaim(candidateId: CandidateId, reason: string): Promise<void>;
   /**
    * Inbox of questions for a candidate, sorted by +1 desc. Includes both
    * unanswered and answered questions so the dashboard can render history.

@@ -393,7 +393,7 @@ interface DataService {
 - `vote-question` — INSERT vote record (ON CONFLICT = 409 already voted), atomic increment via `increment_plus_one` RPC. Solves S-7.
 - `submit-feedback` — validated insert (category check, text 2000 chars, email 254 chars)
 - `proxy-geocodio` — proxies Geocodio API with server-side GEOCODIO_API_KEY secret, address validation (200 chars). Solves S-17.
-- `claim-candidate` — write-once candidate claim. Requires non-anonymous auth (email verified). Checks candidate is unclaimed, inserts into candidate_claims, transitions status to claimed.
+- `verify-candidate-claim` — verified self-claim flow (B6-1). Two actions: `initiate` (cache-first FEC API → committee email → signInWithOtp magic link → `pending_claims` row, OR no email → `social_proof_required` code) and `finalize` (resolves `pending_claims` by user.email after the magic-link round-trip → `candidate_claims` insert → `candidates.status='claimed'`). 10/hr per-user rate limit. Replaces the retired `claim-candidate` (which was a verification bypass).
 
 ---
 
@@ -534,6 +534,7 @@ React Router v6.
   /app/reps                 RepsPage
   /app/profile/:candidateId CandidateProfilePage
   /app/dashboard            DashboardPage (claimed-candidate inbox + video upload)
+  /app/claim/finalize       ClaimFinalizePage (magic-link landing for verify-candidate-claim)
   /app/chain/:chainId       DebateChainPage
 /claim/:candidateId         (future — separate from app shell from day one)
 ```

@@ -14,6 +14,7 @@ import { ClaimPage } from '../views/claim/ClaimPage';
 import { BotPage } from '../views/bot/BotPage';
 import { AdminDedupPage } from '../views/admin/AdminDedupPage';
 import { DashboardPage } from '../views/dashboard/DashboardPage';
+import { ClaimFinalizePage } from '../views/claim/ClaimFinalizePage';
 import { usePendingIntentRunner } from '../hooks/usePendingIntentRunner';
 
 function ProtectedApp() {
@@ -34,6 +35,7 @@ function ProtectedApp() {
         <Route path="districts" element={<DistrictBrowserPage />} />
         <Route path="you" element={<YouPage />} />
         <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="claim/finalize" element={<ClaimFinalizePage />} />
         <Route path="profile/:candidateId" element={<CandidateProfilePage />} />
         <Route path="chain/:chainId" element={<DebateChainPage />} />
         <Route path="*" element={<Navigate to="feed" replace />} />

@@ -2,10 +2,9 @@ import './UnclaimedBanner.css';
 
 interface UnclaimedBannerProps {
   onClaim?: () => void;
-  claiming?: boolean;
 }
 
-export function UnclaimedBanner({ onClaim, claiming = false }: UnclaimedBannerProps) {
+export function UnclaimedBanner({ onClaim }: UnclaimedBannerProps) {
   return (
     <div className="unclaimed-banner">
       <p className="unclaimed-banner__text">
@@ -17,9 +16,8 @@ export function UnclaimedBanner({ onClaim, claiming = false }: UnclaimedBannerPr
           type="button"
           className="unclaimed-banner__claim"
           onClick={onClaim}
-          disabled={claiming}
         >
-          {claiming ? 'Claiming' : 'Is this you? Claim this profile'}
+          Is this you? Claim this profile
         </button>
       )}
     </div>

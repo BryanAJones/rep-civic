@@ -126,6 +126,7 @@ These are identity-level decisions. Do not deviate.
   /app/districts            DistrictBrowserPage (hierarchical district + candidate view)
   /app/you                  YouPage (account, districts, feedback)
   /app/dashboard            DashboardPage (claimed-candidate inbox + video answer upload)
+  /app/claim/finalize       ClaimFinalizePage (magic-link landing for verified-claim flow)
   /app/profile/:candidateId CandidateProfilePage
   /app/chain/:chainId       DebateChainPage
 ```
@@ -151,7 +152,7 @@ The prototype is functional with mock data. All phases through 11 are shipped or
 - PWA: dvh audit, iOS/Android meta tags, production icons (192 + 512), Lighthouse 95/100/100
 - You page: Account placeholder, district listing, feedback link (replaced Reps tab)
 - Feedback system: Modal with category tagging (bug/feature/general)
-- Claim page: Basic claim flow scaffold at /claim. The primary claim entry point is now contextual — every unclaimed profile renders an "Is this you? Claim this profile" button on `UnclaimedBanner`, which gates on email verification and routes to `/app/dashboard` on success.
+- Verified candidate claim: Self-onboarding flow against public filings. `UnclaimedBanner`'s "Is this you? Claim this profile" button opens the multi-step `ClaimModal` (level + filing-ID input). The new `verify-candidate-claim` Edge Function looks up the FEC committee email (cache-first via `candidate_registry`, 24h TTL) and either sends a magic link to that address or returns a `social_proof_required` code (phase 5 wires the verification UI). The user clicks the link from the on-file inbox, lands at `/app/claim/finalize`, and the function promotes the `pending_claims` row → `candidate_claims` row → `candidates.status='claimed'`. Sybil revoke action lives in `/admin/dedup` (audit-logged via `revoke_candidate_claim` RPC). The legacy `claim-candidate` Edge Function (a verification bypass) is retired. The `/claim` route is still scaffold-only; the contextual button on every unclaimed profile is the primary entry point.
 - Email-gated writes: `submit-question`, `vote-question`, `claim-candidate` reject anonymous callers with `403 EMAIL_REQUIRED`. Client wraps writes in `EmailGateProvider`; failure opens `EmailGateModal` (magic link) and persists a `PendingIntent` to localStorage. `usePendingIntentRunner` (mounted at the `/app` shell) replays the intent after `AUTH_UPGRADED` and clears it. `questions.asked_by` FK ties authored content to the verified user (ON DELETE SET NULL).
 
 - Profile-first feed: `ProfileFeedPanel` is the default per district level — vertical scroll of `ProfileFeedCard`s with avatar, name, top 2 questions (inline +1), and an "ask a question" input. Powered by `useProfileFeed` + batched `getTopQuestionsForCandidates(ids, limit)` (one round-trip per panel). Voting reuses the optimistic-update + rollback pattern; submission writes via `submit-question` Edge Function.

@@ -39,8 +39,12 @@ export function usePendingIntentRunner() {
             break;
           }
           case 'claim': {
-            await service.claimCandidate(intent.candidateId);
-            navigate('/app/dashboard');
+            // The verified-claim flow needs the user to interact with the
+            // multi-step modal (filing-ID input). After the email-gate
+            // round-trip we route them back to the candidate profile with
+            // ?claim=1 so the page auto-opens the modal — they pick up
+            // exactly where they were when the gate fired.
+            navigate(`/app/profile/${intent.candidateId}?claim=1`);
             break;
           }
         }
