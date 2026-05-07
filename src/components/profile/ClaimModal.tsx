@@ -284,7 +284,13 @@ function errorToCopy(err: unknown): string {
   const status = context?.status ?? (err as { status?: number }).status;
   if (status === 404) return "That filing ID doesn't match this candidate.";
   if (status === 409) return 'This profile already has a pending claim or has been claimed.';
-  if (status === 429) return 'Too many attempts. Try again in an hour.';
+  if (status === 429) {
+    const code = (err as { context?: { body?: { code?: string } } }).context?.body?.code;
+    if (code === 'OTP_RATE_LIMIT') {
+      return "We've sent too many verification emails recently. Try again in about an hour.";
+    }
+    return 'Too many attempts. Try again in an hour.';
+  }
   if (status === 501) {
     return 'Only federal verification is live in phase 1. Other levels are rolling out.';
   }

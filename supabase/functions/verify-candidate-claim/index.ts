@@ -213,8 +213,18 @@ async function createPendingAndSendMagicLink(args: CreatePendingArgs): Promise<R
     },
   })
   if (otpErr) {
-    // Don't leak the candidate's email back to the caller.
-    return jsonError(502, { error: 'Could not send verification email. Try again in a moment.' })
+    // Surface rate-limit distinctly so callers (and the modal) can render
+    // a more useful "try again later" message instead of the generic 502.
+    const code = (otpErr as { code?: string }).code
+    if (code === 'over_email_send_rate_limit') {
+      return jsonError(429, {
+        error: "We've sent too many verification emails recently. Try again in about an hour.",
+        code: 'OTP_RATE_LIMIT',
+      })
+    }
+    return jsonError(502, {
+      error: 'Could not send verification email. Try again in a moment.',
+    })
   }
 
   return jsonResponse(200, {
