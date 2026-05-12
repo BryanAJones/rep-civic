@@ -12,8 +12,8 @@ const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL!;
 const anonKey = process.env.VITE_SUPABASE_ANON_KEY!;
 const serviceKey = process.env.SUPABASE_SERVICE_KEY!;
 
-const TEST_FILING_ID = 'TEST00001';
-const TEST_CANDIDATE_ID = 'ab58f5b9-55c1-4408-914e-fa30ffe84c0a';
+const TEST_CANDIDATE_ID = process.argv[2] ?? 'ab58f5b9-55c1-4408-914e-fa30ffe84c0a';
+const TEST_FILING_ID = process.argv[3] ?? 'TEST00001';
 const tempEmail = `probe-${Date.now()}@example.test`;
 const tempPassword = `Probe-${Date.now()}!Pwd`;
 
