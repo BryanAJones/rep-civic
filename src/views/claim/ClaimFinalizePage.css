@@ -65,3 +65,15 @@
   cursor: pointer;
   align-self: flex-start;
 }
+
+.claim-finalize__btn--ghost {
+  background: transparent;
+  color: var(--rep-navy, #0D1F3C);
+  border: 1px solid var(--rep-rule, #D1D9E6);
+}
+
+.claim-finalize__row {
+  display: flex;
+  gap: var(--rep-space-md, 12px);
+  flex-wrap: wrap;
+}

@@ -2,6 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { service } from '../../services';
 import { useUser } from '../../context/UserContext';
+import {
+  claimErrorToCopy,
+  extractClaimError,
+  getRecentClaimErrors,
+  logClaimError,
+} from '../../utils/claimErrorLog';
 import './ClaimFinalizePage.css';
 
 type State =
@@ -39,10 +45,13 @@ export function ClaimFinalizePage() {
         setTimeout(() => navigate('/app/dashboard'), 1200);
       } catch (err) {
         if (cancelled) return;
-        setState({
-          kind: 'error',
-          message: err instanceof Error ? err.message : 'Could not finalize claim',
-        });
+        const detail = await extractClaimError(
+          'verify-candidate-claim:finalize',
+          { isAnonymous: userState.isAnonymous },
+          err,
+        );
+        logClaimError(detail);
+        setState({ kind: 'error', message: claimErrorToCopy(detail) });
       }
     })();
     return () => {
@@ -88,16 +97,38 @@ export function ClaimFinalizePage() {
         {state.kind === 'error' && (
           <>
             <p className="claim-finalize__error">{state.message}</p>
-            <button
-              type="button"
-              className="claim-finalize__btn"
-              onClick={() => navigate('/app/feed')}
-            >
-              Back to Rep.
-            </button>
+            <div className="claim-finalize__row">
+              <button
+                type="button"
+                className="claim-finalize__btn claim-finalize__btn--ghost"
+                onClick={copyClaimDiagnostics}
+              >
+                Copy diagnostics
+              </button>
+              <button
+                type="button"
+                className="claim-finalize__btn"
+                onClick={() => navigate('/app/feed')}
+              >
+                Back to Rep.
+              </button>
+            </div>
           </>
         )}
       </div>
     </div>
   );
+}
+
+// Mirror of the affordance in ClaimModal so a user who lands on the
+// finalize page after a stale magic link (and can't open DevTools on
+// mobile) can still hand us the captured status + body.
+async function copyClaimDiagnostics(): Promise<void> {
+  const entries = getRecentClaimErrors();
+  const text = entries.length ? JSON.stringify(entries, null, 2) : 'No diagnostics captured.';
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    window.prompt('Copy diagnostics:', text);
+  }
 }

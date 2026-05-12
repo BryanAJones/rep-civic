@@ -2,6 +2,12 @@ import { useState } from 'react';
 import { service } from '../../services';
 import { useEmailGate } from '../auth';
 import { EmailRequiredError } from '../../utils/errors';
+import {
+  claimErrorToCopy,
+  extractClaimError,
+  getRecentClaimErrors,
+  logClaimError,
+} from '../../utils/claimErrorLog';
 import type { CandidateId, UnclaimedCandidate } from '../../types/domain';
 import type { VerifyClaimResult } from '../../services/dataService';
 import './ClaimModal.css';
@@ -63,10 +69,13 @@ export function ClaimModal({ candidate, onClose }: ClaimModalProps) {
         onClose();
         return;
       }
-      setStep({
-        kind: 'error',
-        message: errorToCopy(err),
-      });
+      const detail = await extractClaimError(
+        'verify-candidate-claim:initiate',
+        { candidateId: candidate.id, level, filingId: trimmed },
+        err,
+      );
+      logClaimError(detail);
+      setStep({ kind: 'error', message: claimErrorToCopy(detail) });
     }
   }
 
@@ -113,13 +122,22 @@ export function ClaimModal({ candidate, onClose }: ClaimModalProps) {
         {step.kind === 'error' && (
           <>
             <p className="claim-modal__error">{step.message}</p>
-            <button
-              className="claim-modal__btn"
-              type="button"
-              onClick={() => setStep({ kind: 'form' })}
-            >
-              Try again
-            </button>
+            <div className="claim-modal__row">
+              <button
+                className="claim-modal__btn claim-modal__btn--ghost"
+                type="button"
+                onClick={copyClaimDiagnostics}
+              >
+                Copy diagnostics
+              </button>
+              <button
+                className="claim-modal__btn"
+                type="button"
+                onClick={() => setStep({ kind: 'form' })}
+              >
+                Try again
+              </button>
+            </div>
           </>
         )}
       </div>
@@ -277,23 +295,18 @@ function renderSocialProof(code: string, instructions: string, onClose: () => vo
   );
 }
 
-function errorToCopy(err: unknown): string {
-  if (!err || typeof err !== 'object') return 'Could not verify. Try again in a moment.';
-  const message = (err as { message?: string }).message;
-  const context = (err as { context?: { status?: number } }).context;
-  const status = context?.status ?? (err as { status?: number }).status;
-  if (status === 404) return "That filing ID doesn't match this candidate.";
-  if (status === 409) return 'This profile already has a pending claim or has been claimed.';
-  if (status === 429) {
-    const code = (err as { context?: { body?: { code?: string } } }).context?.body?.code;
-    if (code === 'OTP_RATE_LIMIT') {
-      return "We've sent too many verification emails recently. Try again in about an hour.";
-    }
-    return 'Too many attempts. Try again in an hour.';
+// Copy the most recent client-side claim error diagnostics to the clipboard.
+// Useful for mobile dogfooding where DevTools is not available: the user
+// hits an error, taps "Copy diagnostics", and pastes the JSON into feedback
+// (or a text to the dev) so we can see status + body without a repro.
+async function copyClaimDiagnostics(): Promise<void> {
+  const entries = getRecentClaimErrors();
+  const text = entries.length ? JSON.stringify(entries, null, 2) : 'No diagnostics captured.';
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    // Older mobile browsers without async clipboard. Fall back to a prompt
+    // so the user can still select + copy manually.
+    window.prompt('Copy diagnostics:', text);
   }
-  if (status === 501) {
-    return 'Only federal verification is live in phase 1. Other levels are rolling out.';
-  }
-  if (status === 502) return 'Could not reach FEC. Try again in a moment.';
-  return message || 'Could not verify. Try again in a moment.';
 }

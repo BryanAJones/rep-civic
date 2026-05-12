@@ -5,6 +5,19 @@
 
 ---
 
+## [0.19.2] - 2026-05-12 — Claim error capture (B6-12)
+
+Unblocks triage on the next mobile claim non-2xx repro. The previous error path on `verify-candidate-claim` failures threw a `FunctionsHttpError` whose response body was never read, so even the user-facing copy fell through to a generic "Could not verify" line — and there was no way to recover the status or `code` from a phone where DevTools is unavailable.
+
+### Added
+- **`src/utils/claimErrorLog.ts`.** Reads the FunctionsHttpError `context.response` body (JSON first, plain-text fallback), pulls out `status` + `code` + raw `body` + the call context (action, candidateId, level, filingId, isAnonymous, userAgent), writes a structured detail to `console.error`, and persists the last 10 errors to localStorage under `__rep.claimErrors`. Never throws — quota and parse errors are swallowed so the logger can't break the surrounding flow. New unit suite covers status/code extraction, text-body fallback, ring-buffer cap + ordering, quota-error tolerance, and the `claimErrorToCopy` mapping.
+- **"Copy diagnostics" button on the error step in `ClaimModal` and `ClaimFinalizePage`.** Serializes the ring buffer as JSON to the clipboard (with a `window.prompt` fallback for older mobile browsers without the async Clipboard API). A user dogfooding on mobile can hit a non-2xx, tap the button, and paste the captured payload into feedback or a text without ever opening DevTools.
+
+### Fixed
+- **`errorToCopy` read non-existent properties on `FunctionsHttpError`.** The previous helper expected `context.status` and `context.body.code`, but the real shape is `context.response: Response` — the body is a stream we have to `clone().json()`. Every 404/409/429/501/502 was silently falling through to the generic catch-all instead of surfacing the right copy. Replaced by the new `claimErrorToCopy(detail)` which operates on the structured detail produced by `extractClaimError`.
+
+---
+
 ## [0.19.1] - 2026-05-12 — Stable seed-test-claim URL (B6-11)
 
 ### Fixed
