@@ -12,13 +12,10 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { questionId, candidateId, videoUrl, caption } = await req.json()
+    const { questionId, videoUrl, caption } = await req.json()
 
     if (!questionId || typeof questionId !== 'string') {
       return jsonError(400, { error: 'questionId is required' })
-    }
-    if (!candidateId || typeof candidateId !== 'string') {
-      return jsonError(400, { error: 'candidateId is required' })
     }
     if (!videoUrl || typeof videoUrl !== 'string') {
       return jsonError(400, { error: 'videoUrl is required' })
@@ -43,19 +40,23 @@ Deno.serve(async (req) => {
     })
     if (!rate.ok) return rate.response
 
-    // Verify caller owns a claim for this candidate. Storage RLS already
-    // gates the upload itself; this check stops a different claimed user
-    // from finalizing someone else's video into the answers table.
+    // S-12: derive candidate_id from the session's claim. The client never
+    // gets to assert which candidate it is acting as; the server reads the
+    // single row in candidate_claims keyed on auth.uid(). Storage RLS
+    // already prevented the upload from landing under a wrong prefix, but
+    // this closes the gap where a verified caller could otherwise pass an
+    // arbitrary candidateId to the body and have it land in `videos`.
     const { data: claim } = await supabaseAdmin
       .from('candidate_claims')
       .select('candidate_id')
       .eq('user_id', user.id)
-      .eq('candidate_id', candidateId)
       .maybeSingle()
 
     if (!claim) {
-      return jsonError(403, { error: 'You do not own a claim for this candidate' })
+      return jsonError(403, { error: 'You do not own a candidate claim' })
     }
+
+    const candidateId = claim.candidate_id as string
 
     const { data: question } = await supabaseAdmin
       .from('questions')
@@ -67,7 +68,7 @@ Deno.serve(async (req) => {
       return jsonError(404, { error: 'Question not found' })
     }
     if (question.candidate_id !== candidateId) {
-      return jsonError(403, { error: 'Question does not belong to this candidate' })
+      return jsonError(403, { error: 'Question does not belong to your candidate' })
     }
 
     const { data: video, error: videoErr } = await supabaseAdmin

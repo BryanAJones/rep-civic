@@ -5,6 +5,16 @@
 
 ---
 
+## [0.19.3] - 2026-05-12 — Server-derived candidateId on video answers (S-12)
+
+### Security
+- **`submit-video-answer` derives `candidate_id` from the session's claim.** The function previously read `candidateId` from the request body and validated that the caller owned a matching row in `candidate_claims`. The body input is now ignored entirely: the Edge Function looks up `candidate_claims WHERE user_id = auth.uid()` and returns 403 if the caller has no claim. Storage RLS already gated the upload by path prefix, so this closes the parallel gap on the `videos` insert: a verified caller can no longer pass an arbitrary `candidateId` in the body and have it land in the answer row even with a valid upload. Edge Function deployed before the client so old clients (still sending `candidateId` in the body) continue to work — the server just stops trusting that value.
+
+### Changed
+- **`supabaseService.submitVideoAnswer` no longer forwards `candidateId` to the Edge Function body.** The argument is still part of the function signature because the client needs the value locally to construct the Storage path `<candidate_id>/<uuid>.<ext>` that Storage RLS enforces. Internal contract only; no UI change.
+
+---
+
 ## [0.19.2] - 2026-05-12 — Claim error capture (B6-12)
 
 Unblocks triage on the next mobile claim non-2xx repro. The previous error path on `verify-candidate-claim` failures threw a `FunctionsHttpError` whose response body was never read, so even the user-facing copy fell through to a generic "Could not verify" line — and there was no way to recover the status or `code` from a phone where DevTools is unavailable.

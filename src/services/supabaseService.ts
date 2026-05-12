@@ -438,8 +438,11 @@ export const supabaseService: DataService = {
       .from('candidate-videos')
       .getPublicUrl(path);
 
+    // S-12: candidateId is no longer sent in the body. The Edge Function
+    // derives it from the caller's candidate_claims row. We still need
+    // it locally to construct the Storage path that Storage RLS enforces.
     const { data, error } = await supabase.functions.invoke('submit-video-answer', {
-      body: { candidateId, questionId, videoUrl: publicUrl, caption },
+      body: { questionId, videoUrl: publicUrl, caption },
     });
 
     if (error) {

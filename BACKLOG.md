@@ -157,7 +157,7 @@
 |---|------|--------|-------|
 | S-10 | Claim verification ceremony spec (highest-risk item) | done | v1: self-attestation with email verification required. verification_method + verified_at columns for future ceremony upgrade. |
 | S-11 | Separate candidate and constituent auth contexts | done | Anonymous = constituent only. Non-anonymous (email verified) = eligible to claim. |
-| S-12 | Server derives candidateId from session on candidate writes | planned | Candidate auth |
+| S-12 | Server derives candidateId from session on candidate writes | done | Shipped 2026-05-12. `submit-video-answer` Edge Function no longer reads `candidateId` from the body; it derives the value from `candidate_claims WHERE user_id = auth.uid()` and returns 403 if the caller has no claim. Storage RLS already gated the upload by path prefix; this closes the parallel gap on the videos insert. Client (`supabaseService.submitVideoAnswer`) still takes `candidateId` as a function arg (it needs it locally to construct the Storage path) but no longer forwards it. Edge Function redeployed first to maintain backward compatibility with old clients. |
 | S-14 | Constituent writes require email-verified session | done | `submit-question` + `vote-question` reject `is_anonymous` callers with 403 / `EMAIL_REQUIRED`. Closes the loophole where any device-created anonymous user could vote and ask without identity. Coupled with `questions.asked_by` FK so authored content is now durably tied to a verified user. |
 | S-13 | Write-once ownership table on candidate claim | done | candidate_claims table with UNIQUE on candidate_id. One claim per user enforced in Edge Function. |
 
