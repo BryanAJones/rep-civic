@@ -5,6 +5,13 @@
 
 ---
 
+## [0.19.1] - 2026-05-12 — Stable seed-test-claim URL (B6-11)
+
+### Fixed
+- **`scripts/seed-test-claim.ts` produces a stable candidate id across re-runs.** The previous `upsert` keyed on `filing_id` was generating a fresh `gen_random_uuid()` whenever a prior test row had been cleaned up, which broke the dogfooding URL between runs. Replaced with an explicit `SELECT … WHERE filing_id = …` → `UPDATE` existing row by id (so FK references from `pending_claims` / `candidate_claims` survive) or `INSERT` with a deterministic `TEST_CANDIDATE_ID = '00000000-0000-4000-8000-000000000001'` on fresh seeds. Internal-only; no user-facing change.
+
+---
+
 ## [0.19.0] - 2026-05-05 — Calm-dossier empty states + Web Share + Edge Function consolidation
 
 ### Added

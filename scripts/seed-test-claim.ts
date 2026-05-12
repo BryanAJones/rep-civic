@@ -32,6 +32,9 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
 
 const TEST_FILING_ID = 'TEST00001';
 const TEST_NAME = 'Test Candidate (verify-flow seed)';
+// Deterministic UUID so the test profile URL stays stable across
+// cleanup → reseed cycles. RFC 4122 v4-shaped placeholder.
+const TEST_CANDIDATE_ID = '00000000-0000-4000-8000-000000000001';
 
 const args = process.argv.slice(2);
 const cleanup = args.includes('--cleanup');
@@ -63,27 +66,58 @@ async function runSeed(targetEmail: string) {
     process.exit(1);
   }
 
-  // Upsert the candidate. We key on filing_id (UNIQUE per the
-  // 20260406000000 migration), so re-running this script is idempotent.
-  const { data: candidate, error: candErr } = await supabase
+  // Reuse existing row's id if one already exists for this filing_id,
+  // otherwise insert with a deterministic UUID. Avoids the previous
+  // upsert path where re-seeds after a cleanup produced fresh
+  // gen_random_uuid() values and broke the test URL.
+  const { data: existing, error: existingErr } = await supabase
     .from('candidates')
-    .upsert(
-      {
-        name: TEST_NAME,
-        initials: 'TC',
-        office_title: 'GA US House (test)',
-        district_code: anyDistrict.code,
-        party: 'Independent',
+    .select('id, status, district_code')
+    .eq('filing_id', TEST_FILING_ID)
+    .maybeSingle();
+  if (existingErr) {
+    console.error('Candidate lookup failed:', existingErr);
+    process.exit(1);
+  }
+
+  const mutableFields = {
+    name: TEST_NAME,
+    initials: 'TC',
+    office_title: 'GA US House (test)',
+    district_code: anyDistrict.code,
+    party: 'Independent',
+  };
+
+  let candidate: { id: string; status: string; district_code: string };
+
+  if (existing) {
+    const { data, error } = await supabase
+      .from('candidates')
+      .update(mutableFields)
+      .eq('id', existing.id)
+      .select('id, status, district_code')
+      .single();
+    if (error || !data) {
+      console.error('Candidate update failed:', error);
+      process.exit(1);
+    }
+    candidate = data;
+  } else {
+    const { data, error } = await supabase
+      .from('candidates')
+      .insert({
+        id: TEST_CANDIDATE_ID,
         status: 'unclaimed',
         filing_id: TEST_FILING_ID,
-      },
-      { onConflict: 'filing_id' },
-    )
-    .select('id, name, status, district_code')
-    .single();
-  if (candErr || !candidate) {
-    console.error('Candidate upsert failed:', candErr);
-    process.exit(1);
+        ...mutableFields,
+      })
+      .select('id, status, district_code')
+      .single();
+    if (error || !data) {
+      console.error('Candidate insert failed:', error);
+      process.exit(1);
+    }
+    candidate = data;
   }
 
   // If a previous test already claimed this candidate, undo so the next
