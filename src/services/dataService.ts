@@ -22,7 +22,17 @@ export interface BallotResult {
 
 export type VerifyClaimResult =
   | { status: 'email_sent'; emailHint: string }
-  | { status: 'social_proof_required'; code: string; instructions: string };
+  | {
+      status: 'social_proof_required';
+      pendingClaimId: string;
+      code: string;
+      instructions: string;
+    };
+
+export type SubmitSocialProofResult = {
+  status: 'social_proof_submitted';
+  pendingClaimId: string;
+};
 
 export interface DataService {
   // District resolution
@@ -109,6 +119,16 @@ export interface DataService {
     level: 'federal' | 'state' | 'local';
     filingId: string;
   }): Promise<VerifyClaimResult>;
+  /**
+   * Submit the URL where the social-proof code was posted. Called only
+   * after `verifyCandidateClaim` returned `social_proof_required`. The
+   * row stays in `pending` until an admin runs `approve_social_proof`
+   * or `reject_social_proof`.
+   */
+  submitSocialProof(args: {
+    candidateId: CandidateId;
+    proofUrl: string;
+  }): Promise<SubmitSocialProofResult>;
   /**
    * Finalize a claim after the candidate has clicked the magic link in
    * their filing-on-file inbox. Looks up the user's pending claim by

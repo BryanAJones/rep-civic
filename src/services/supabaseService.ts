@@ -355,6 +355,17 @@ export const supabaseService: DataService = {
     return data as VerifyClaimResult;
   },
 
+  async submitSocialProof(args: {
+    candidateId: CandidateId;
+    proofUrl: string;
+  }): Promise<{ status: 'social_proof_submitted'; pendingClaimId: string }> {
+    const { data, error } = await supabase.functions.invoke('verify-candidate-claim', {
+      body: { action: 'submit_social_proof', ...args },
+    });
+    if (error) throw error;
+    return data as { status: 'social_proof_submitted'; pendingClaimId: string };
+  },
+
   async finalizeCandidateClaim(): Promise<
     { candidateId: CandidateId; candidateName: string } | null
   > {

@@ -740,8 +740,25 @@ export const mockService: DataService = {
     }
     return delay({
       status: 'social_proof_required',
+      pendingClaimId: '00000000-0000-0000-0000-000000000001',
       code: 'XYZ-AB1-23C',
       instructions: 'Mock: post this code from your campaign social account.',
+    } as const);
+  },
+
+  submitSocialProof(args: { candidateId: CandidateId; proofUrl: string }) {
+    // Light client-side check that mirrors the real Edge Function.
+    try {
+      const u = new URL(args.proofUrl);
+      if (u.protocol !== 'https:' && u.protocol !== 'http:') {
+        return Promise.reject(new Error('proofUrl must be http(s)'));
+      }
+    } catch {
+      return Promise.reject(new Error('proofUrl must be a valid URL'));
+    }
+    return delay({
+      status: 'social_proof_submitted',
+      pendingClaimId: `mock-${args.candidateId}`,
     } as const);
   },
 

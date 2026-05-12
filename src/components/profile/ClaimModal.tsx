@@ -18,6 +18,8 @@ type Step =
   | { kind: 'submitting' }
   | { kind: 'sent'; emailHint: string }
   | { kind: 'social-proof'; code: string; instructions: string }
+  | { kind: 'social-proof-submitting'; code: string }
+  | { kind: 'social-proof-submitted' }
   | { kind: 'error'; message: string };
 
 interface ClaimModalProps {
@@ -60,8 +62,6 @@ export function ClaimModal({ candidate, onClose }: ClaimModalProps) {
       }
     } catch (err) {
       if (err instanceof EmailRequiredError) {
-        // Anonymous user — gate them to verify their own email first, then
-        // bring them back to this profile with the modal re-opened.
         requireEmail({
           intent: { type: 'claim', candidateId: candidate.id as CandidateId },
           message: err.message,
@@ -72,6 +72,25 @@ export function ClaimModal({ candidate, onClose }: ClaimModalProps) {
       const detail = await extractClaimError(
         'verify-candidate-claim:initiate',
         { candidateId: candidate.id, level, filingId: trimmed },
+        err,
+      );
+      logClaimError(detail);
+      setStep({ kind: 'error', message: claimErrorToCopy(detail) });
+    }
+  }
+
+  async function handleSubmitSocialProof(code: string, proofUrl: string) {
+    setStep({ kind: 'social-proof-submitting', code });
+    try {
+      await service.submitSocialProof({
+        candidateId: candidate.id as CandidateId,
+        proofUrl,
+      });
+      setStep({ kind: 'social-proof-submitted' });
+    } catch (err) {
+      const detail = await extractClaimError(
+        'verify-candidate-claim:initiate',
+        { candidateId: candidate.id },
         err,
       );
       logClaimError(detail);
@@ -118,7 +137,19 @@ export function ClaimModal({ candidate, onClose }: ClaimModalProps) {
         )}
         {step.kind === 'sent' && renderSent(step.emailHint, onClose)}
         {step.kind === 'social-proof' &&
-          renderSocialProof(step.code, step.instructions, onClose)}
+          renderSocialProof({
+            code: step.code,
+            instructions: step.instructions,
+            onSubmit: (proofUrl) => handleSubmitSocialProof(step.code, proofUrl),
+            onCancel: onClose,
+          })}
+        {step.kind === 'social-proof-submitting' && (
+          <>
+            <p className="claim-modal__text">Submitting proof URL…</p>
+            <code className="claim-modal__code">{step.code}</code>
+          </>
+        )}
+        {step.kind === 'social-proof-submitted' && renderSocialProofSubmitted(onClose)}
         {step.kind === 'error' && (
           <>
             <p className="claim-modal__error">{step.message}</p>
@@ -278,15 +309,88 @@ function renderSent(emailHint: string, onClose: () => void) {
   );
 }
 
-function renderSocialProof(code: string, instructions: string, onClose: () => void) {
+type SocialProofProps = {
+  code: string;
+  instructions: string;
+  onSubmit: (proofUrl: string) => void;
+  onCancel: () => void;
+};
+
+function renderSocialProof(props: SocialProofProps) {
+  return <SocialProofForm {...props} />;
+}
+
+function SocialProofForm({ code, instructions, onSubmit, onCancel }: SocialProofProps) {
+  const [proofUrl, setProofUrl] = useState('');
+  const [touched, setTouched] = useState(false);
+  const trimmed = proofUrl.trim();
+  let parseError: string | null = null;
+  if (touched && trimmed) {
+    try {
+      const u = new URL(trimmed);
+      if (u.protocol !== 'https:' && u.protocol !== 'http:') {
+        parseError = 'Use a full http(s) link.';
+      }
+    } catch {
+      parseError = 'That does not look like a valid URL.';
+    }
+  }
+  const disabled = !trimmed || Boolean(parseError);
+
   return (
     <>
       <p className="claim-modal__text">No email on file for this candidate.</p>
       <p className="claim-modal__sub">{instructions}</p>
       <code className="claim-modal__code">{code}</code>
+      <label className="claim-modal__label" htmlFor="claim-proof-url">
+        Where did you post this code?
+      </label>
+      <input
+        id="claim-proof-url"
+        className="claim-modal__input"
+        type="url"
+        value={proofUrl}
+        onChange={(e) => setProofUrl(e.target.value)}
+        onBlur={() => setTouched(true)}
+        placeholder="https://x.com/yourcampaign/status/..."
+        autoComplete="off"
+        inputMode="url"
+      />
+      {parseError && <p className="claim-modal__error">{parseError}</p>}
       <p className="claim-modal__sub">
-        Social-handle verification ships in phase 5. Save this code; we'll add the
-        verification step soon.
+        Link the public post (X, Instagram, Facebook, or a page on your campaign
+        domain) that contains the code above. We will review and email you within
+        24 hours.
+      </p>
+      <div className="claim-modal__row">
+        <button
+          className="claim-modal__btn claim-modal__btn--ghost"
+          type="button"
+          onClick={onCancel}
+        >
+          Cancel
+        </button>
+        <button
+          className="claim-modal__btn"
+          type="button"
+          onClick={() => onSubmit(trimmed)}
+          disabled={disabled}
+        >
+          Submit for review
+        </button>
+      </div>
+    </>
+  );
+}
+
+function renderSocialProofSubmitted(onClose: () => void) {
+  return (
+    <>
+      <p className="claim-modal__text">Submitted for review.</p>
+      <p className="claim-modal__sub">
+        We will check the link against your candidate identity and email you a
+        verification result within 24 hours. If approved, your profile flips to
+        claimed and you can sign in to the dashboard immediately.
       </p>
       <button className="claim-modal__btn" type="button" onClick={onClose}>
         Done

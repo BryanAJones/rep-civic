@@ -5,6 +5,26 @@
 
 ---
 
+## [0.19.5] - 2026-05-12 — Social-proof fallback phase 5a (B6-5) + strategic deferrals + setup docs
+
+The product hypothesis — "a candidate will self-claim against public filings to control their narrative" — remains untested. The work in this version moves toward validating it instead of further expanding inventory.
+
+### Added
+- **`pending_claims.social_proof_url` + `social_proof_submitted_at`.** Migration `20260512000000_b6_5_social_proof_url.sql`. The B6-1 ceremony already stashed a 9-char `social_proof_code` when no email was on file; the claimant now has somewhere to tell us where they posted it.
+- **`approve_social_proof` + `reject_social_proof` SECURITY DEFINER RPCs.** Service-role-only. Approval wraps promote-pending + insert-candidate-claim + flip-status in one transaction and writes `claim.social_proof_approved` / `claim.social_proof_rejected` to `audit_log` with the proof URL and admin note. Idempotent guards: both RPCs no-op if the row is not still `pending` or not a `social_proof` row.
+- **`verify-candidate-claim` `submit_social_proof` action.** Validates the URL parses + http(s), looks up the caller's own pending row (keyed on `candidate_id` + `user_id` + `status='pending'` + `verification_method='social_proof'`) so a different user cannot submit a URL against someone else's row, stamps `social_proof_url` + `social_proof_submitted_at`.
+- **`ClaimModal` social-proof step is interactive.** Was previously a static "save this code; we'll add the verification step soon" dead-end. Now: code + URL input + Submit-for-review button + terminal "Submitted for review — we'll email you within 24 hours" state. Mirrors the URL validation the Edge Function performs.
+- **`scripts/review-social-proof.ts` admin CLI.** `npm run review:social-proof` lists pending submissions with candidate name, expected code, submitted URL, and timestamps. `--approve <id>` and `--reject <id> --reason "..."` run the RPCs. The first-cut admin queue is a CLI; admin-UI inside `/admin/dedup` is phase 5b polish.
+- **`docs/SMTP_SETUP.md` and `docs/DOGFOODING_REAL_CANDIDATE.md`.** Two operator-facing checklists. The first walks through Resend / SendGrid / AWS SES SMTP setup for B6-10. The second is a one-page checklist for the first real candidate dogfood — pre-flight, during the session, immediately after, and what to watch for in the first 7 days.
+
+### Deferred (per strategic reassessment 2026-05-12)
+- **B6-3 Ballotpedia verification scraper** + **B6-4 GA SOS Playwright fallback** + **B6-8 Local self-claim** — deferred. The bottleneck on the B6 path is not candidate inventory; it's zero validated claims. Re-evaluate after one real federal candidate completes the loop. Same logic as B1-23/B1-24: narrow the goal, don't widen the sources.
+- **52 onboarding district map thumbnails** — deferred. Visual polish with no learning value.
+- **56 Workbox custom strategies** + **57 offline fallback** — deferred. PWA polish that matters with real installed users; no installed-user base yet.
+- **B6-2 OG image piece** — deferred. Share previews matter when claimed candidates share their profile; no claims means no sharing.
+
+---
+
 ## [0.19.4] - 2026-05-12 — Retire orphan `claim-candidate` Edge Function
 
 ### Security

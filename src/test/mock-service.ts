@@ -36,6 +36,12 @@ export function createMockService(
     verifyCandidateClaim: vi
       .fn()
       .mockResolvedValue({ status: 'email_sent', emailHint: 'tre***@example.com' }),
+    submitSocialProof: vi
+      .fn()
+      .mockResolvedValue({
+        status: 'social_proof_submitted',
+        pendingClaimId: '00000000-0000-0000-0000-000000000001',
+      }),
     finalizeCandidateClaim: vi.fn().mockResolvedValue(null),
     revokeCandidateClaim: vi.fn().mockResolvedValue(undefined),
     getDashboardInbox: vi.fn().mockResolvedValue([]),

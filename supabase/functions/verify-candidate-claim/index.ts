@@ -41,7 +41,13 @@ type FinalizeBody = {
   action: 'finalize'
 }
 
-type RequestBody = InitiateBody | FinalizeBody
+type SubmitSocialProofBody = {
+  action: 'submit_social_proof'
+  candidateId: string
+  proofUrl: string
+}
+
+type RequestBody = InitiateBody | FinalizeBody | SubmitSocialProofBody
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -59,6 +65,9 @@ Deno.serve(async (req) => {
     }
     if (body.action === 'finalize') {
       return await finalize(auth.user.id, auth.user.email ?? null, auth.supabaseAdmin)
+    }
+    if (body.action === 'submit_social_proof') {
+      return await submitSocialProof(body, auth.user.id, auth.supabaseAdmin)
     }
     return jsonError(400, { error: 'Unknown action' })
   } catch (err) {
@@ -140,16 +149,20 @@ async function initiate(
     return result
   }
 
-  // No email on file → social-proof branch (phase 5 fills the UI)
+  // No email on file → social-proof branch.
   const code = generateProofCode()
-  const insertSocial = await supabase.from('pending_claims').insert({
-    candidate_id: body.candidateId,
-    user_id: userId,
-    filing_id: body.filingId,
-    level: body.level,
-    verification_method: 'social_proof',
-    social_proof_code: code,
-  })
+  const insertSocial = await supabase
+    .from('pending_claims')
+    .insert({
+      candidate_id: body.candidateId,
+      user_id: userId,
+      filing_id: body.filingId,
+      level: body.level,
+      verification_method: 'social_proof',
+      social_proof_code: code,
+    })
+    .select('id')
+    .single()
   if (insertSocial.error) {
     if (insertSocial.error.code === '23505') {
       return jsonError(409, {
@@ -162,9 +175,67 @@ async function initiate(
 
   return jsonResponse(200, {
     status: 'social_proof_required',
+    pendingClaimId: insertSocial.data.id,
     code,
     instructions:
-      'Post this exact code from a campaign social account or campaign-domain page. Phase 5 wires up the verification check.',
+      'Post this exact code from a campaign social account (X / Instagram / Facebook) or a page on your campaign domain. Then paste the link below.',
+  })
+}
+
+async function submitSocialProof(
+  body: SubmitSocialProofBody,
+  userId: string,
+  supabase: ReturnType<typeof createClient>,
+): Promise<Response> {
+  if (!body.candidateId || !body.proofUrl) {
+    return jsonError(400, { error: 'candidateId and proofUrl are required' })
+  }
+
+  let parsed: URL
+  try {
+    parsed = new URL(body.proofUrl)
+  } catch {
+    return jsonError(400, { error: 'proofUrl must be a valid URL', code: 'INVALID_URL' })
+  }
+  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+    return jsonError(400, { error: 'proofUrl must be http(s)', code: 'INVALID_URL' })
+  }
+
+  // Look up the caller's own pending row. We key on (candidate_id, user_id,
+  // status='pending', method='social_proof') so a different user cannot
+  // submit a URL against someone else's pending row.
+  const { data: pending } = await supabase
+    .from('pending_claims')
+    .select('id, candidate_id, user_id, verification_method, status, expires_at')
+    .eq('candidate_id', body.candidateId)
+    .eq('user_id', userId)
+    .eq('verification_method', 'social_proof')
+    .eq('status', 'pending')
+    .gt('expires_at', new Date().toISOString())
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (!pending) {
+    return jsonError(404, {
+      error: 'No pending social-proof claim found for this candidate',
+      code: 'NO_PENDING_SOCIAL_PROOF',
+    })
+  }
+
+  const { error: updateErr } = await supabase
+    .from('pending_claims')
+    .update({
+      social_proof_url: parsed.toString(),
+      social_proof_submitted_at: new Date().toISOString(),
+    })
+    .eq('id', pending.id)
+    .eq('status', 'pending')
+  if (updateErr) throw updateErr
+
+  return jsonResponse(200, {
+    status: 'social_proof_submitted',
+    pendingClaimId: pending.id,
   })
 }
 
