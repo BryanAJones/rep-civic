@@ -5,6 +5,15 @@
 
 ---
 
+## [0.19.4] - 2026-05-12 — Retire orphan `claim-candidate` Edge Function
+
+### Security
+- **Deleted the deployed `claim-candidate` Edge Function from Supabase.** The source was removed 2026-05-05 in the B6-1 cutover, but the deployed function (version 4, last updated 2026-03-31) was never explicitly torn down via `supabase functions delete`. It remained reachable for 7 days under deletion notice — and ~6 weeks running its pre-B6-1 logic, which would write `candidate_claims` with `verification_method: 'self_attestation'` for any non-anonymous caller posting `{ candidateId }`. No filing-ID check, no FEC committee email, no magic-link round-trip. A complete bypass of the B6-1 ceremony.
+- **Audit log query confirms 0 exploits.** Out of all `candidate.claimed` events recorded since the `audit_log` trigger went live (2026-04-18), 0 used `self_attestation`. Cross-check against the live `candidate_claims` table also shows 0 surviving rows with that verification method. The gap was open from 2026-03-31 → 2026-05-12 but unexploited.
+- **CLAUDE.md updated** to list the real authed-write surface (`submit-question`, `vote-question`, `submit-video-answer`, and `verify-candidate-claim` initiate). The previous wording still mentioned `claim-candidate` despite the function no longer existing.
+
+---
+
 ## [0.19.3] - 2026-05-12 — Server-derived candidateId on video answers (S-12)
 
 ### Security
